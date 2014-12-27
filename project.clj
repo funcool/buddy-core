@@ -12,8 +12,6 @@
   :java-source-paths ["src/java"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
   :test-paths ["test"]
-  :plugins [[codox "0.8.10"]
-            [lein-cloverage "1.0.2"]]
   :profiles {:speclj {:dependencies [[speclj "3.1.0"]]
                       :test-paths ["spec"]
                       :plugins [[speclj "3.1.0"]]}})
