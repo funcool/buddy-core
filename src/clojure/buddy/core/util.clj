@@ -12,7 +12,7 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns buddy.util
+(ns buddy.core.util
   (:require [clojure.algo.monads :refer [domonad maybe-m]]))
 
 (defmacro maybe-let
