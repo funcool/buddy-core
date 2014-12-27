@@ -5,7 +5,7 @@
 
 Cryptography api.
 
-## Documentation:
+## Documentation
 
 - **Stable version documentation:** https://funcool.github.io/buddy/latest/
 - **Development version documentation:** https://funcool.github.io/buddy/devel/
