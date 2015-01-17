@@ -1,4 +1,4 @@
-= Buddy - Cryptographic Api
+= buddy-core - Cryptographic Api
 Andrey Antukh, <niwi@niwi.be>
 0.3.0-SNAPSHOT
 :toc: left
