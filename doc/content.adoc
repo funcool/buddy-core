@@ -598,3 +598,66 @@ consists mainly on functions related conversion between strings, bytes, hex enco
 and base64.
 
 The best documentation for this part is the source code.
+
+== How to Contribute?
+
+=== Philosophy
+
+Five most important rules:
+
+- Beautiful is better than ugly.
+- Explicit is better than implicit.
+- Simple is better than complex.
+- Complex is better than complicated.
+- Readability counts.
+
+All contributions to _buddy-core_ should keep these important rules in mind.
+
+
+=== Procedure
+
+**buddy-core** unlike Clojure and other Clojure contrib libs, does not have many
+restrictions for contributions. Just follow the following steps depending on the
+situation:
+
+**Bugfix**:
+
+- Fork the GitHub repo.
+- Fix a bug/typo on a new branch.
+- Make a pull-request to master.
+
+**New feature**:
+
+- Open new issue with the new feature proposal.
+- If it is accepted, follow the same steps as "bugfix".
+
+=== License
+
+_buddy-core_ is licensed under BSD (2-Clause) license:
+
+----
+Copyright (c) 2013-2015, Andrey Antukh <niwi@niwi.be>
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+----
