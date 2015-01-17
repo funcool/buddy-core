@@ -1,0 +1,7 @@
+= Changelog
+
+== Version 0.3.0
+
+Date: unreleased
+
+- First version splitted from monolitic buddy package.
