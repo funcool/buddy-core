@@ -33,7 +33,7 @@ This section covers the _buddy-core_ library installing process and its requirem
 
 === Requirements
 
-_suricatta_ is tested with these platforms:
+_buddy-core_ is tested with these platforms:
 
 - JDK7
 - JDK8
