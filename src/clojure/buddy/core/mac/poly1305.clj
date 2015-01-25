@@ -54,7 +54,7 @@ guarantee."
   It uses sha3 (256 bit) for normalize the size to 32
   bytes and poly1305 algorithm for transform it."
   [^bytes key]
-  (let [bkey (sha3-256 key)]
+  (let [^bytes bkey (sha3-256 key)]
     (Poly1305KeyGenerator/clamp bkey)
     bkey))
 
