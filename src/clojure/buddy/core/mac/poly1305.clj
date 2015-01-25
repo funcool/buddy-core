@@ -34,8 +34,8 @@ guarantee."
 
 (defn resolve-engine
   "Given dynamic type engine, try resolve it to
-valid engine instance. By default accepts keywords
-and functions."
+  valid engine instance. By default accepts keywords
+  and functions."
   [engine]
   (cond
    (instance? Keyword engine) (let [factory (engine *available-engines*)]
@@ -49,9 +49,9 @@ and functions."
 
 (defn key->poly1305key
   "Noramalizes any length byte array key to poly1305
-formatted byte array key.
-It uses sha3 (256 bit) for normalize the size to 32
-bytes and poly1305 algorithm for transform it."
+  formatted byte array key.
+  It uses sha3 (256 bit) for normalize the size to 32
+  bytes and poly1305 algorithm for transform it."
   [^bytes key]
   (let [bkey (sha3-256 key)]
     (Poly1305KeyGenerator/clamp bkey)
@@ -101,10 +101,10 @@ bytes and poly1305 algorithm for transform it."
 
 (defprotocol Poly1305Mac
   "Protocol that defines a low level interface
-to poly 1305 algorithm and allows extend it for
-different types.
-It comes with default implementation for: string,
-bytes, input stream, file, url and uri."
+  to poly 1305 algorithm and allows extend it for
+  different types.
+  It comes with default implementation for: string,
+  bytes, input stream, file, url and uri."
   (make-poly1305 [obj key iv alg] "Calculate poly1305 mac for type."))
 
 (alter-meta! #'make-poly1305 assoc :no-doc true :private true)
@@ -140,8 +140,8 @@ bytes, input stream, file, url and uri."
 
 (defn poly1305
   "Make poly1305 mac for specified data, using arbitrary
-length key and 128 bits iv.
-Key can be any type that implements ByteArray protocol."
+  length key and 128 bits iv.
+  Key can be any type that implements ByteArray protocol."
   [input key ^bytes iv ^Keyword alg]
   {:pre [(= (count iv) 16)]}
   (let [key (->byte-array key)]
