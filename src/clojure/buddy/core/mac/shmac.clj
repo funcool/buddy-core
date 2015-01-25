@@ -33,15 +33,15 @@
 
 (defn shmac
   "Generic function that exposes a high level
-interface for salted variant of keyed-hash message
-authentication code algorithm."
+  interface for salted variant of keyed-hash message
+  authentication code algorithm."
   [input key salt ^Keyword alg]
   (make-salted-hmac input key salt alg))
 
 (defn verify
   "Generic function that exposes a high level
-interface for salted variant of keyed-hash message
-authentication code verification algorithm."
+  interface for salted variant of keyed-hash message
+  authentication code verification algorithm."
   [input ^bytes signature key salt ^Keyword alg]
   (verify-salted-hmac input signature key salt alg))
 
