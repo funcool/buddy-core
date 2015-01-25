@@ -50,6 +50,7 @@ guarantee."
 (defn key->poly1305key
   "Noramalizes any length byte array key to poly1305
   formatted byte array key.
+
   It uses sha3 (256 bit) for normalize the size to 32
   bytes and poly1305 algorithm for transform it."
   [^bytes key]
@@ -58,6 +59,8 @@ guarantee."
     bkey))
 
 (defn- make-poly1305-plain-impl
+  "Calculate the poly1305 message authentication code
+  for byte array objects."
   [^bytes input ^bytes pkey ^bytes iv ^Keyword alg]
   (let [engine (resolve-engine alg)
         mac    (Poly1305. engine)
@@ -71,6 +74,8 @@ guarantee."
     out))
 
 (defn- make-poly1305-stream-impl
+  "Calculate the poly1305 message authentication code
+  for file like objects in most memory efficient way."
   [^java.io.InputStream stream ^bytes pkey ^bytes iv ^Keyword alg]
   (let [engine (resolve-engine alg)
         mac    (Poly1305. engine)
