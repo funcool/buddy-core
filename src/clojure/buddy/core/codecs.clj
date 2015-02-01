@@ -14,7 +14,7 @@
 
 (ns buddy.core.codecs
   "Util functions for make conversion between string, bytes
-and encode them to base64 ot hex format."
+  and encode them to base64 ot hex format."
   (:require [clojure.string :as str])
   (:import org.apache.commons.codec.binary.Base64
            org.apache.commons.codec.binary.Hex

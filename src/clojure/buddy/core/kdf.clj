@@ -18,8 +18,8 @@
 
 (defprotocol KDFType
   "Generic type that unify access to any implementation
-of kdf implemented in buddy."
-  (generate-bytes! [obj length] "Generate bytes"))
+  of kdf implemented in buddy."
+  (generate-bytes! [_ length] "Generate bytes"))
 
 (defn- generate-bytes-impl
   [impl length]
@@ -31,36 +31,25 @@ of kdf implemented in buddy."
 ;; HKDF interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord HKDF [digest impl]
-  KDFType
-  (generate-bytes! [obj length] (generate-bytes-impl impl length)))
-
-(alter-meta! #'->HKDF assoc :no-doc true :private true)
-(alter-meta! #'map->HKDF assoc :no-doc true :private true)
-
 (defn hkdf
   "HMAC-based Extract-and-Expand Key Derivation Function (HKDF) implemented
-according to IETF RFC 5869, May 2010 as specified by H. Krawczyk, IBM
-Research &amp; P. Eronen, Nokia. It uses a HMac internally to compute de OKM
-(output keying material) and is likely to have better security properties
-than KDF's based on just a hash function."
+  according to IETF RFC 5869, May 2010 as specified by H. Krawczyk, IBM
+  Research &amp; P. Eronen, Nokia. It uses a HMac internally to compute de OKM
+  (output keying material) and is likely to have better security properties
+  than KDF's based on just a hash function."
   [^bytes keydata ^bytes salt ^bytes info ^Keyword alg]
   (let [params  (HKDFParameters. keydata salt info)
         digest  (hash/resolve-digest alg)
         kdfimpl (HKDFBytesGenerator. digest)]
     (.init kdfimpl params)
-    (->HKDF digest kdfimpl)))
+    (reify
+      KDFType
+      (generate-bytes! [_ length]
+        (generate-bytes-impl kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; KDF1/2 interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defrecord KDF [digest impl]
-  KDFType
-  (generate-bytes! [obj length] (generate-bytes-impl impl length)))
-
-(alter-meta! #'->HKDF assoc :no-doc true :private true)
-(alter-meta! #'map->HKDF assoc :no-doc true :private true)
 
 (defn kdf1
   "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
@@ -69,7 +58,10 @@ than KDF's based on just a hash function."
         digest  (hash/resolve-digest alg)
         kdfimpl (KDF1BytesGenerator. digest)]
     (.init kdfimpl params)
-    (->KDF digest kdfimpl)))
+    (reify
+      KDFType
+      (generate-bytes! [_ length]
+        (generate-bytes-impl kdfimpl length)))))
 
 (defn kdf2
   "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
@@ -78,44 +70,36 @@ than KDF's based on just a hash function."
         digest  (hash/resolve-digest alg)
         kdfimpl (KDF2BytesGenerator. digest)]
     (.init kdfimpl params)
-    (->KDF digest kdfimpl)))
+    (reify
+      KDFType
+      (generate-bytes! [_ length]
+        (generate-bytes-impl kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Counter mode KDF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord CMKDF [mac salt r impl]
-  KDFType
-  (generate-bytes! [obj length] (generate-bytes-impl impl length)))
-
-(alter-meta! #'->CMKDF assoc :no-doc true :private true)
-(alter-meta! #'map->CMKDF assoc :no-doc true :private true)
-
 (defn cmkdf
   "Counter mode KDF defined by the publicly available
-NIST SP 800-108 specification."
+  NIST SP 800-108 specification."
   [^bytes keydata ^bytes salt ^Keyword alg & [{:keys [r] :or {r 32}}]]
   (let [params  (KDFCounterParameters. keydata salt r)
         digest  (hash/resolve-digest alg)
         mac     (HMac. digest)
         kdfimpl (KDFCounterBytesGenerator. mac)]
     (.init kdfimpl params)
-    (->CMKDF mac salt r kdfimpl)))
+    (reify
+      KDFType
+      (generate-bytes! [_ length]
+        (generate-bytes-impl kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrecord FMKDF [mac salt r impl]
-  KDFType
-  (generate-bytes! [obj length] (generate-bytes-impl impl length)))
-
-(alter-meta! #'->FMKDF assoc :no-doc true :private true)
-(alter-meta! #'map->FMKDF assoc :no-doc true :private true)
-
 (defn fmkdf
   "Counter mode KDF defined by the publicly available
-NIST SP 800-108 specification."
+  NIST SP 800-108 specification."
   [^bytes keydata ^bytes salt ^Keyword alg & [{:keys [r use-counter] :or {r 32 use-counter true}}]]
   ;; KDFFeedbackParameters takes iv and salt as parameter but
   ;; at this momment, iv is totally ignored:
@@ -127,18 +111,14 @@ NIST SP 800-108 specification."
         mac     (HMac. digest)
         kdfimpl (KDFFeedbackBytesGenerator. mac)]
     (.init kdfimpl params)
-    (->CMKDF mac salt r kdfimpl)))
+    (reify
+      KDFType
+      (generate-bytes! [_ length]
+        (generate-bytes-impl kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defrecord DPIMKDF [mac salt r impl]
-  KDFType
-  (generate-bytes! [obj length] (generate-bytes-impl impl length)))
-
-(alter-meta! #'->DPIMKDF assoc :no-doc true :private true)
-(alter-meta! #'map->DPIMKDF assoc :no-doc true :private true)
 
 (defn dpimkdf
   "Double-Pipeline Iteration Mode KDF defined by the publicly
@@ -151,4 +131,7 @@ available NIST SP 800-108 specification."
         mac     (HMac. digest)
         kdfimpl (KDFDoublePipelineIterationBytesGenerator. mac)]
     (.init kdfimpl params)
-    (->DPIMKDF mac salt r kdfimpl)))
+    (reify
+      KDFType
+      (generate-bytes! [_ length]
+        (generate-bytes-impl kdfimpl length)))))
