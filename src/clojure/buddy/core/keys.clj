@@ -48,33 +48,39 @@
     (.getPublicKey converter keyinfo)))
 
 (defn private-key
+  "Private key constructor from file path."
   [^String path & [^String passphrase]]
   (with-open [reader (io/reader path)]
     (.getPrivate
       (read-pem->privkey reader passphrase))))
 
-(defn public-key? [k]
+(defn public-key?
+  "Check if a given parameter corresponds to some
+  kind of public key instance."
+  [k]
   (let [t (type k)]
     (or (= org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey t)
         (= org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPublicKey t)
         (= org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey t))))
 
 (defn public-key
+  "Public key constrcutor from file path."
   [^String path]
   (with-open [reader (io/reader path)]
     (read-pem->pubkey reader)))
 
 (defn str->public-key
+  "Public key constructor from string."
   [^String keydata]
   (with-open [reader (StringReader. keydata)]
     (read-pem->pubkey reader)))
 
 (defn make-random-bytes
   "Generate a byte array of scpecified length with random
-bytes taken from secure random number generator."
+  bytes taken from secure random number generator."
   ([^Long numbytes]
-     (make-random-bytes numbytes (SecureRandom.)))
+   (make-random-bytes numbytes (SecureRandom.)))
   ([^Long numbytes ^SecureRandom sr]
-     (let [buffer (byte-array numbytes)]
-       (.nextBytes sr buffer)
-       buffer)))
+   (let [buffer (byte-array numbytes)]
+     (.nextBytes sr buffer)
+     buffer)))

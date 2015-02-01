@@ -84,7 +84,7 @@ return bytearray."
 
 (defn str->safebase64
   "Given a string, convert it to completely
-urlsafe base64 version."
+  urlsafe base64 version."
   [^String s]
   (-> (str->base64 s)
       (str/replace #"\s" "")
@@ -94,7 +94,7 @@ urlsafe base64 version."
 
 (defn bytes->safebase64
   "Given a string, convert it to completely
-urlsafe base64 version."
+  urlsafe base64 version."
   [^bytes s]
   (-> (bytes->base64 s)
       (str/replace #"\s" "")
@@ -139,15 +139,15 @@ urlsafe base64 version."
 
 (defn concat-byte-arrays
   "Given N number of byte arrays, concat them in
-one unique byte array and return it."
+  one unique byte array and return it."
   [& parts]
   (byte-array (for [ar parts
                     i  ar] i)))
 
 (defprotocol ByteArray
   "Facility for convert input parameters
-to bytes array with default implementation
-for string an bytes array itself."
+  to bytes array with default implementation
+  for string an bytes array itself."
   (->byte-array [this] "Represent this as byte array."))
 
 (extend-protocol ByteArray
