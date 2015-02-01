@@ -16,10 +16,11 @@
            org.bouncycastle.crypto.Mac
            clojure.lang.Keyword))
 
-(defprotocol KDFType
+(defprotocol IKDF
   "Generic type that unify access to any implementation
   of kdf implemented in buddy."
-  (generate-bytes! [_ length] "Generate bytes"))
+  (generate-byte-array! [_ length] "Generate byte array of specified length.")
+  (generate-byte-buffer! [_ length] "Generate byte buffer of specified length."))
 
 (defn- generate-byte-array
   [impl length]
