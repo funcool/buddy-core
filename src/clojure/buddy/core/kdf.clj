@@ -23,6 +23,13 @@
   (generate-byte-array! [_ length] "Generate byte array of specified length.")
   (generate-byte-buffer! [_ length] "Generate byte buffer of specified length."))
 
+(defn generate-bytes!
+  "Generate a byte array of specified length.
+  WARNING: this method is deprecated but maintained
+  untile next version for backward compatibility."
+  [impl ^long length]
+  (generate-byte-array! impl length))
+
 (defn- generate-byte-array
   [impl length]
   (let [buffer (byte-array length)]
