@@ -1,7 +1,16 @@
 = Changelog
 
-== Version 0.3.0
+== Version 0.4.0
 
 Date: unreleased
+
+- Replace record usage in kdf ns with reify.
+- Rename kdf protocol from KDFType to IKDF
+- Rename kdf protocol method names to more consistent ones.
+- Add support for nio ByteBuffer for kdf.
+
+== Version 0.3.0
+
+Date: 2015-01-18
 
 - First version splitted from monolitic buddy package.
