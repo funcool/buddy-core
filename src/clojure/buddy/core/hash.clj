@@ -52,14 +52,12 @@
    (instance? IFn alg) (alg)
    (instance? Digest alg) alg))
 
-(defprotocol DigestType
-  (make-digest [input algorithm] "Low level interface, always returns bytes"))
+(defprotocol IDigest
+  (^:private digest* [input algorithm] "Low level interface, always returns bytes"))
 
-(alter-meta! #'make-digest assoc :no-doc true :private true)
-
-(extend-protocol DigestType
+(extend-protocol IDigest
   (Class/forName "[B")
-  (make-digest [^bytes input ^Keyword alg]
+  (digest* [^bytes input ^Keyword alg]
     (let [digest (resolve-digest alg)
           buffer (byte-array (.getDigestSize digest))]
       (.update digest input 0 (count input))
@@ -67,11 +65,11 @@
       buffer))
 
   String
-  (make-digest [^String input ^Keyword alg]
-    (make-digest (->byte-array input) alg))
+  (digest* [^String input ^Keyword alg]
+    (digest* (->byte-array input) alg))
 
   java.io.InputStream
-  (make-digest [^java.io.InputStream input ^Keyword alg]
+  (digest* [^java.io.InputStream input ^Keyword alg]
     (let [digest  (resolve-digest alg)
           buffer1 (byte-array 5120)
           buffer2 (byte-array (.getDigestSize digest))]
@@ -84,21 +82,21 @@
       buffer2))
 
   java.io.File
-  (make-digest [^java.io.File input ^Keyword alg]
-    (make-digest (io/input-stream input) alg))
+  (digest* [^java.io.File input ^Keyword alg]
+    (digest* (io/input-stream input) alg))
 
   java.net.URL
-  (make-digest [^java.net.URL input ^Keyword alg]
-    (make-digest (io/input-stream input) alg))
+  (digest* [^java.net.URL input ^Keyword alg]
+    (digest* (io/input-stream input) alg))
 
   java.net.URI
-  (make-digest [^java.net.URI input ^Keyword alg]
-    (make-digest (io/input-stream input) alg)))
+  (digest* [^java.net.URI input ^Keyword alg]
+    (digest* (io/input-stream input) alg)))
 
 (defn digest
   "Generic function for create cryptographic hash."
   [input ^Keyword alg]
-  (make-digest input alg))
+  (digest* input alg))
 
 (def sha256 #(digest % :sha256))
 (def sha384 #(digest % :sha384))
