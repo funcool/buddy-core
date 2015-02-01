@@ -151,7 +151,7 @@
 
 (defn dpimkdf
   "Double-Pipeline Iteration Mode KDF defined by the publicly
-available NIST SP 800-108 specification."
+  available NIST SP 800-108 specification."
   [^bytes keydata ^bytes salt ^Keyword alg & [{:keys [r use-counter] :or {r 32 use-counter true}}]]
   (let [params  (if use-counter
                   (KDFDoublePipelineIterationParameters/createWithCounter keydata salt r)
