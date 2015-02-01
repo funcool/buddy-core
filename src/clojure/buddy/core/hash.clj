@@ -31,19 +31,20 @@
 
 (def ^{:doc "Available digests."
        :dynamic true}
-  *available-digests* {:sha256   #(SHA256Digest.)
-                       :sha384   #(SHA384Digest.)
-                       :sha512   #(SHA512Digest.)
-                       :sha1     #(SHA1Digest.)
-                       :tiger    #(TigerDigest.)
-                       :md5      #(MD5Digest.)
-                       :sha3-256 #(SHA3Digest. 256)
-                       :sha3-384 #(SHA3Digest. 284)
-                       :sha3-512 #(SHA3Digest. 512)})
+  *available-digests*
+  {:sha256   #(SHA256Digest.)
+   :sha384   #(SHA384Digest.)
+   :sha512   #(SHA512Digest.)
+   :sha1     #(SHA1Digest.)
+   :tiger    #(TigerDigest.)
+   :md5      #(MD5Digest.)
+   :sha3-256 #(SHA3Digest. 256)
+   :sha3-384 #(SHA3Digest. 284)
+   :sha3-512 #(SHA3Digest. 512)})
 
-(defn resolve-digest
+(defn- resolve-digest
   "Helper function for make Digest instances
-from algorithm parameter."
+  from algorithm parameter."
   [alg]
   (cond
    (instance? Keyword alg) (let [factory (*available-digests* alg)]
