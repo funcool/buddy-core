@@ -42,7 +42,7 @@
    :sha3-384 #(SHA3Digest. 284)
    :sha3-512 #(SHA3Digest. 512)})
 
-(defn- resolve-digest
+(defn resolve-digest
   "Helper function for make Digest instances
   from algorithm parameter."
   [alg]
