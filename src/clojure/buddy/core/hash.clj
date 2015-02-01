@@ -28,7 +28,6 @@
            clojure.lang.IFn
            clojure.lang.Keyword))
 
-
 (def ^{:doc "Available digests."
        :dynamic true}
   *available-digests*
