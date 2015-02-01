@@ -8,6 +8,7 @@ Date: unreleased
 - Rename kdf protocol from KDFType to IKDF
 - Rename kdf protocol method names to more consistent ones.
 - Add support for nio ByteBuffer for kdf.
+- Improve consistency naming on hash related protocol and its method.
 
 == Version 0.3.0
 
