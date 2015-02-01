@@ -41,12 +41,12 @@
 
 (defprotocol BlockCipher
   "Protocol that defines interface for all
-supported block ciphers by `buddy`."
+  supported block ciphers by `buddy`."
   (process-block! [obj input] "Encrypt/Decrypt a block of bytes."))
 
 (defprotocol StreamCipher
   "Protocol that defines interface for all
-supported stream ciphers by `buddy`."
+  supported stream ciphers by `buddy`."
   (process-bytes! [obj input] "Encrypt/Decrypt a set of bytes."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,7 +55,7 @@ supported stream ciphers by `buddy`."
 
 (defn- make-block-cipher-params
   "Generate CipherParameters instance from
-clojure hash map."
+  clojure hash map."
   [params]
   (if (:iv params)
     (let [keyparams (make-block-cipher-params (dissoc params :iv))]
