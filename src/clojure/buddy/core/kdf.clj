@@ -14,6 +14,7 @@
            org.bouncycastle.crypto.params.KDFDoublePipelineIterationParameters
            org.bouncycastle.crypto.macs.HMac
            org.bouncycastle.crypto.Mac
+           java.nio.ByteBuffer
            clojure.lang.Keyword))
 
 (defprotocol IKDF
@@ -27,6 +28,11 @@
   (let [buffer (byte-array length)]
     (.generateBytes impl buffer 0 length)
     buffer))
+
+(defn- generate-byte-buffer
+  [impl length]
+  (let [buffer (generate-byte-array impl length)]
+    (ByteBuffer/wrap buffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; HKDF interface
@@ -44,9 +50,12 @@
         kdfimpl (HKDFBytesGenerator. digest)]
     (.init kdfimpl params)
     (reify
-      KDFType
-      (generate-bytes! [_ length]
-        (generate-byte-array kdfimpl length)))))
+      IKDF
+      (generate-byte-array! [_ length]
+        (generate-byte-array kdfimpl length))
+
+      (generate-byte-buffer! [_ length]
+        (generate-byte-buffer kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; KDF1/2 interface
@@ -60,9 +69,12 @@
         kdfimpl (KDF1BytesGenerator. digest)]
     (.init kdfimpl params)
     (reify
-      KDFType
-      (generate-bytes! [_ length]
-        (generate-byte-array kdfimpl length)))))
+      IKDF
+      (generate-byte-array! [_ length]
+        (generate-byte-array kdfimpl length))
+
+      (generate-byte-buffer! [_ length]
+        (generate-byte-buffer kdfimpl length)))))
 
 (defn kdf2
   "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
@@ -72,9 +84,12 @@
         kdfimpl (KDF2BytesGenerator. digest)]
     (.init kdfimpl params)
     (reify
-      KDFType
-      (generate-bytes! [_ length]
-        (generate-byte-array kdfimpl length)))))
+      IKDF
+      (generate-byte-array! [_ length]
+        (generate-byte-array kdfimpl length))
+
+      (generate-byte-buffer! [_ length]
+        (generate-byte-buffer kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Counter mode KDF
@@ -90,9 +105,12 @@
         kdfimpl (KDFCounterBytesGenerator. mac)]
     (.init kdfimpl params)
     (reify
-      KDFType
-      (generate-bytes! [_ length]
-        (generate-byte-array kdfimpl length)))))
+      IKDF
+      (generate-byte-array! [_ length]
+        (generate-byte-array kdfimpl length))
+
+      (generate-byte-buffer! [_ length]
+        (generate-byte-buffer kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
@@ -113,9 +131,12 @@
         kdfimpl (KDFFeedbackBytesGenerator. mac)]
     (.init kdfimpl params)
     (reify
-      KDFType
-      (generate-bytes! [_ length]
-        (generate-byte-array kdfimpl length)))))
+      IKDF
+      (generate-byte-array! [_ length]
+        (generate-byte-array kdfimpl length))
+
+      (generate-byte-buffer! [_ length]
+        (generate-byte-buffer kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
@@ -133,6 +154,9 @@ available NIST SP 800-108 specification."
         kdfimpl (KDFDoublePipelineIterationBytesGenerator. mac)]
     (.init kdfimpl params)
     (reify
-      KDFType
-      (generate-bytes! [_ length]
-        (generate-byte-array kdfimpl length)))))
+      IKDF
+      (generate-byte-array! [_ length]
+        (generate-byte-array kdfimpl length))
+
+      (generate-byte-buffer! [_ length]
+        (generate-byte-buffer kdfimpl length)))))
