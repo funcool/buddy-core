@@ -21,7 +21,7 @@
   of kdf implemented in buddy."
   (generate-bytes! [_ length] "Generate bytes"))
 
-(defn- generate-bytes-impl
+(defn- generate-byte-array
   [impl length]
   (let [buffer (byte-array length)]
     (.generateBytes impl buffer 0 length)
@@ -45,7 +45,7 @@
     (reify
       KDFType
       (generate-bytes! [_ length]
-        (generate-bytes-impl kdfimpl length)))))
+        (generate-byte-array kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; KDF1/2 interface
@@ -61,7 +61,7 @@
     (reify
       KDFType
       (generate-bytes! [_ length]
-        (generate-bytes-impl kdfimpl length)))))
+        (generate-byte-array kdfimpl length)))))
 
 (defn kdf2
   "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
@@ -73,7 +73,7 @@
     (reify
       KDFType
       (generate-bytes! [_ length]
-        (generate-bytes-impl kdfimpl length)))))
+        (generate-byte-array kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Counter mode KDF
@@ -91,7 +91,7 @@
     (reify
       KDFType
       (generate-bytes! [_ length]
-        (generate-bytes-impl kdfimpl length)))))
+        (generate-byte-array kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
@@ -114,7 +114,7 @@
     (reify
       KDFType
       (generate-bytes! [_ length]
-        (generate-bytes-impl kdfimpl length)))))
+        (generate-byte-array kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
@@ -134,4 +134,4 @@ available NIST SP 800-108 specification."
     (reify
       KDFType
       (generate-bytes! [_ length]
-        (generate-bytes-impl kdfimpl length)))))
+        (generate-byte-array kdfimpl length)))))
