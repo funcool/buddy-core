@@ -17,6 +17,6 @@
 
 (defprotocol Signature
   "Default inteterface for all signature
-algorithms supported by `buddy`."
+  algorithms supported by `buddy`."
   (make-signature [input key alg] "Make signature.")
   (verify-signature [input signature key alg] "Verify signature."))
