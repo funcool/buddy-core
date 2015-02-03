@@ -15,16 +15,16 @@
 
 (ns buddy.core.mac.poly1305
   "Poly1305-AES is a cryptographic message authentication code
-(MAC) written by Daniel J. Bernstein. It can be used to verify the
-data integrity and the authenticity of a message.
+  (MAC) written by Daniel J. Bernstein. It can be used to verify the
+  data integrity and the authenticity of a message.
 
-The security of Poly1305-AES is very close to the underlying AES
-block cipher algorithm. As a result, the only way for an attacker
-to break Poly1305-AES is to break AES.
+  The security of Poly1305-AES is very close to the underlying AES
+  block cipher algorithm. As a result, the only way for an attacker
+  to break Poly1305-AES is to break AES.
 
-Poly1305-AES offers also cipher replaceability. If anything does
-go wrong with AES, it can be substituted with identical security
-guarantee."
+  Poly1305-AES offers also cipher replaceability. If anything does
+  go wrong with AES, it can be substituted with identical security
+  guarantee."
   (:import org.bouncycastle.crypto.generators.Poly1305KeyGenerator
            org.bouncycastle.crypto.macs.Poly1305
            org.bouncycastle.crypto.params.KeyParameter
