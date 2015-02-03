@@ -45,8 +45,8 @@
 
 (defn- resolve-signer
   "Given dynamic type engine, try resolve it to
-valid engine instance. By default accepts keywords
-and functions."
+  valid engine instance. By default accepts keywords
+  and functions."
   [signer]
   (cond
    (instance? Keyword signer) (let [factory (signer *supported-algorithms*)] (factory))
@@ -128,4 +128,3 @@ and functions."
     (make-signature-for-stream (io/input-stream input) pkey alg))
   (verify-signature [^java.net.URI input, ^bytes signature, pkey, ^Keyword alg]
     (verify-signature-for-stream (io/input-stream input) signature pkey alg)))
-
