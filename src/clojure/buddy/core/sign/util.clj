@@ -18,8 +18,8 @@
 
 (defn concat-two-keywords
   ([^Keyword first  ^Keyword second]
-     (concat-two-keywords first second "-"))
+   (concat-two-keywords first second "-"))
   ([^Keyword first  ^Keyword second ^String delim]
-     (let [name1 (name first)
-           name2 (name second)]
-       (keyword (str name1 delim name2)))))
+   (let [name1 (name first)
+         name2 (name second)]
+     (keyword (str name1 delim name2)))))
