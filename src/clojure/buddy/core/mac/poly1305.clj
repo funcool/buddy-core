@@ -42,6 +42,9 @@
            clojure.lang.Keyword
            buddy.Arrays))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Low level hmac engine.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^{:doc "Default engine factories."
        :dynamic true}
@@ -49,7 +52,7 @@
                        :serpent #(SerpentEngine.)
                        :twofish #(TwofishEngine.)})
 
-(defn resolve-engine
+(defn- resolve-engine
   "Given dynamic type engine, try resolve it to
   valid engine instance. By default accepts keywords
   and functions."
@@ -60,11 +63,7 @@
    (instance? IFn engine) (engine)
    (instance? BlockCipher engine) engine))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Internal implementations
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn key->poly1305key
+(defn- key->poly1305key
   "Noramalizes any length byte array key to poly1305
   formatted byte array key.
 
@@ -75,39 +74,47 @@
     (Poly1305KeyGenerator/clamp bkey)
     bkey))
 
+(defn poly1305-engine
+  "Create a hmac engine."
+  ([key iv] (poly1305-engine key iv :aes))
+  ([key iv alg]
+   (let [engine (resolve-engine alg)
+         mac    (Poly1305. engine)
+         kp     (KeyParameter. (key->poly1305key key))]
+     (.init mac (ParametersWithIV. kp iv))
+     (reify
+       proto/IMac
+       (update [_ input offset length]
+         (.update mac input offset length))
+       (end [_]
+         (let [buffer (byte-array (.getMacSize mac))]
+           (.doFinal mac buffer 0)
+           buffer))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Internal implementations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn- make-poly1305-plain-impl
   "Calculate the poly1305 message authentication code
   for byte array objects."
-  [^bytes input ^bytes pkey ^bytes iv ^Keyword alg]
-  (let [engine (resolve-engine alg)
-        mac    (Poly1305. engine)
-        out    (byte-array 16)
-        kp     (KeyParameter. (key->poly1305key pkey))
-        pwi    (ParametersWithIV. kp iv)]
-    (doto mac
-      (.init pwi)
-      (.update input 0 (count input))
-      (.doFinal out 0))
-    out))
+  [^bytes input ^bytes key ^bytes iv ^Keyword alg]
+  (let [engine (poly1305-engine key iv alg)]
+    (proto/update! engine input)
+    (proto/end! engine)))
 
 (defn- make-poly1305-stream-impl
   "Calculate the poly1305 message authentication code
   for file like objects in most memory efficient way."
-  [^java.io.InputStream stream ^bytes pkey ^bytes iv ^Keyword alg]
-  (let [engine (resolve-engine alg)
-        mac    (Poly1305. engine)
-        out    (byte-array 16)
-        kp     (KeyParameter. (key->poly1305key pkey))
-        pwi    (ParametersWithIV. kp iv)
-        bfr    (byte-array 5120)]
-    (.init mac pwi)
+  [^java.io.InputStream input ^bytes key ^bytes iv ^Keyword alg]
+  (let [engine (poly1305-engine key iv alg)
+        buffer (byte-array 5120)]
     (loop []
-      (let [readed (.read stream bfr 0 5120)]
+      (let [readed (.read input buffer 0 5120)]
         (when-not (= readed -1)
-          (.update mac bfr 0 readed)
+          (proto/update! engine buffer 0 readed)
           (recur))))
-    (.doFinal mac out 0)
-    out))
+    (proto/end! engine)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Low level interface
