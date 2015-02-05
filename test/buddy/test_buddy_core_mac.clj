@@ -30,6 +30,22 @@
       (is (Arrays/equals (hmac/hmac "foo" secretkey :sha256)
                          (hmac/hmac "foo" secretkey :sha256))))
 
+    (testing "Test Vector"
+      (let [key (hex->bytes (str "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aa"))
+            data (str->bytes "Test Using Larger Than Block-Size Key - Hash Key First")
+            result "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54"]
+        (is (= result (bytes->hex (hmac/hmac data key :sha256))))))
+
     (testing "Sign/Verify string"
       (let [sig (hmac/hmac "foo" secretkey :sha384)]
         (is (true? (hmac/verify "foo" sig secretkey :sha384)))))
