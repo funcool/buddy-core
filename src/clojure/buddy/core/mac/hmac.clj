@@ -68,8 +68,8 @@
 
 (defprotocol HMacType
   "Unified protocol for calculate a keyed-hash message.
-It comes with default implementations for bytes, String,
-InputStream, File, URL and URI."
+  It comes with default implementations for bytes, String,
+  InputStream, File, URL and URI."
   (make-hmac [data key alg] "Calculate hmac for input using key and alg.")
   (verify-hmac [data signature key alg] "Verify hmac for input using key and alg."))
 
