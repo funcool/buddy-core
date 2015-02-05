@@ -25,6 +25,11 @@
   Poly1305-AES offers also cipher replaceability. If anything does
   go wrong with AES, it can be substituted with identical security
   guarantee."
+  (:require [buddy.core.hash :refer [sha3-256]]
+            [buddy.core.mac.proto :as proto]
+            [buddy.core.codecs :refer :all]
+            [buddy.core.keys :refer [make-random-bytes]]
+            [clojure.java.io :as io])
   (:import org.bouncycastle.crypto.generators.Poly1305KeyGenerator
            org.bouncycastle.crypto.macs.Poly1305
            org.bouncycastle.crypto.params.KeyParameter
@@ -35,11 +40,8 @@
            org.bouncycastle.crypto.BlockCipher
            clojure.lang.IFn
            clojure.lang.Keyword
-           buddy.Arrays)
-  (:require [buddy.core.hash :refer [sha3-256]]
-            [buddy.core.codecs :refer :all]
-            [buddy.core.keys :refer [make-random-bytes]]
-            [clojure.java.io :as io]))
+           buddy.Arrays))
+
 
 (def ^{:doc "Default engine factories."
        :dynamic true}
