@@ -15,6 +15,7 @@
 (ns buddy.core.mac.hmac
   "Hash-based Message Authentication Codes (HMACs)"
   (:require [buddy.core.codecs :refer :all]
+            [buddy.core.mac.proto :as proto]
             [buddy.core.hash :as hash]
             [clojure.java.io :as io])
   (:import org.bouncycastle.crypto.macs.HMac
@@ -24,21 +25,34 @@
            buddy.Arrays))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Low level hmac engine.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn hmac-engine
+  "Create a hmac engine."
+  [key alg]
+  (let [digest (hash/resolve-digest alg)
+        kp     (KeyParameter. (->byte-array key))
+        mac    (HMac. digest)]
+    (reify
+      proto/IMac
+      (update [_ input offset length]
+        (.update mac input offset length))
+      (end [_]
+        (let [buffer (byte-array (.getMacSize mac))]
+          (.doFinal mac buffer 0)
+          buffer)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Low level private function with all logic for make
 ;; hmac for distinct types.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- make-hmac-for-plain-data
-  [^bytes input, pkey, ^Keyword alg]
-  (let [digest (hash/resolve-digest alg)
-        kp     (KeyParameter. (->byte-array pkey))
-        mac    (HMac. digest)
-        buffer (byte-array (.getMacSize mac))]
-    (doto mac
-      (.init kp)
-      (.update input 0 (count input))
-      (.doFinal buffer 0))
-    buffer))
+  [^bytes input key ^Keyword alg]
+  (let [engine (hmac-engine key alg)]
+    (proto/update! engine input)
+    (proto/end! engine)))
 
 (defn- verify-hmac-for-plain-data
   [^bytes input, ^bytes signature, pkey, ^Keyword alg]
@@ -46,20 +60,15 @@
     (Arrays/equals sig signature)))
 
 (defn- make-hmac-for-stream
-  [^java.io.InputStream input, pkey, ^Keyword alg]
-  (let [digest  (hash/resolve-digest alg)
-        kp      (KeyParameter. (->byte-array pkey))
-        mac     (HMac. digest)
-        buffer1 (byte-array 5120)
-        buffer2 (byte-array (.getMacSize mac))]
-    (.init mac kp)
+  [^java.io.InputStream input key ^Keyword alg]
+  (let [engine (hmac-engine key alg)
+        buffer (byte-array 5120)]
     (loop []
-      (let [readed (.read input buffer1 0 5120)]
+      (let [readed (.read input buffer 0 5120)]
         (when-not (= readed -1)
-          (.update mac buffer1 0 readed)
+          (proto/update! engine buffer 0 readed)
           (recur))))
-    (.doFinal mac buffer2 0)
-    buffer2))
+    (proto/end! engine)))
 
 (defn- verify-hmac-for-stream
   [^java.io.InputStream input, ^bytes signature, pkey, ^Keyword alg]
