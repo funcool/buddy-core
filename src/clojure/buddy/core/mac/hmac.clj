@@ -32,8 +32,8 @@
   "Create a hmac engine."
   [key alg]
   (let [digest (hash/resolve-digest alg)
-        kp     (KeyParameter. (->byte-array key))
         mac    (HMac. digest)]
+    (.init mac (KeyParameter. (->byte-array key)))
     (reify
       proto/IMac
       (update [_ input offset length]
