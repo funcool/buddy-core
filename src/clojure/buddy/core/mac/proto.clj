@@ -17,8 +17,9 @@
   low level protocol definition.")
 
 (defprotocol IMac
-  (^:private update [_ bytes offset length] "Update bytes in a current instance.")
-  (^:private end [_] "Return the computed mac and reset the engine."))
+  "Mac engine common interface definition."
+  (update [_ bytes offset length] "Update bytes in a current instance.")
+  (end [_] "Return the computed mac and reset the engine."))
 
 (defn update!
   ([engine input]
