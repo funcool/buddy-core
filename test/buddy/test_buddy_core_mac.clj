@@ -28,8 +28,8 @@
         path      "test/_files/pubkey.ecdsa.pem"]
 
     (testing "Multiple sign using hmac sha256"
-      (is (Arrays/equals (hmac/hmac "foo" secretkey :sha256)
-                         (hmac/hmac "foo" secretkey :sha256))))
+      (is (Arrays/equals (hmac/hash "foo" secretkey :sha256)
+                         (hmac/hash "foo" secretkey :sha256))))
 
     (testing "Test Vector"
       (let [key (hex->bytes (str "aaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -45,26 +45,26 @@
                                  "aa"))
             data (str->bytes "Test Using Larger Than Block-Size Key - Hash Key First")
             result "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54"]
-        (is (= result (bytes->hex (hmac/hmac data key :sha256))))))
+        (is (= result (bytes->hex (hmac/hash data key :sha256))))))
 
     (testing "Sign/Verify string"
-      (let [sig (hmac/hmac "foo" secretkey :sha384)]
+      (let [sig (hmac/hash "foo" secretkey :sha384)]
         (is (true? (hmac/verify "foo" sig secretkey :sha384)))))
 
     (testing "Sign/Verify input stream"
-      (let [sig (hmac/hmac (io/input-stream path) secretkey :sha512)]
+      (let [sig (hmac/hash (io/input-stream path) secretkey :sha512)]
         (is (true? (hmac/verify (io/input-stream path) sig secretkey :sha512)))))
 
     (testing "Sign/Verify file"
-      (let [sig (hmac/hmac (java.io.File. path) secretkey :sha512)]
+      (let [sig (hmac/hash (java.io.File. path) secretkey :sha512)]
         (is (true? (hmac/verify (java.io.File. path) sig secretkey :sha512)))))
 
     (testing "Sign/Verify url"
-      (let [sig (hmac/hmac (.toURL (java.io.File. path)) secretkey :sha512)]
+      (let [sig (hmac/hash (.toURL (java.io.File. path)) secretkey :sha512)]
         (is (true? (hmac/verify (.toURL (java.io.File. path)) sig secretkey :sha512)))))
 
     (testing "Sign/Verify uri"
-      (let [sig (hmac/hmac (.toURI (java.io.File. path)) secretkey :sha512)]
+      (let [sig (hmac/hash (.toURI (java.io.File. path)) secretkey :sha512)]
         (is (true? (hmac/verify (.toURI (java.io.File. path)) sig secretkey :sha512)))))
 
     (testing "Sign/Verify salted hmac with string"
@@ -72,38 +72,27 @@
         (is (true? (shmac/verify "foo" sig secretkey "salt" :sha256)))))))
 
 (deftest buddy-core-mac-poly1305
-  (let [iv        (byte-array 16) ;; 16 bytes array filled with 0
-        plaintext "text"
+  (let [plaintext "text"
         secretkey "secret"]
     (testing "Poly1305 encrypt/verify (using string key)"
-      (let [mac-bytes1 (poly/poly1305 plaintext secretkey iv :aes)
-            mac-bytes2 (poly/poly1305 plaintext secretkey iv :aes)]
-      (is (= (Arrays/equals mac-bytes1 mac-bytes2)))))
+      (let [mac-bytes1 (poly/poly1305 plaintext secretkey :aes)
+            mac-bytes2 (poly/poly1305 plaintext secretkey :aes)]
+        (is (not (Arrays/equals mac-bytes1 mac-bytes2))))
 
-  (testing "Poly1305 explicit encrypt/verify (using string key)"
-    (let [mac-bytes1 (poly/poly1305 plaintext secretkey iv :aes)]
-      (is (= (-> mac-bytes1 (bytes->hex)) "98a94ff88861bf9b96bcb7112b506579"))))
+      (let [mac-bytes1 (poly/hash plaintext secretkey :aes)
+            mac-bytes2 (poly/hash plaintext secretkey :aes)]
+        (is (not (Arrays/equals mac-bytes1 mac-bytes2)))))
 
   (testing "File mac"
     (let [path       "test/_files/pubkey.ecdsa.pem"
-          macbytes   (poly/poly1305 (io/input-stream path) secretkey iv :aes)]
-      (is (poly/verify (io/input-stream path) macbytes secretkey iv :aes))))
-
-  (testing "Poly1305-AES enc/verify using key with good iv"
-    (let [iv1      (make-random-bytes 16)
-          iv2      (make-random-bytes 16)
-          macbytes (poly/poly1305 plaintext secretkey iv1 :aes)]
-      (is (poly/verify plaintext macbytes secretkey iv1 :aes))
-      (is (not (poly/verify plaintext macbytes secretkey iv2 :aes)))))
+          macbytes   (poly/poly1305 (io/input-stream path) secretkey :aes)]
+      (is (poly/verify (io/input-stream path) macbytes secretkey :aes))))
 
   (testing "Poly1305-Twofish env/verify"
-    (let [iv2 (make-random-bytes 16)
-          signature (poly/poly1305 plaintext secretkey iv2 :twofish)]
-      (is (poly/verify plaintext signature secretkey iv2 :twofish))
-      (is (not (poly/verify plaintext signature secretkey iv :twofish)))))
+    (let [signature (poly/poly1305 plaintext secretkey :twofish)]
+      (is (poly/verify plaintext signature secretkey :twofish))))
 
   (testing "Poly1305-Serpent env/verify"
-    (let [iv2 (make-random-bytes 16)
-          signature (poly/poly1305 plaintext secretkey iv2 :serpent)]
-      (is (poly/verify plaintext signature secretkey iv2 :serpent))
-      (is (not (poly/verify plaintext signature secretkey iv :serpent)))))))
+    (let [signature (poly/poly1305 plaintext secretkey :serpent)]
+      (is (poly/verify plaintext signature secretkey :serpent))))
+))
