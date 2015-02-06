@@ -3,7 +3,11 @@
   for generate a valid secure nonce values.
 
   By convenience, it also exposes additional functions
-  for generate random iv/salts.")
+  for generate random iv/salts."
+  (:require [buddy.core.codecs :refer [clone-byte-array]]
+            [clojure.pprint :refer [pprint]])
+  (:import java.security.SecureRandom))
+
 
 (defn random-bytes
   "Generate a byte array of scpecified length with random
@@ -11,7 +15,7 @@
   This method should be used for generate a random
   iv/salt or arbitrary length."
   ([^long numbytes]
-   (make-random-bytes numbytes (SecureRandom.)))
+   (random-bytes numbytes (SecureRandom.)))
   ([^long numbytes ^SecureRandom sr]
    (let [buffer (byte-array numbytes)]
      (.nextBytes sr buffer)
@@ -27,6 +31,6 @@
   ([^long numbytes ^SecureRandom sr]
    (let [buffer (java.nio.ByteBuffer/allocate numbytes)]
      (.putLong buffer (System/currentTimeMillis))
-     (.putBytes buffer (random-bytes (.remaining buffer) sr))
-     (.array buffer))))
+     (.put buffer (random-bytes (.remaining buffer) sr))
+     (clone-byte-array (.array buffer)))))
 
