@@ -155,6 +155,16 @@ return bytearray."
   ([^bytes input ^long offset ^long limit]
    (java.util.Arrays/copyOfRange input offset limit)))
 
+(defn equals?
+  "Test whether two sequences of characters or bytes are equal in a way that
+  protects against timing attacks. Note that this does not prevent an attacker
+  from discovering the *length* of the data being compared."
+  [a b]
+  (let [a (map int a), b (map int b)]
+    (if (and a b (= (count a) (count b)))
+      (zero? (reduce bit-or (map bit-xor a b)))
+      false)))
+
 (defprotocol ByteArray
   "Facility for convert input parameters
   to bytes array with default implementation
