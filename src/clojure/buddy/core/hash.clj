@@ -65,7 +65,7 @@
 
   String
   (digest* [^String input ^Keyword alg]
-    (digest* (->byte-array input) alg))
+    (digest* (str->bytes input) alg))
 
   java.io.InputStream
   (digest* [^java.io.InputStream input ^Keyword alg]
