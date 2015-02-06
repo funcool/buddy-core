@@ -16,6 +16,7 @@
   (:require [clojure.test :refer :all]
             [buddy.core.codecs :refer :all]
             [buddy.core.keys :refer :all]
+            [buddy.core.nonce :as nonce]
             [buddy.core.mac.poly1305 :as poly]
             [buddy.core.mac.hmac :as hmac]
             [buddy.core.mac.shmac :as shmac]

@@ -16,15 +16,16 @@
   (:require [clojure.test :refer :all]
             [buddy.core.codecs :refer :all]
             [buddy.core.keys :refer :all]
+            [buddy.core.nonce :as nonce]
             [buddy.core.kdf :as kdf]
             [clojure.java.io :as io])
   (:import buddy.Arrays))
 
 (deftest buddy-core-kdf
-  (let [key1 (make-random-bytes 32)
-        key2 (make-random-bytes 16)
-        salt (make-random-bytes 8)
-        info (make-random-bytes 8)]
+  (let [key1 (nonce/random-bytes 32)
+        key2 (nonce/random-bytes 16)
+        salt (nonce/random-bytes 8)
+        info (nonce/random-bytes 8)]
     (testing "HKDF with sha256 with info"
       (let [generator1 (kdf/hkdf key1 salt info :sha256)
             generator2 (kdf/hkdf key1 salt info :sha256)

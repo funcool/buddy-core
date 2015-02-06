@@ -3,15 +3,15 @@
             [clojure.pprint :refer :all]
             [buddy.core.codecs :refer :all]
             [buddy.core.keys :refer :all]
+            [buddy.core.nonce :as nonce]
             [buddy.core.hash :as hash]
             [buddy.core.crypto :as cr]
             [clojure.java.io :as io])
   (:import buddy.Arrays))
 
-
 (deftest buddy-core-crypto
-  (let [key     (make-random-bytes 32)
-        iv      (make-random-bytes 16)
+  (let [key     (nonce/random-bytes 32)
+        iv      (nonce/random-bytes 16)
         key     (hex->bytes "0000000000000000000000000000000000000000000000000000000000000000")
         iv16    (hex->bytes "00000000000000000000000000000000")
         iv8     (hex->bytes "0011001100110011")
