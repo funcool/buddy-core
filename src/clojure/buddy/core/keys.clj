@@ -74,13 +74,3 @@
   [^String keydata]
   (with-open [reader (StringReader. keydata)]
     (read-pem->pubkey reader)))
-
-(defn make-random-bytes
-  "Generate a byte array of scpecified length with random
-  bytes taken from secure random number generator."
-  ([^Long numbytes]
-   (make-random-bytes numbytes (SecureRandom.)))
-  ([^Long numbytes ^SecureRandom sr]
-   (let [buffer (byte-array numbytes)]
-     (.nextBytes sr buffer)
-     buffer)))
