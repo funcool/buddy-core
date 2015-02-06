@@ -14,6 +14,7 @@
 
 (ns buddy.core.mac.hmac
   "Hash-based Message Authentication Codes (HMACs)"
+  (:refer-clojure :exclude [hash])
   (:require [buddy.core.codecs :refer :all]
             [buddy.core.mac.proto :as proto]
             [buddy.core.hash :as hash]
@@ -43,23 +44,26 @@
           (.doFinal mac buffer 0)
           buffer)))))
 
+(defprotocol IHMac
+  (hash* [data key alg] "Generate the hmac digest for provided data.")
+  (verify* [data signature key alg] "Virify the hmac digest for provided data."))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Low level private function with all logic for make
-;; hmac for distinct types.
+;; Implementation details for different data types.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- make-hmac-for-plain-data
+(defn- hash-plain-data
   [^bytes input key ^Keyword alg]
   (let [engine (hmac-engine key alg)]
     (proto/update! engine input)
     (proto/end! engine)))
 
-(defn- verify-hmac-for-plain-data
+(defn- verify-plain-data
   [^bytes input, ^bytes signature, pkey, ^Keyword alg]
-  (let [sig (make-hmac-for-plain-data input pkey alg)]
+  (let [sig (hash-plain-data input pkey alg)]
     (Arrays/equals sig signature)))
 
-(defn- make-hmac-for-stream
+(defn- hash-stream-data
   [^java.io.InputStream input key ^Keyword alg]
   (let [engine (hmac-engine key alg)
         buffer (byte-array 5120)]
@@ -70,71 +74,65 @@
           (recur))))
     (proto/end! engine)))
 
-(defn- verify-hmac-for-stream
+(defn- verify-stream
   [^java.io.InputStream input, ^bytes signature, pkey, ^Keyword alg]
-  (let [sig (make-hmac-for-stream input pkey alg)]
+  (let [sig (hash-stream-data input pkey alg)]
     (Arrays/equals sig signature)))
 
-(defprotocol HMacType
-  "Unified protocol for calculate a keyed-hash message.
-  It comes with default implementations for bytes, String,
-  InputStream, File, URL and URI."
-  (make-hmac [data key alg] "Calculate hmac for input using key and alg.")
-  (verify-hmac [data signature key alg] "Verify hmac for input using key and alg."))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Implementation of IMac protocol
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(alter-meta! #'make-hmac assoc :no-doc true :private true)
-(alter-meta! #'verify-hmac assoc :no-doc true :private true)
-
-(extend-protocol HMacType
+(extend-protocol IHMac
   (Class/forName "[B")
-  (make-hmac [^bytes input key ^Keyword alg]
-    (make-hmac-for-plain-data input key alg))
-  (verify-hmac [^bytes input ^bytes signature ^String key ^Keyword alg]
-    (verify-hmac-for-plain-data input signature key alg))
+  (hash* [^bytes input key ^Keyword alg]
+    (hash-plain-data input key alg))
+  (verify* [^bytes input ^bytes signature ^String key ^Keyword alg]
+    (verify-plain-data input signature key alg))
 
   java.lang.String
-  (make-hmac [^String input key ^Keyword alg]
-    (make-hmac-for-plain-data (->byte-array input) key alg))
-  (verify-hmac [^String input ^bytes signature ^String key ^Keyword alg]
-    (verify-hmac-for-plain-data (->byte-array input) signature key alg))
+  (hash* [^String input key ^Keyword alg]
+    (hash-plain-data (->byte-array input) key alg))
+  (verify* [^String input ^bytes signature ^String key ^Keyword alg]
+    (verify-plain-data (->byte-array input) signature key alg))
 
   java.io.InputStream
-  (make-hmac [^java.io.InputStream input key ^Keyword alg]
-    (make-hmac-for-stream input key alg))
-  (verify-hmac [^java.io.InputStream input ^bytes signature ^String key ^Keyword alg]
-    (verify-hmac-for-stream input signature key alg))
+  (hash* [^java.io.InputStream input key ^Keyword alg]
+    (hash-stream-data input key alg))
+  (verify* [^java.io.InputStream input ^bytes signature ^String key ^Keyword alg]
+    (verify-stream input signature key alg))
 
   java.io.File
-  (make-hmac [^java.io.File input key ^Keyword alg]
-    (make-hmac-for-stream (io/input-stream input) key alg))
-  (verify-hmac [^java.io.File input ^bytes signature ^String key ^Keyword alg]
-    (verify-hmac-for-stream (io/input-stream input) signature key alg))
+  (hash* [^java.io.File input key ^Keyword alg]
+    (hash-stream-data (io/input-stream input) key alg))
+  (verify* [^java.io.File input ^bytes signature ^String key ^Keyword alg]
+    (verify-stream (io/input-stream input) signature key alg))
 
   java.net.URL
-  (make-hmac [^java.net.URL input key ^Keyword alg]
-    (make-hmac-for-stream (io/input-stream input) key alg))
-  (verify-hmac [^java.net.URL input ^bytes signature ^String key ^Keyword alg]
-    (verify-hmac-for-stream (io/input-stream input) signature key alg))
+  (hash* [^java.net.URL input key ^Keyword alg]
+    (hash-stream-data (io/input-stream input) key alg))
+  (verify* [^java.net.URL input ^bytes signature ^String key ^Keyword alg]
+    (verify-stream (io/input-stream input) signature key alg))
 
   java.net.URI
-  (make-hmac [^java.net.URI input key ^Keyword alg]
-    (make-hmac-for-stream (io/input-stream input) key alg))
-  (verify-hmac [^java.net.URI input ^bytes signature ^String key ^Keyword alg]
-    (verify-hmac-for-stream (io/input-stream input) signature key alg)))
+  (hash* [^java.net.URI input key ^Keyword alg]
+    (hash-stream-data (io/input-stream input) key alg))
+  (verify* [^java.net.URI input ^bytes signature ^String key ^Keyword alg]
+    (verify-stream (io/input-stream input) signature key alg)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; High level interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn hmac
-  "Make hmac for arbitrary input.
+(defn hash
+  "Generate hmac digest for arbitrary
+  input data, a secret key and hash algorithm.
 
-  Example:
-    (hmac \"foo bar\" \"secret\" :sha256)
-    ;; => #<byte[] [B@465d154e>
-  "
-  [input key ^Keyword alg]
-  (make-hmac input key alg))
+  If algorithm is not supplied, sha256
+  will be used as default value."
+  ([input key] (hash input key :sha256))
+  ([input key alg]
+   (hash* input key alg)))
 
 (defn verify
   "Verify hmac for artbitrary input and signature.
@@ -145,4 +143,8 @@
     ;; => true
   "
   [input ^bytes signature key ^Keyword alg]
-  (verify-hmac input signature key alg))
+  (verify* input signature key alg))
+
+(def ^{:doc "Deprecated alias for `hash` function.`"
+       :deprecated true}
+  hmac hash)
