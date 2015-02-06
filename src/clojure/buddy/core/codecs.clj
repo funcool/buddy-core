@@ -144,6 +144,17 @@ return bytearray."
   (byte-array (for [ar parts
                     i  ar] i)))
 
+(defn clone-byte-array
+  "Get a new byte array that represents
+  a slice of the one given."
+  ([^bytes input]
+   (let [length (count input)
+         buffer (byte-array length)]
+     (System/arraycopy input 0 buffer 0 length)
+     buffer))
+  ([^bytes input ^long offset ^long limit]
+   (java.util.Arrays/copyOfRange input offset limit)))
+
 (defprotocol ByteArray
   "Facility for convert input parameters
   to bytes array with default implementation
