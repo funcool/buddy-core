@@ -14,21 +14,20 @@
 
 (ns buddy.test-buddy-core-mac
   (:require [clojure.test :refer :all]
-            [buddy.core.codecs :refer :all]
+            [buddy.core.codecs :as codecs :refer :all]
             [buddy.core.keys :refer :all]
             [buddy.core.nonce :as nonce]
             [buddy.core.mac.poly1305 :as poly]
             [buddy.core.mac.hmac :as hmac]
             [buddy.core.mac.shmac :as shmac]
-            [clojure.java.io :as io])
-  (:import buddy.Arrays))
+            [clojure.java.io :as io]))
 
 (deftest buddy-core-mac-hmac
   (let [secretkey "my.secret.key"
         path      "test/_files/pubkey.ecdsa.pem"]
 
     (testing "Multiple sign using hmac sha256"
-      (is (Arrays/equals (hmac/hash "foo" secretkey :sha256)
+      (is (codecs/equals? (hmac/hash "foo" secretkey :sha256)
                          (hmac/hash "foo" secretkey :sha256))))
 
     (testing "Test Vector"
@@ -77,11 +76,11 @@
     (testing "Poly1305 encrypt/verify (using string key)"
       (let [mac-bytes1 (poly/poly1305 plaintext secretkey :aes)
             mac-bytes2 (poly/poly1305 plaintext secretkey :aes)]
-        (is (not (Arrays/equals mac-bytes1 mac-bytes2))))
+        (is (not (codecs/equals? mac-bytes1 mac-bytes2))))
 
       (let [mac-bytes1 (poly/hash plaintext secretkey :aes)
             mac-bytes2 (poly/hash plaintext secretkey :aes)]
-        (is (not (Arrays/equals mac-bytes1 mac-bytes2)))))
+        (is (not (codecs/equals? mac-bytes1 mac-bytes2)))))
 
   (testing "File mac"
     (let [path       "test/_files/pubkey.ecdsa.pem"

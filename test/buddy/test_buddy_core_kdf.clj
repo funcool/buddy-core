@@ -14,12 +14,11 @@
 
 (ns buddy.test-buddy-core-kdf
   (:require [clojure.test :refer :all]
-            [buddy.core.codecs :refer :all]
+            [buddy.core.codecs :as codecs :refer :all]
             [buddy.core.keys :refer :all]
             [buddy.core.nonce :as nonce]
             [buddy.core.kdf :as kdf]
-            [clojure.java.io :as io])
-  (:import buddy.Arrays))
+            [clojure.java.io :as io]))
 
 (deftest buddy-core-kdf
   (let [key1 (nonce/random-bytes 32)
@@ -33,17 +32,17 @@
             bytes2     (kdf/generate-bytes! generator1 8)
             bytes3     (kdf/generate-bytes! generator1 8)
             bytes4     (kdf/generate-bytes! generator1 8)]
-        (is (Arrays/equals bytes1 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes2 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes3 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes4 (kdf/generate-bytes! generator2 8)))))
+        (is (codecs/equals? bytes1 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes2 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes3 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes4 (kdf/generate-bytes! generator2 8)))))
     (testing "HKDF with sha256 without info"
       (let [generator1 (kdf/hkdf key1 salt nil :sha256)
             generator2 (kdf/hkdf key1 salt nil :sha256)
             bytes1     (kdf/generate-bytes! generator1 8)
             bytes2     (kdf/generate-bytes! generator1 8)]
-        (is (Arrays/equals bytes1 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes2 (kdf/generate-bytes! generator2 8)))))
+        (is (codecs/equals? bytes1 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes2 (kdf/generate-bytes! generator2 8)))))
 
     (testing "KDF1 with sha512"
       (let [generator1 (kdf/kdf1 key1 salt :sha512)
@@ -52,10 +51,10 @@
             bytes2     (kdf/generate-bytes! generator1 8)
             bytes3     (kdf/generate-bytes! generator1 8)
             bytes4     (kdf/generate-bytes! generator1 8)]
-        (is (Arrays/equals bytes1 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes2 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes3 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes4 (kdf/generate-bytes! generator2 8)))))
+        (is (codecs/equals? bytes1 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes2 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes3 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes4 (kdf/generate-bytes! generator2 8)))))
 
     (testing "KDF2 with sha512"
       (let [generator1 (kdf/kdf2 key1 salt :sha512)
@@ -64,10 +63,10 @@
             bytes2     (kdf/generate-bytes! generator1 8)
             bytes3     (kdf/generate-bytes! generator1 8)
             bytes4     (kdf/generate-bytes! generator1 8)]
-        (is (Arrays/equals bytes1 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes2 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes3 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes4 (kdf/generate-bytes! generator2 8)))))
+        (is (codecs/equals? bytes1 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes2 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes3 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes4 (kdf/generate-bytes! generator2 8)))))
 
     (testing "CMKDF with sha3-512"
       (let [generator1 (kdf/cmkdf key1 salt :sha3-512)
@@ -76,10 +75,10 @@
             bytes2     (kdf/generate-bytes! generator1 8)
             bytes3     (kdf/generate-bytes! generator1 8)
             bytes4     (kdf/generate-bytes! generator1 8)]
-        (is (Arrays/equals bytes1 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes2 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes3 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes4 (kdf/generate-bytes! generator2 8)))))
+        (is (codecs/equals? bytes1 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes2 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes3 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes4 (kdf/generate-bytes! generator2 8)))))
 
     (testing "FMKDF with tiger"
       (let [generator1 (kdf/fmkdf key1 salt :tiger)
@@ -88,10 +87,10 @@
             bytes2     (kdf/generate-bytes! generator1 8)
             bytes3     (kdf/generate-bytes! generator1 8)
             bytes4     (kdf/generate-bytes! generator1 8)]
-        (is (Arrays/equals bytes1 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes2 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes3 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes4 (kdf/generate-bytes! generator2 8)))))
+        (is (codecs/equals? bytes1 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes2 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes3 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes4 (kdf/generate-bytes! generator2 8)))))
 
     (testing "DPIMKDF with sha3-256"
       (let [generator1 (kdf/dpimkdf key1 salt :sha3-256)
@@ -100,8 +99,8 @@
             bytes2     (kdf/generate-bytes! generator1 8)
             bytes3     (kdf/generate-bytes! generator1 8)
             bytes4     (kdf/generate-bytes! generator1 8)]
-        (is (Arrays/equals bytes1 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes2 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes3 (kdf/generate-bytes! generator2 8)))
-        (is (Arrays/equals bytes4 (kdf/generate-bytes! generator2 8)))))
+        (is (codecs/equals? bytes1 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes2 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes3 (kdf/generate-bytes! generator2 8)))
+        (is (codecs/equals? bytes4 (kdf/generate-bytes! generator2 8)))))
 ))

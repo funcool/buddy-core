@@ -15,15 +15,14 @@
 (ns buddy.core.mac.hmac
   "Hash-based Message Authentication Codes (HMACs)"
   (:refer-clojure :exclude [hash])
-  (:require [buddy.core.codecs :refer :all]
+  (:require [buddy.core.codecs :as codecs :refer :all]
             [buddy.core.mac.proto :as proto]
             [buddy.core.hash :as hash]
             [clojure.java.io :as io])
   (:import org.bouncycastle.crypto.macs.HMac
            org.bouncycastle.crypto.Mac
            org.bouncycastle.crypto.params.KeyParameter
-           clojure.lang.Keyword
-           buddy.Arrays))
+           clojure.lang.Keyword))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Low level hmac engine.
@@ -61,7 +60,7 @@
 (defn- verify-plain-data
   [^bytes input, ^bytes signature, pkey, ^Keyword alg]
   (let [sig (hash-plain-data input pkey alg)]
-    (Arrays/equals sig signature)))
+    (codecs/equals? sig signature)))
 
 (defn- hash-stream-data
   [^java.io.InputStream input key ^Keyword alg]
@@ -77,7 +76,7 @@
 (defn- verify-stream
   [^java.io.InputStream input, ^bytes signature, pkey, ^Keyword alg]
   (let [sig (hash-stream-data input pkey alg)]
-    (Arrays/equals sig signature)))
+    (codecs/equals? sig signature)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation of IMac protocol

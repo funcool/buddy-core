@@ -1,13 +1,12 @@
 (ns buddy.test-buddy-core-crypto
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
-            [buddy.core.codecs :refer :all]
+            [buddy.core.codecs :as codecs :refer :all]
             [buddy.core.keys :refer :all]
             [buddy.core.nonce :as nonce]
             [buddy.core.hash :as hash]
             [buddy.core.crypto :as cr]
-            [clojure.java.io :as io])
-  (:import buddy.Arrays))
+            [clojure.java.io :as io]))
 
 (deftest buddy-core-crypto
   (let [key     (nonce/random-bytes 32)
@@ -30,15 +29,15 @@
               result2 (cr/process-block! engine block16)]
           (is (bytes? result1))
           (is (bytes? result2))
-          (is (Arrays/equals expected1 result1))
-          (is (Arrays/equals expected2 result2)))
+          (is (codecs/equals? expected1 result1))
+          (is (codecs/equals? expected2 result2)))
 
         ;; Decrypt
         (cr/initialize! engine {:iv iv16 :key key :op :decrypt})
         (let [result1 (cr/process-block! engine expected1)
               result2 (cr/process-block! engine expected2)]
-          (is (Arrays/equals result1 block16))
-          (is (Arrays/equals result2 block16)))))
+          (is (codecs/equals? result1 block16))
+          (is (codecs/equals? result2 block16)))))
 
     (testing "Aes in :cbc mode"
       (let [engine   (cr/engine :aes :cbc)
@@ -47,12 +46,12 @@
         ;; Encrypt
         (cr/initialize! engine {:iv iv16 :key key :op :encrypt})
         (let [result (cr/process-block! engine block16)]
-          (is (Arrays/equals result expected)))
+          (is (codecs/equals? result expected)))
 
         ;; Decrypt
         (cr/initialize! engine {:iv iv16 :key key :op :decrypt})
         (let [result (cr/process-block! engine expected)]
-          (is (Arrays/equals result block16)))))
+          (is (codecs/equals? result block16)))))
 
     (testing "ChaCha Streaming Cipher"
       (let [engine    (cr/stream-engine :chacha)
@@ -61,14 +60,14 @@
         (cr/initialize! engine {:iv iv8 :key key :op :encrypt})
         (let [result1 (cr/process-bytes! engine block3)
               result2 (cr/process-bytes! engine block6)]
-          (is (Arrays/equals result1 expected1))
-          (is (Arrays/equals result2 expected2)))
+          (is (codecs/equals? result1 expected1))
+          (is (codecs/equals? result2 expected2)))
 
         (cr/initialize! engine {:iv iv8 :key key :op :decrypt})
         (let [result1 (cr/process-bytes! engine expected1)
               result2 (cr/process-bytes! engine expected2)]
-          (is (Arrays/equals result1 block3))
-          (is (Arrays/equals result2 block6)))))
+          (is (codecs/equals? result1 block3))
+          (is (codecs/equals? result2 block6)))))
 ))
 
 
