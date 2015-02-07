@@ -7,7 +7,6 @@
                  [commons-codec/commons-codec "1.10"]
                  [org.bouncycastle/bcprov-jdk15on "1.51"]
                  [org.bouncycastle/bcpkix-jdk15on "1.51"]]
-  :source-paths ["src/clojure"]
-  :java-source-paths ["src/java"]
+  :source-paths ["src"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
   :test-paths ["test"])
