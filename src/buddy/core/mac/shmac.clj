@@ -14,16 +14,16 @@
 
 (ns buddy.core.mac.shmac
   "Salted variant of Hash-based Message Authentication Codes (HMACs)"
-  (:import clojure.lang.Keyword)
   (:require [buddy.core.codecs :refer :all]
             [buddy.core.mac.hmac :as hmac]
-            [buddy.core.hash :as hash]))
+            [buddy.core.hash :as hash])
+  (:import clojure.lang.Keyword))
 
 (defn- make-salted-hmac
   [input key salt ^Keyword alg]
   (let [key (concat-byte-arrays (->byte-array key)
                                 (->byte-array salt))]
-    (hmac/hmac input (hash/sha512 key) alg)))
+    (hmac/hash input (hash/sha512 key) alg)))
 
 (defn- verify-salted-hmac
   [input ^bytes signature key salt ^Keyword alg]
@@ -31,12 +31,18 @@
                                 (->byte-array salt))]
     (hmac/verify input signature (hash/sha512 key) alg)))
 
-(defn shmac
-  "Generic function that exposes a high level
-  interface for salted variant of keyed-hash message
-  authentication code algorithm."
+(defn hash
+  "Generate salted hmac digest for arbitrary
+  input data, a secret key and hash algorithm.
+
+  If algorithm is not supplied, sha256
+  will be used as default value."
   [input key salt ^Keyword alg]
   (make-salted-hmac input key salt alg))
+
+(def ^{:doc "Deprecated alias for `hash` function.`"
+       :deprecated true}
+  shmac hash)
 
 (defn verify
   "Generic function that exposes a high level
