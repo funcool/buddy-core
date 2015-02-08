@@ -48,121 +48,91 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Private api: type declarations
+;; Cipher protocol declaration.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol Cipher
-  (initialize! [obj params] "Initialize cipher"))
-
-(defprotocol BlockCipher
-  "Protocol that defines interface for all
-  supported block ciphers by `buddy`."
+  (initialize! [obj params] "Initialize cipher")
   (process-block! [obj input] "Encrypt/Decrypt a block of bytes."))
 
-(defprotocol StreamCipher
-  "Protocol that defines interface for all
-  supported stream ciphers by `buddy`."
-  (process-bytes! [obj input] "Encrypt/Decrypt a set of bytes."))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Private api: internal implementation.
+;; Implementation details.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- make-block-cipher-params
-  "Generate CipherParameters instance from
-  clojure hash map."
-  [params]
-  (if (:iv params)
-    (let [keyparams (make-block-cipher-params (dissoc params :iv))]
-      (ParametersWithIV. keyparams (:iv params)))
-    (KeyParameter. (:key params))))
+(def ^{:private true
+       :doc "Check if op is a valid op keyword."
+       :static true}
+  valid-op? (comp boolean #{:encrypt :decrypt}))
 
 (defn- initialize-cipher!
-  [engine params]
-  (let [encrypt (case (:op params)
+  [engine {:keys [iv key op]}]
+  {:pre [(bytes? key)
+         (valid-op? op)]}
+  (let [params (if (nil? iv)
+                 (KeyParameter. key)
+                 (ParametersWithIV. (KeyParameter. key) iv))
+        encrypt (condp = op
                   :encrypt true
-                  :decrypt false
-                  true)
-        cipher-params (make-block-cipher-params (dissoc params :op))]
-    (.init engine encrypt cipher-params)))
+                  :decrypt false)]
+    (.init engine encrypt params)
+    engine))
 
-(defn- process-block-with-block-cipher!
+(defn- block-cipher-process!
   [engine input]
   (let [buffer (byte-array (.getBlockSize engine))]
     (.processBlock engine input 0 buffer 0)
     buffer))
 
-(defn- process-bytes-with-stream-cipher!
+(defn- stream-cipher-process!
   [engine input]
   (let [len    (count input)
         buffer (byte-array len)]
     (.processBytes engine input 0 len buffer 0)
     buffer))
 
-(extend-type CBCBlockCipher
-  Cipher
-  (initialize! [engine params]
-    (initialize-cipher! engine params))
-
-  BlockCipher
-  (process-block! [engine input]
-    (process-block-with-block-cipher! engine input)))
-
-(extend-type SICBlockCipher
-  Cipher
-  (initialize! [engine params]
-    (initialize-cipher! engine params))
-
-  BlockCipher
-  (process-block! [engine input]
-    (process-block-with-block-cipher! engine input)))
-
-(extend-type OFBBlockCipher
-  Cipher
-  (initialize! [engine params]
-    (initialize-cipher! engine params))
-
-  BlockCipher
-  (process-block! [engine input]
-    (process-block-with-block-cipher! engine input)))
-
-(extend-type ChaChaEngine
-  Cipher
-  (initialize! [engine params]
-    (initialize-cipher! engine params))
-
-  StreamCipher
-  (process-bytes! [engine input]
-    (process-bytes-with-stream-cipher! engine input)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public Api: Low level
+;; Low level api.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- cipher-supported?
-  [^Keyword cipher]
-  (contains? *supported-block-ciphers* cipher))
+(defn- algorithm-supported?
+  [^Keyword type ^Keyword cipher]
+  (condp = type
+    :block (contains? *supported-block-ciphers* cipher)
+    :stream (contains? *supported-stream-ciphers* cipher)))
 
-(defn- stream-cipher-supported?
-  [^Keyword cipher]
-  (contains? *supported-stream-ciphers* cipher))
-
-(defn- ciphermode-supported?
+(defn- mode-supported?
   [^Keyword mode]
   (contains? *supported-modes* mode))
 
-(defn engine
+(defn block-cipher
   "Block cipher engine constructor."
-  [^Keyword cipher ^Keyword mode]
-  {:pre [(cipher-supported? cipher)
-         (ciphermode-supported? mode)]}
-  (let [modefactory   (mode *supported-modes*)
-        enginefactory (cipher *supported-block-ciphers*)]
-    (modefactory (enginefactory))))
+  [^Keyword alg ^Keyword mode]
+  {:pre [(algorithm-supported? :block alg)
+         (mode-supported? mode)]}
+  (let [modefactory (get *supported-modes* mode)
+        enginefactory (get *supported-block-ciphers* alg)
+        engine (modefactory (enginefactory))]
+    (reify Cipher
+      (initialize! [_ params]
+        (initialize-cipher! engine params))
+      (process-block! [_ input]
+        (block-cipher-process! engine input)))))
 
-(defn stream-engine
+(defn stream-cipher
   "Stream cipher engine constructor."
-  [^Keyword cipher]
-  {:pre [(stream-cipher-supported? cipher)]}
-  (let [enginefactory (cipher *supported-stream-ciphers*)]
-    (enginefactory)))
+  [^Keyword alg]
+  {:pre [(algorithm-supported? :stream alg)]}
+  (let [enginefactory (get *supported-stream-ciphers* alg)
+        engine (enginefactory)]
+    (reify Cipher
+      (initialize! [_ params]
+        (initialize-cipher! engine params))
+      (process-block! [_ input]
+        (stream-cipher-process! engine input)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; High level api.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO
