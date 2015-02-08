@@ -130,6 +130,12 @@
       (process-block! [_ input]
         (stream-cipher-process! engine input)))))
 
+(defn process-bytes!
+  "Backward compatibility alias for `process-block!`
+  function. This function will be removed in the
+  next stable version."
+  [engine input]
+  (process-block! engine input))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; High level api.
