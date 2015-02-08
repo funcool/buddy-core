@@ -14,6 +14,7 @@
 
 (ns buddy.core.crypto
   "Modes implementation"
+  (:require [buddy.core.bytes :as bytes :refer [bytes?]])
   (:import org.bouncycastle.crypto.engines.TwofishEngine
            org.bouncycastle.crypto.engines.BlowfishEngine
            org.bouncycastle.crypto.engines.AESEngine

@@ -15,8 +15,16 @@
 (ns buddy.core.bytes
   "A collection of functions for work with byte arrays
   and bytes."
+  (:refer-clojure :exclude [concat])
   (:import java.nio.ByteBuffer
            java.util.Arrays))
+
+(defn bytes?
+  "Test if a first parameter is a byte
+  array or not."
+  [^Object x]
+  (= (Class/forName "[B")
+    (.getClass x)))
 
 (defn slice
   "Given a byte array, get a copy of it. If offset

@@ -20,13 +20,6 @@
            org.apache.commons.codec.binary.Hex
            java.nio.ByteBuffer))
 
-(defn bytes?
-  "Test if a first parameter is a byte
-  array or not."
-  [^Object x]
-  (= (Class/forName "[B")
-    (.getClass x)))
-
 (defn str->bytes
   "Convert string to java bytes array"
   ([^String s]

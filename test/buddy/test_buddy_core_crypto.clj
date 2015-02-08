@@ -28,8 +28,8 @@
         (cr/initialize! engine {:iv iv16 :key key :op :encrypt})
         (let [result1 (cr/process-block! engine block16)
               result2 (cr/process-block! engine block16)]
-          (is (bytes? result1))
-          (is (bytes? result2))
+          (is (bytes/bytes? result1))
+          (is (bytes/bytes? result2))
           (is (bytes/equals? expected1 result1))
           (is (bytes/equals? expected2 result2)))
 
