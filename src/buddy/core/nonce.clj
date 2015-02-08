@@ -4,8 +4,6 @@
 
   By convenience, it also exposes additional functions
   for generate random iv/salts."
-  (:require [buddy.core.codecs :refer [clone-byte-array]]
-            [clojure.pprint :refer [pprint]])
   (:import java.security.SecureRandom))
 
 
@@ -32,5 +30,5 @@
    (let [buffer (java.nio.ByteBuffer/allocate numbytes)]
      (.putLong buffer (System/currentTimeMillis))
      (.put buffer (random-bytes (.remaining buffer) sr))
-     (clone-byte-array (.array buffer)))))
+     (.array buffer))))
 

@@ -16,6 +16,7 @@
   "Hash-based Message Authentication Codes (HMACs)"
   (:refer-clojure :exclude [hash])
   (:require [buddy.core.codecs :as codecs :refer :all]
+            [buddy.core.bytes :as bytes]
             [buddy.core.mac.proto :as proto]
             [buddy.core.hash :as hash]
             [clojure.java.io :as io])
@@ -60,7 +61,7 @@
 (defn- verify-plain-data
   [^bytes input, ^bytes signature, pkey, ^Keyword alg]
   (let [sig (hash-plain-data input pkey alg)]
-    (codecs/equals? sig signature)))
+    (bytes/equals? sig signature)))
 
 (defn- hash-stream-data
   [^java.io.InputStream input key ^Keyword alg]
@@ -76,7 +77,7 @@
 (defn- verify-stream
   [^java.io.InputStream input, ^bytes signature, pkey, ^Keyword alg]
   (let [sig (hash-stream-data input pkey alg)]
-    (codecs/equals? sig signature)))
+    (bytes/equals? sig signature)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation of IMac protocol

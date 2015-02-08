@@ -15,6 +15,7 @@
 (ns buddy.test-buddy-core
   (:require [clojure.test :refer :all]
             [buddy.core.codecs :as codecs :refer :all]
+            [buddy.core.bytes :as bytes]
             [buddy.core.keys :refer :all]
             [buddy.core.hash :as hash]
             [clojure.java.io :as io]))
@@ -25,14 +26,14 @@
           encoded     (bytes->hex some-bytes)
           decoded     (hex->bytes encoded)
           some-str    (bytes->str decoded)]
-      (is (codecs/equals? decoded, some-bytes))
+      (is (bytes/equals? decoded, some-bytes))
       (is (= some-str "FooBar"))))
 
   (testing "Hex encode/decode 02"
     (let [mybytes (into-array Byte/TYPE (range 10))
           encoded (bytes->hex mybytes)
           decoded (hex->bytes encoded)]
-      (is (codecs/equals? decoded mybytes)))))
+      (is (bytes/equals? decoded mybytes)))))
 
 (deftest buddy-core-hash
   (testing "SHA3 support test"
@@ -54,7 +55,7 @@
   (testing "Concat byte arrays"
     (let [array1 (into-array Byte/TYPE [1,2,3])
           array2 (into-array Byte/TYPE [3,4,5])]
-      (is (codecs/equals? (concat-byte-arrays array1 array2)
-                          (into-array Byte/TYPE [1,2,3,3,4,5]))))))
+      (is (bytes/equals? (bytes/concat array1 array2)
+                         (into-array Byte/TYPE [1,2,3,3,4,5]))))))
 
 

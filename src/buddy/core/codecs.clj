@@ -137,34 +137,6 @@ return bytearray."
     (.flip buffer)
     (.getLong buffer)))
 
-(defn concat-byte-arrays
-  "Given N number of byte arrays, concat them in
-  one unique byte array and return it."
-  [& parts]
-  (byte-array (for [ar parts
-                    i  ar] i)))
-
-(defn clone-byte-array
-  "Get a new byte array that represents
-  a slice of the one given."
-  ([^bytes input]
-   (let [length (count input)
-         buffer (byte-array length)]
-     (System/arraycopy input 0 buffer 0 length)
-     buffer))
-  ([^bytes input ^long offset ^long limit]
-   (java.util.Arrays/copyOfRange input offset limit)))
-
-(defn equals?
-  "Test whether two sequences of characters or bytes are equal in a way that
-  protects against timing attacks. Note that this does not prevent an attacker
-  from discovering the *length* of the data being compared."
-  [a b]
-  (let [a (map int a), b (map int b)]
-    (if (and a b (= (count a) (count b)))
-      (zero? (reduce bit-or (map bit-xor a b)))
-      false)))
-
 (defprotocol ByteArray
   "Facility for convert input parameters
   to bytes array with default implementation

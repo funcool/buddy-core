@@ -28,6 +28,7 @@
   (:refer-clojure :exclude [hash])
   (:require [buddy.core.hash :as hash]
             [buddy.core.nonce :as nonce]
+            [buddy.core.bytes :as bytes]
             [buddy.core.mac.proto :as proto]
             [buddy.core.codecs :as codecs :refer :all]
             [clojure.java.io :as io])
@@ -73,7 +74,7 @@
   formatted byte array key."
   [^bytes key]
   {:pre [(= (count key) 32)]}
-  (let [key (clone-byte-array key)]
+  (let [key (bytes/copy key)]
     (Poly1305KeyGenerator/clamp key)
     key))
 
@@ -114,7 +115,7 @@
          engine (poly1305-engine key iv alg)]
      (proto/update! engine input)
      (let [result (proto/end! engine)]
-       (concat-byte-arrays result iv)))))
+       (bytes/concat result iv)))))
 
 (defn- hash-stream-data
   "Calculate the poly1305 message authentication code
@@ -132,25 +133,25 @@
            (proto/update! engine buffer 0 readed)
            (recur))))
      (let [result (proto/end! engine)]
-       (concat-byte-arrays result iv)))))
+       (bytes/concat result iv)))))
 
 (defn- verify-plain-data
   "Generic implementation of verify proces of
   poly1305 mac digest."
   [^bytes input ^bytes signature ^bytes key ^Keyword alg]
   (let [outputsize poly1305-output-size
-        iv (codecs/clone-byte-array signature outputsize (count signature))
+        iv (bytes/slice signature outputsize (count signature))
         sig (hash-plain-data input key iv alg)]
-    (codecs/equals? sig signature)))
+    (bytes/equals? sig signature)))
 
 (defn- verify-stream-data
   "Generic implementation of verify proces of
   poly1305 mac digest."
   [^bytes input ^bytes signature ^bytes key ^Keyword alg]
   (let [outputsize poly1305-output-size
-        iv (clone-byte-array signature outputsize (count signature))
+        iv (bytes/slice signature outputsize (count signature))
         sig (hash-stream-data input key iv alg)]
-    (codecs/equals? sig signature)))
+    (bytes/equals? sig signature)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Low level interface

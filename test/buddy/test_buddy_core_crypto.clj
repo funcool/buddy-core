@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
             [buddy.core.codecs :as codecs :refer :all]
+            [buddy.core.bytes :as bytes]
             [buddy.core.keys :refer :all]
             [buddy.core.nonce :as nonce]
             [buddy.core.hash :as hash]
@@ -29,15 +30,15 @@
               result2 (cr/process-block! engine block16)]
           (is (bytes? result1))
           (is (bytes? result2))
-          (is (codecs/equals? expected1 result1))
-          (is (codecs/equals? expected2 result2)))
+          (is (bytes/equals? expected1 result1))
+          (is (bytes/equals? expected2 result2)))
 
         ;; Decrypt
         (cr/initialize! engine {:iv iv16 :key key :op :decrypt})
         (let [result1 (cr/process-block! engine expected1)
               result2 (cr/process-block! engine expected2)]
-          (is (codecs/equals? result1 block16))
-          (is (codecs/equals? result2 block16)))))
+          (is (bytes/equals? result1 block16))
+          (is (bytes/equals? result2 block16)))))
 
     (testing "Aes in :cbc mode"
       (let [engine   (cr/engine :aes :cbc)
@@ -46,12 +47,12 @@
         ;; Encrypt
         (cr/initialize! engine {:iv iv16 :key key :op :encrypt})
         (let [result (cr/process-block! engine block16)]
-          (is (codecs/equals? result expected)))
+          (is (bytes/equals? result expected)))
 
         ;; Decrypt
         (cr/initialize! engine {:iv iv16 :key key :op :decrypt})
         (let [result (cr/process-block! engine expected)]
-          (is (codecs/equals? result block16)))))
+          (is (bytes/equals? result block16)))))
 
     (testing "ChaCha Streaming Cipher"
       (let [engine    (cr/stream-engine :chacha)
@@ -60,14 +61,14 @@
         (cr/initialize! engine {:iv iv8 :key key :op :encrypt})
         (let [result1 (cr/process-bytes! engine block3)
               result2 (cr/process-bytes! engine block6)]
-          (is (codecs/equals? result1 expected1))
-          (is (codecs/equals? result2 expected2)))
+          (is (bytes/equals? result1 expected1))
+          (is (bytes/equals? result2 expected2)))
 
         (cr/initialize! engine {:iv iv8 :key key :op :decrypt})
         (let [result1 (cr/process-bytes! engine expected1)
               result2 (cr/process-bytes! engine expected2)]
-          (is (codecs/equals? result1 block3))
-          (is (codecs/equals? result2 block6)))))
+          (is (bytes/equals? result1 block3))
+          (is (bytes/equals? result2 block6)))))
 ))
 
 

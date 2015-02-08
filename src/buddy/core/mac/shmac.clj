@@ -15,20 +15,21 @@
 (ns buddy.core.mac.shmac
   "Salted variant of Hash-based Message Authentication Codes (HMACs)"
   (:require [buddy.core.codecs :refer :all]
+            [buddy.core.bytes :as bytes]
             [buddy.core.mac.hmac :as hmac]
             [buddy.core.hash :as hash])
   (:import clojure.lang.Keyword))
 
 (defn- make-salted-hmac
   [input key salt ^Keyword alg]
-  (let [key (concat-byte-arrays (->byte-array key)
-                                (->byte-array salt))]
+  (let [key (bytes/concat (->byte-array key)
+                          (->byte-array salt))]
     (hmac/hash input (hash/sha512 key) alg)))
 
 (defn- verify-salted-hmac
   [input ^bytes signature key salt ^Keyword alg]
-  (let [key (concat-byte-arrays (->byte-array key)
-                                (->byte-array salt))]
+  (let [key (bytes/concat (->byte-array key)
+                          (->byte-array salt))]
     (hmac/verify input signature (hash/sha512 key) alg)))
 
 (defn hash

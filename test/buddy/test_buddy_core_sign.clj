@@ -15,6 +15,7 @@
 (ns buddy.test-buddy-core-sign
   (:require [clojure.test :refer :all]
             [buddy.core.codecs :as codecs :refer :all]
+            [buddy.core.bytes :as bytes]
             [buddy.core.keys :refer :all]
             [buddy.core.mac.hmac :as hmac]
             [buddy.core.mac.shmac :as shmac]
@@ -30,24 +31,24 @@
         ec-pubkey   (public-key "test/_files/pubkey.ecdsa.pem")]
 
     (testing "Multiple sign using rsassa-pkcs"
-      (is (codecs/equals? (rsapkcs/rsapkcs15 "foobar" rsa-privkey :sha256)
-                          (rsapkcs/rsapkcs15 "foobar" rsa-privkey :sha256))))
+      (is (bytes/equals? (rsapkcs/rsapkcs15 "foobar" rsa-privkey :sha256)
+                         (rsapkcs/rsapkcs15 "foobar" rsa-privkey :sha256))))
 
     (testing "Sign/Verify using rsassa-pkcs"
       (let [signature (rsapkcs/rsapkcs15 "foobar" rsa-privkey :sha256)]
         (is (true? (rsapkcs/verify "foobar" signature rsa-pubkey :sha256)))))
 
     (testing "Multiple sign using rsassa-pss"
-      (is (false? (codecs/equals? (rsapss/rsapss "foobar" rsa-privkey :sha256)
-                                  (rsapss/rsapss "foobar" rsa-privkey :sha256)))))
+      (is (false? (bytes/equals? (rsapss/rsapss "foobar" rsa-privkey :sha256)
+                                 (rsapss/rsapss "foobar" rsa-privkey :sha256)))))
 
     (testing "Sign/Verify using rsassa-pss"
       (let [signature (rsapss/rsapss "foobar" rsa-privkey :sha256)]
         (is (true? (rsapss/verify "foobar" signature rsa-pubkey :sha256)))))
 
     (testing "Multiple sign using ecdsa"
-      (is (false? (codecs/equals? (ecdsa/ecdsa "foobar" ec-privkey :sha256)
-                                  (ecdsa/ecdsa "foobar" ec-privkey :sha256)))))
+      (is (false? (bytes/equals? (ecdsa/ecdsa "foobar" ec-privkey :sha256)
+                                 (ecdsa/ecdsa "foobar" ec-privkey :sha256)))))
 
     (testing "Sign/Verify using ecdsa"
       (let [signature (ecdsa/ecdsa "foobar" ec-privkey :sha256)]
