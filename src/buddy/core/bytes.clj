@@ -58,3 +58,5 @@
   (byte-array (for [ar parts
                     i ar] i)))
 
+
+;; TODO: add bytebuffer related abstractions here
