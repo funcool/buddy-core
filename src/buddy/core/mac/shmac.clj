@@ -14,6 +14,7 @@
 
 (ns buddy.core.mac.shmac
   "Salted variant of Hash-based Message Authentication Codes (HMACs)"
+  (:refer-clojure :exclude [hash])
   (:require [buddy.core.codecs :refer :all]
             [buddy.core.bytes :as bytes]
             [buddy.core.mac.hmac :as hmac]
