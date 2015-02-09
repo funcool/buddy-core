@@ -26,6 +26,16 @@
   (= (Class/forName "[B")
      (.getClass x)))
 
+(defn fill
+  "Assigns the specified byte value to each element
+  of the specified array of bytes."
+  ([^bytes input val]
+   (Arrays/fill input (byte val)))
+  ([^bytes input val & {:keys [limit offset]}]
+   (let [offset (or offset 0)
+         limit (or limit (count input))]
+     (Arrays/fill input offset limit (byte val)))))
+
 (defn slice
   "Given a byte array, get a copy of it. If offset
   and limit is provided, a slice will be returned."
