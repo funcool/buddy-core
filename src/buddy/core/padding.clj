@@ -14,6 +14,7 @@
 
 (ns buddy.core.padding
   "Block padding algorithms."
+  (:refer-clojure :exclude [count])
   (:require [buddy.core.bytes :as bytes])
   (:import org.bouncycastle.crypto.paddings.ZeroBytePadding
            org.bouncycastle.crypto.paddings.X923Padding
@@ -37,35 +38,42 @@
 
 (defn pad!
   "Add padding using one of supported padding algorithms."
-  ([^bytes input ^long offset] (pad input offset :zerobyte))
+  ([^bytes input ^long offset] (pad! input offset :pkcs7))
   ([^bytes input ^long offset ^Keyword alg]
    (let [engine (padding-engine alg)]
      (.init engine (java.security.SecureRandom.))
      (.addPadding engine input offset))))
 
-(defn pad
-  "Add padding using one of supported padding algorithms.
-  This is a side effect free version of pad! function."
-  ([^bytes input ^long offset] (pad input offset :zerobyte))
-  ([^bytes input ^long offset ^Keyword alg]
-   (let [^bytes input (bytes/copy input)]
-     (pad! input offset alg)
-     input)))
+(defn unpad!
+  "Remove padding from given byte array and fill
+  the unpadded bytes with 0"
+  ([^bytes input] (unpad! input :pkcs7))
+  ([^bytes input ^Keyword alg]
+   (let [engine (padding-engine alg)
+         padsize (.padCount engine input)
+         offset (- (clojure.core/count input) padsize)]
+     (bytes/fill input 0 :offset offset))))
+
+(defn count
+  "Get the padding size found on given byte array."
+  ([^bytes input] (count input :pkcs7))
+  ([^bytes input ^Keyword alg]
+   (let [engine (padding-engine alg)]
+     (.padCount engine input))))
 
 (defn padded?
   "Check if given byte array has padding using specified
-  padding algorithm. If no one is specified, :zerobyte
+  padding algorithm. If no one is specified, :pkcs7
   will be used."
-  ([^bytes input] (padded? input :zerobyte))
+  ([^bytes input] (padded? input :pkcs7))
   ([^bytes input ^Keyword alg]
-   (let [engine (padding-engine alg)]
-     (pos? (.padCount engine input)))))
+   (pos? (count input alg))))
 
-(defn unpad
-  "Remove padding from given byte array and return a new
-  byte array without padding."
-  ([^bytes input] (unpad input :zerobyte))
-  ([^bytes input ^Keyword alg]
-   (let [engine (padding-engine alg)
-         num (.padCount engine input)]
-     (bytes/slice input 0 (- (count input) num)))))
+;; (defn pad
+;;   "Add padding using one of supported padding algorithms.
+;;   This is a side effect free version of pad! function."
+;;   ([^bytes input ^long offset] (pad input offset :pkcs7))
+;;   ([^bytes input ^long offset ^Keyword alg]
+;;    (let [^bytes input (bytes/copy input)]
+;;      (pad! input offset alg)
+;;      input)))
