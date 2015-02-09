@@ -22,9 +22,9 @@
 (defn bytes?
   "Test if a first parameter is a byte
   array or not."
-  [^Object x]
+  [x]
   (= (Class/forName "[B")
-    (.getClass x)))
+     (.getClass x)))
 
 (defn slice
   "Given a byte array, get a copy of it. If offset
@@ -57,6 +57,5 @@
   [& parts]
   (byte-array (for [ar parts
                     i ar] i)))
-
 
 ;; TODO: add bytebuffer related abstractions here
