@@ -12,7 +12,7 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns buddy.test-buddy-core-mac
+(ns buddy.core.mac-tests
   (:require [clojure.test :refer :all]
             [buddy.core.codecs :as codecs :refer :all]
             [buddy.core.bytes :as bytes]
