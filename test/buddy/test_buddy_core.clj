@@ -33,7 +33,20 @@
     (let [mybytes (into-array Byte/TYPE (range 10))
           encoded (bytes->hex mybytes)
           decoded (hex->bytes encoded)]
-      (is (bytes/equals? decoded mybytes)))))
+      (is (bytes/equals? decoded mybytes))))
+
+  (testing "Safe base64 encode/decode"
+    (let [output1 (str->safebase64 "foo")
+          output2 (safebase64->str output1)]
+      (is (= output1 "Zm9v"))
+      (is (= output2 "foo"))))
+
+  (testing "Concat byte arrays"
+    (let [array1 (into-array Byte/TYPE [1,2,3])
+          array2 (into-array Byte/TYPE [3,4,5])]
+      (is (bytes/equals? (bytes/concat array1 array2)
+                         (into-array Byte/TYPE [1,2,3,3,4,5]))))))
+
 
 (deftest buddy-core-hash
   (testing "SHA3 support test"
@@ -45,17 +58,3 @@
     (let [path       "test/_files/pubkey.ecdsa.pem"
           valid-hash "7aa01e35e65701c9a9d8f71c4cbf056acddc9be17fdff06b4c7af1b0b34ddc29"]
       (is (= (bytes->hex (hash/sha256 (io/input-stream path))) valid-hash)))))
-
-(deftest buddy-core-codecs
-  (testing "Safe base64 encode/decode"
-    (let [output1 (str->safebase64 "foo")
-          output2 (safebase64->str output1)]
-      (is (= output1 "Zm9v"))
-      (is (= output2 "foo"))))
-  (testing "Concat byte arrays"
-    (let [array1 (into-array Byte/TYPE [1,2,3])
-          array2 (into-array Byte/TYPE [3,4,5])]
-      (is (bytes/equals? (bytes/concat array1 array2)
-                         (into-array Byte/TYPE [1,2,3,3,4,5]))))))
-
-
