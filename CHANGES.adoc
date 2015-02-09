@@ -17,6 +17,7 @@ Date: unreleased
 - Remove make-random-bytes function from buddy.core.keys ns.
 - Add buddy.core.nonce namespace with functions for generate secure random ivs and
   secure nonces.
+- Add buddy.core.padding namespace with interface to common padding algorithms.
 
 == Version 0.3.0
 
