@@ -121,7 +121,12 @@
   (let [modefactory (get *supported-modes* mode)
         enginefactory (get *supported-block-ciphers* alg)
         engine (modefactory (enginefactory))]
-    (reify Cipher
+    (reify
+      BlockCipher
+      (get-block-size [_]
+        (.getBlockSize engine))
+
+      Cipher
       (initialize! [_ params]
         (initialize-cipher! engine params))
       (process-block! [_ input]
@@ -133,7 +138,9 @@
   {:pre [(algorithm-supported? :stream alg)]}
   (let [enginefactory (get *supported-stream-ciphers* alg)
         engine (enginefactory)]
-    (reify Cipher
+    (reify
+      StreamCipher ;; Mark only
+      Cipher
       (initialize! [_ params]
         (initialize-cipher! engine params))
       (process-block! [_ input]
