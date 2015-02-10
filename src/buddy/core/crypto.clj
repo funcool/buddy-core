@@ -52,9 +52,17 @@
 ;; Cipher protocol declaration.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defprotocol BlockCipher
+  "Common interface to block ciphers."
+  (get-block-size [_] "Get block size in bytes."))
+
+(defprotocol StreamCipher
+  "Common interface to stream ciphers.")
+
 (defprotocol Cipher
-  (initialize! [obj params] "Initialize cipher")
-  (process-block! [obj input] "Encrypt/Decrypt a block of bytes."))
+  "Common interface to both, stream and block ciphers."
+  (initialize! [_ params] "Initialize cipher")
+  (process-block! [_ input] "Encrypt/Decrypt a block of bytes."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details.
