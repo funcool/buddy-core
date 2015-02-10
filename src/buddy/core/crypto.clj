@@ -157,4 +157,67 @@
 ;; High level api.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO
+;; (defn get-buffer-for-input
+;;   [^bytes input ^long blocksize]
+;;   (let [length (count input)
+;;         csize (double (/ input blocksize))]
+;;     (cond
+;;       (<= csize blocksize)
+;;       (byte-array blocksize)
+
+;;       (> csize blocksize)
+;;       (let [m (mod csize blocksize)]
+;;         (if (== m 0)
+;;           (byte-array (long csize))
+;;           (byte-array (+ (long csize) blocksize)))))))
+
+(defn split-by-blocksize
+  "Split a byte array in blocksize blocks.
+
+  Given a arbitrary size bytearray and block size in bytes,
+  returns a lazy sequence of bytearray blocks of blocksize
+  size. If last block does not have enought data for fill
+  all block, it is padded using zerobyte padding."
+  [^bytes input ^long blocksize]
+  (let [inputsize (count input)
+        seqgen (fn seqgen [& {:keys [cursormin cursormax remain]}]
+                 (cond
+                   (<= remain blocksize)
+                   (let [buffer (byte-array blocksize)]
+                     (System/arraycopy input cursormin buffer 0 remain)
+                     (list buffer))
+
+                   (> remain blocksize)
+                   (let [buffer (byte-array blocksize)]
+                     (System/arraycopy input cursormin buffer 0 blocksize)
+                     (cons buffer (lazy-seq (seqgen :cursormin cursormax
+                                                    :cursormax (+ cursormax blocksize)
+                                                    :remain (- inputsize cursormax)))))
+                   :else nil))]
+    (lazy-seq (seqgen :cursormin 0
+                      :cursormax blocksize
+                      :remain inputsize))))
+
+(defn encrypt
+  "Encrypt message, and return a result as byte array."
+  [input & {:keys [alg mode iv nonce key] :or {alg :aes mode :ctr}}]
+  {:pre [(or (bytes/bytes? iv)
+             (bytes/bytes? nonce))
+         (bytes/bytes? key)]}
+  (let [^bytes iv (or iv nonce)
+        ^bytes input (codecs/->byte-array input)]
+    (println 2222 alg mode)
+    (cond
+      (algorithm-supported? :block alg)
+      (let [cipher (block-cipher alg mode)
+            blocksize (get-block-size cipher)]
+        (initialize! cipher {:op :encrypt :iv iv :key key})
+        (apply bytes/concat (reduce (fn [acc block]
+                                      (conj acc (process-block! cipher block)))
+                                    [] (split-by-blocksize input blocksize))))
+
+      (algorithm-supported? :stream alg)
+      (let [cipher (stream-cipher alg)]
+        (initialize! cipher {:op :encrypt :iv iv :key key})
+        (process-block! cipher input)))))
+
