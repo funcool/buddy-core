@@ -206,7 +206,6 @@
          (bytes/bytes? key)]}
   (let [^bytes iv (or iv nonce)
         ^bytes input (codecs/->byte-array input)]
-    (println 2222 alg mode)
     (cond
       (algorithm-supported? :block alg)
       (let [cipher (block-cipher alg mode)
