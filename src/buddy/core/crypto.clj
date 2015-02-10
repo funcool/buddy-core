@@ -157,20 +157,6 @@
 ;; High level api.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defn get-buffer-for-input
-;;   [^bytes input ^long blocksize]
-;;   (let [length (count input)
-;;         csize (double (/ input blocksize))]
-;;     (cond
-;;       (<= csize blocksize)
-;;       (byte-array blocksize)
-
-;;       (> csize blocksize)
-;;       (let [m (mod csize blocksize)]
-;;         (if (== m 0)
-;;           (byte-array (long csize))
-;;           (byte-array (+ (long csize) blocksize)))))))
-
 (defn split-by-blocksize
   "Split a byte array in blocksize blocks.
 
