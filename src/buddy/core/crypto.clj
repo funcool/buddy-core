@@ -205,4 +205,3 @@
       (let [cipher (stream-cipher alg)]
         (initialize! cipher {:op :encrypt :iv iv :key key})
         (process-block! cipher input)))))
-
