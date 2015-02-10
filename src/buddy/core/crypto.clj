@@ -75,7 +75,7 @@
 
 (defn- initialize-cipher!
   [engine {:keys [iv key op]}]
-  {:pre [(bytes? key)
+  {:pre [(bytes/bytes? key)
          (valid-op? op)]}
   (let [params (if (nil? iv)
                  (KeyParameter. key)
