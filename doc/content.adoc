@@ -368,7 +368,7 @@ link:http://www.ietf.org/rfc/rfc3447.txt[rfc3447.txt]
 (def rsaprivkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret"))
 
 ;; Make signature
-(def signature (rsapss/rsapss "foo" rsaprivkey :sha256))
+(def signature (rsapss/sign "foo" rsaprivkey :sha256))
 
 ;; Now signature contains a byte[] with signature of "foo" string
 ----
@@ -403,7 +403,7 @@ link:http://www.ietf.org/rfc/rfc3447.txt[rfc3447.txt]
 (def rsaprivkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret"))
 
 ;; Make signature
-(def signature (rsapkcs/rsapkcs15 "foo" rsaprivkey :sha256))
+(def signature (rsapkcs/sign "foo" rsaprivkey :sha256))
 
 ;; Now signature contains a byte[] with signature of "foo" string
 ----
@@ -435,7 +435,7 @@ Digital Signature Algorithm (DSA) which uses elliptic curve cryptography.
 (def ecdsaprivkey (keys/private-key "test/_files/privkey.ecdsa.pem" "secret"))
 
 ;; Make signature
-(def signature (ecdsa/ecdsa "foo" ecdsaprivkey :sha256))
+(def signature (ecdsa/sign "foo" ecdsaprivkey :sha256))
 ----
 
 .Verify signature using ecdsa.

@@ -21,6 +21,7 @@ Changes with backward compatibility:
   access to hash algorithm engines).
 - Improve naming on hmac, shmac and poly1305 namespaces using `hash` function instead of algorithm
   name for mac calculation function.
+- Unify digital signature function names to: `sign` and `verify`.
 
 Backward incompatible changes:
 

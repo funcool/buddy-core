@@ -19,14 +19,19 @@
             [buddy.core.sign.util :refer :all])
   (:import clojure.lang.Keyword))
 
-(defn ecdsa
+(defn sign
   "Make ECDSA digital signature."
-  [input pkey ^Keyword alg]
-  (let [alg (concat-two-keywords :ecdsa alg)]
-    (proto/make-signature input pkey alg)))
+  ([input key] (sign input key :sha256))
+  ([input key ^Keyword alg]
+   (let [alg (concat-two-keywords :ecdsa alg)]
+     (proto/make-signature input key alg))))
 
 (defn verify
   "Verify ECDSA digital signature."
   [input ^bytes signature pkey ^Keyword alg]
   (let [alg (concat-two-keywords :ecdsa alg)]
     (proto/verify-signature input signature pkey alg)))
+
+(def ^{:doc "Deprecated alias for sign function."
+       :deprecated true}
+  ecdsa sign)

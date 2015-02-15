@@ -19,14 +19,19 @@
             [buddy.core.sign.util :refer :all])
   (:import clojure.lang.Keyword))
 
-(defn rsapkcs15
+(defn sign
   "Make RSASSA-PKCSv1_5 digital signature."
-  [input pkey ^Keyword alg]
-  (let [alg (concat-two-keywords :rsassa-pkcs15 alg)]
-    (proto/make-signature input pkey alg)))
+  ([input key] (sign input key :sha256))
+  ([input pkey ^Keyword alg]
+   (let [alg (concat-two-keywords :rsassa-pkcs15 alg)]
+     (proto/make-signature input pkey alg))))
 
 (defn verify
   "Verify RSASSA-PKCSv1_5 digital signature."
   [input ^bytes signature pkey ^Keyword alg]
   (let [alg (concat-two-keywords :rsassa-pkcs15 alg)]
     (proto/verify-signature input signature pkey alg)))
+
+(def ^{:doc "Deprecated alias for sign function."
+       :deprecated true}
+  rsapkcs15 sign)
