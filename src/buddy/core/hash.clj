@@ -41,6 +41,34 @@
    :sha3-384 #(SHA3Digest. 284)
    :sha3-512 #(SHA3Digest. 512)})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Protocol definitions (abstractions)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defprotocol IDigest
+  (^:private digest* [input algorithm] "Low level interface, always returns bytes"))
+
+(defprotocol IHash
+  "Mac engine common interface definition."
+  (^:private update [_ bytes offset length] "Update bytes in a current instance.")
+  (^:private end [_] "Return the computed mac and reset the engine."))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Low level api
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn update!
+  ([engine input]
+   (update engine input 0 (count input)))
+  ([engine input offset]
+   (update engine input offset (count input)))
+  ([engine input offset length]
+   (update engine input offset length)))
+
+(defn end!
+  [engine]
+  (end engine))
+
 (defn resolve-digest
   "Helper function for make Digest instances
   from algorithm parameter."
@@ -51,46 +79,68 @@
    (instance? IFn alg) (alg)
    (instance? Digest alg) alg))
 
-(defprotocol IDigest
-  (^:private digest* [input algorithm] "Low level interface, always returns bytes"))
+(defn hash-engine
+  "Create a hash engine instance."
+  [^Keyword alg]
+  (let [engine (resolve-digest alg)]
+    (reify
+      IHash
+      (update [_ input offset length]
+        (.update engine input offset length))
+      (end [_]
+        (let [buffer (byte-array (.getDigestSize engine))]
+          (.doFinal engine buffer 0)
+          buffer)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Implementation details for different data types.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- hash-plain-data
+  [^bytes input ^Keyword alg]
+  (let [engine (hash-engine alg)]
+    (update! engine input)
+    (end! engine)))
+
+(defn- hash-stream-data
+  [^java.io.InputStream input ^Keyword alg]
+  (let [engine (hash-engine alg)
+        buffer (byte-array 5120)]
+    (loop []
+      (let [readed (.read input buffer 0 5120)]
+        (when-not (= readed -1)
+          (update! engine buffer 0 readed)
+          (recur))))
+    (end! engine)))
 
 (extend-protocol IDigest
   (Class/forName "[B")
   (digest* [^bytes input ^Keyword alg]
-    (let [digest (resolve-digest alg)
-          buffer (byte-array (.getDigestSize digest))]
-      (.update digest input 0 (count input))
-      (.doFinal digest buffer 0)
-      buffer))
+    (hash-plain-data input alg))
 
   String
   (digest* [^String input ^Keyword alg]
-    (digest* (str->bytes input) alg))
+    (hash-plain-data (str->bytes input) alg))
 
   java.io.InputStream
   (digest* [^java.io.InputStream input ^Keyword alg]
-    (let [digest  (resolve-digest alg)
-          buffer1 (byte-array 5120)
-          buffer2 (byte-array (.getDigestSize digest))]
-      (loop []
-        (let [readed (.read input buffer1 0 5120)]
-          (when-not (= readed -1)
-            (.update digest buffer1 0 readed)
-            (recur))))
-      (.doFinal digest buffer2 0)
-      buffer2))
+    (hash-stream-data input alg))
 
   java.io.File
   (digest* [^java.io.File input ^Keyword alg]
-    (digest* (io/input-stream input) alg))
+    (hash-stream-data (io/input-stream input) alg))
 
   java.net.URL
   (digest* [^java.net.URL input ^Keyword alg]
-    (digest* (io/input-stream input) alg))
+    (hash-stream-data (io/input-stream input) alg))
 
   java.net.URI
   (digest* [^java.net.URI input ^Keyword alg]
-    (digest* (io/input-stream input) alg)))
+    (hash-stream-data (io/input-stream input) alg)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; High level public api.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn digest
   "Generic function for create cryptographic hash."
@@ -105,4 +155,3 @@
 (def sha3-512 #(digest % :sha3-512))
 (def sha1 #(digest % :sha1))
 (def md5 #(digest % :md5))
-
