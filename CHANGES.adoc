@@ -4,20 +4,29 @@
 
 Date: unreleased
 
-- Replace record usage in kdf ns with reify.
-- Rename kdf protocol from KDFType to IKDF
-- Rename kdf protocol method names to more consistent ones.
-- Add partial support for nio ByteBuffer for kdf.
-- Improve consistency naming on hash related protocol and its method.
-- Add common protocol for mac "engine" (this allows low level clojure friendly access to
-  the mac algoritm engine) and add implementations of that for hmac and poly1305.
-- Remove iv parameter on poly1305 high level abstraction (still available on "engine" constructor).
-- Improve naming on hmac, shmac and poly1305 namespaces (use `hash` function instead of algorithm
-  name for mac calculation function).
-- Remove make-random-bytes function from buddy.core.keys ns.
+New features:
+
 - Add buddy.core.nonce namespace with functions for generate secure random ivs and
   secure nonces.
 - Add buddy.core.padding namespace with interface to common padding algorithms.
+
+Changes with backward compatibility:
+
+- Replace record usage in kdf ns with reify.
+- Rename kdf protocol method names to more consistent ones.
+- Add partial support for nio ByteBuffer for kdf.
+- Add common protocol for mac "engine" (this allows low level clojure friendly access to
+  the mac algoritm engine) and add implementations of that for hmac and poly1305.
+- Improve naming on hmac, shmac and poly1305 namespaces using `hash` function instead of algorithm
+  name for mac calculation function.
+
+Backward incompatible changes:
+
+- Rename kdf protocol from KDFType to IKDF.
+- Remove make-random-bytes function from buddy.core.keys ns.
+- Improve consistency naming on hash related protocol and its method.
+- Remove iv parameter on poly1305 high level abstraction (still available on "engine" constructor).
+
 
 == Version 0.3.0
 
