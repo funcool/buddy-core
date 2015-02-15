@@ -19,6 +19,8 @@ Including:
 - message authentication (mac)
 - block ciphers
 - stream ciphers
+- padding schemes
+- nonces and stalts
 
 
 == Project Maturity
