@@ -145,10 +145,12 @@ function *digest*.
 
 Buddy comes with three mac implementations: *HMac*, *SHMac* and *Poly1305*.
 
+
 === HMac
 
 This is a hash based mac algorithm and it is available in *buddy.core.mac.hmac*
 namespace.
+
 
 ==== Basic usage
 
@@ -628,7 +630,51 @@ engine requires 8 bytes iv.
 
 NOTE: for decrypt, only change `:op` value to `:decrypt`
 
-You can call `crypto/initialize` any times as you want, it simply reinitializes the engine.
+You can call `crypto/initialize!` any times as you want, it simply reinitializes the engine.
+
+
+== Paddings
+
+Padding schemes are often used for fill the empty bytes of byte array of data to an concrete
+blocksize.
+
+.This is a list of currently supported padding schemes
+[options="header"]
+|========================================
+|Algorithm name     | Keywords
+| Zero Byte         | `:zerobyte`
+| PKCS7             | `:pkcs7`
+| TBC               | `:tbc`
+|========================================
+
+Let see an example on how to use it:
+
+[source, clojure]
+----
+(require '[buddy.core.padding :as padding])
+(require '[buddy.core.bytes :as bytes])
+
+(def data (byte-array 10))
+
+;; Fill the array with byte value 10
+(bytes/fill data 10)
+
+;; Add padding to the byte array with offset value: 7
+;; This is a side effect and it will mutate the data
+;; byte array.
+(vec (padding/pad! data 7 :pkcs7))
+;; =>[10 10 10 10 10 10 10 3 3 3]
+
+;; Show the size of applied padding
+(padding/count data :pkcs7)
+;; => 3
+
+;; Remove padding
+(vec (padding/unpad! data 7 :pkcs7))
+;; =>[10 10 10 10 10 10 10 0 0 0]
+----
+
+The default padding scheme is `:pkcs7` and that parameter can be ommited.
 
 
 == Nonces and Salts
