@@ -659,7 +659,7 @@ Let see an example on how to use it:
 (def data (byte-array 10))
 
 ;; Fill the array with byte value 10
-(bytes/fill data 10)
+(bytes/fill! data 10)
 
 ;; Add padding to the byte array with offset value: 7
 ;; This is a side effect and it will mutate the data
