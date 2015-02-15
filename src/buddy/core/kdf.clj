@@ -34,8 +34,33 @@
 (defprotocol IKDF
   "Generic type that unify access to any implementation
   of kdf implemented in buddy."
-  (generate-byte-array! [_ length] "Generate byte array of specified length.")
-  (generate-byte-buffer! [_ length] "Generate byte buffer of specified length."))
+  (generate-byte-array [_ length] "Generate byte array of specified length.")
+  (generate-byte-buffer [_ length] "Generate byte buffer of specified length."))
+
+(defn- generate-byte-array*
+  [impl length]
+  (let [buffer (byte-array length)]
+    (.generateBytes impl buffer 0 length)
+    buffer))
+
+(defn- generate-byte-buffer*
+  [impl length]
+  (let [buffer (generate-byte-array* impl length)]
+    (ByteBuffer/wrap buffer)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public Api
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn generate-byte-array!
+  "Generate a byte array of specified length."
+  [engine ^long length]
+  (generate-byte-array engine length))
+
+(defn generate-byte-buffer!
+  "Generate a byte buffer of specified length."
+  [engine ^long length]
+  (generate-byte-buffer engine length))
 
 (defn generate-bytes!
   "Generate a byte array of specified length.
@@ -43,17 +68,6 @@
   untile next version for backward compatibility."
   [impl ^long length]
   (generate-byte-array! impl length))
-
-(defn- generate-byte-array
-  [impl length]
-  (let [buffer (byte-array length)]
-    (.generateBytes impl buffer 0 length)
-    buffer))
-
-(defn- generate-byte-buffer
-  [impl length]
-  (let [buffer (generate-byte-array impl length)]
-    (ByteBuffer/wrap buffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; HKDF interface
@@ -72,11 +86,11 @@
     (.init kdfimpl params)
     (reify
       IKDF
-      (generate-byte-array! [_ length]
-        (generate-byte-array kdfimpl length))
+      (generate-byte-array [_ length]
+        (generate-byte-array* kdfimpl length))
 
-      (generate-byte-buffer! [_ length]
-        (generate-byte-buffer kdfimpl length)))))
+      (generate-byte-buffer [_ length]
+        (generate-byte-buffer* kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; KDF1/2 interface
@@ -91,11 +105,11 @@
     (.init kdfimpl params)
     (reify
       IKDF
-      (generate-byte-array! [_ length]
-        (generate-byte-array kdfimpl length))
+      (generate-byte-array [_ length]
+        (generate-byte-array* kdfimpl length))
 
-      (generate-byte-buffer! [_ length]
-        (generate-byte-buffer kdfimpl length)))))
+      (generate-byte-buffer [_ length]
+        (generate-byte-buffer* kdfimpl length)))))
 
 (defn kdf2
   "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
@@ -106,11 +120,11 @@
     (.init kdfimpl params)
     (reify
       IKDF
-      (generate-byte-array! [_ length]
-        (generate-byte-array kdfimpl length))
+      (generate-byte-array [_ length]
+        (generate-byte-array* kdfimpl length))
 
-      (generate-byte-buffer! [_ length]
-        (generate-byte-buffer kdfimpl length)))))
+      (generate-byte-buffer [_ length]
+        (generate-byte-buffer* kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Counter mode KDF
@@ -127,11 +141,11 @@
     (.init kdfimpl params)
     (reify
       IKDF
-      (generate-byte-array! [_ length]
-        (generate-byte-array kdfimpl length))
+      (generate-byte-array [_ length]
+        (generate-byte-array* kdfimpl length))
 
-      (generate-byte-buffer! [_ length]
-        (generate-byte-buffer kdfimpl length)))))
+      (generate-byte-buffer [_ length]
+        (generate-byte-buffer* kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
@@ -153,11 +167,11 @@
     (.init kdfimpl params)
     (reify
       IKDF
-      (generate-byte-array! [_ length]
-        (generate-byte-array kdfimpl length))
+      (generate-byte-array [_ length]
+        (generate-byte-array* kdfimpl length))
 
-      (generate-byte-buffer! [_ length]
-        (generate-byte-buffer kdfimpl length)))))
+      (generate-byte-buffer [_ length]
+        (generate-byte-buffer* kdfimpl length)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Feedback mode KDF
@@ -176,8 +190,8 @@
     (.init kdfimpl params)
     (reify
       IKDF
-      (generate-byte-array! [_ length]
-        (generate-byte-array kdfimpl length))
+      (generate-byte-array [_ length]
+        (generate-byte-array* kdfimpl length))
 
-      (generate-byte-buffer! [_ length]
-        (generate-byte-buffer kdfimpl length)))))
+      (generate-byte-buffer [_ length]
+        (generate-byte-buffer* kdfimpl length)))))
