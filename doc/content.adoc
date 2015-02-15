@@ -735,7 +735,7 @@ This is a brief list of available functions:
 | `buddy.core.codecs/long->bytes`       | Get byte array representation of long
 | `buddy.core.codecs/bytes->long`       | Get long from byte array
 | `buddy.core.bytes/bytes?`             | Predicate for test byte arrays
-| `buddy.core.bytes/fill`               | Fill byte array with data
+| `buddy.core.bytes/fill!`               | Fill byte array with data
 | `buddy.core.bytes/slice`              | Create a new byte array as slice of other
 | `buddy.core.bytes/copy`               | Copy the byte array.
 | `buddy.core.bytes/equals?`            | Constant time equals predicate for byte arrays

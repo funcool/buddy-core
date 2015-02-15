@@ -26,7 +26,7 @@
   (= (Class/forName "[B")
      (.getClass x)))
 
-(defn fill
+(defn fill!
   "Assigns the specified byte value to each element
   of the specified array of bytes."
   ([^bytes input val]
