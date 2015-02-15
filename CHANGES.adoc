@@ -2,7 +2,7 @@
 
 == Version 0.4.0
 
-Date: unreleased
+Date: 2015-02-15
 
 New features:
 
