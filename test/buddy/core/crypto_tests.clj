@@ -85,26 +85,26 @@
           (is (bytes/equals? result2 block6)))))
 ))
 
-(deftest buddy-high-level-crypto
-  (testing "Split by blocksize"
-    (let [input1 (codecs/str->bytes "aaaabbbb")
-          input2 (codecs/str->bytes "aaaabbb")
-          input3 (codecs/str->bytes "aaaabbbbc")
-          result1 (cr/split-by-blocksize input1 4)
-          result2 (cr/split-by-blocksize input2 4)
-          result3 (cr/split-by-blocksize input3 4)]
-      (is (= (count result1) 2))
-      (is (= (count result2) 2))
-      (is (= (count result3) 3))))
+;; (deftest buddy-high-level-crypto
+;;   (testing "Split by blocksize"
+;;     (let [input1 (codecs/str->bytes "aaaabbbb")
+;;           input2 (codecs/str->bytes "aaaabbb")
+;;           input3 (codecs/str->bytes "aaaabbbbc")
+;;           result1 (cr/split-by-blocksize input1 4)
+;;           result2 (cr/split-by-blocksize input2 4)
+;;           result3 (cr/split-by-blocksize input3 4)]
+;;       (is (= (count result1) 2))
+;;       (is (= (count result2) 2))
+;;       (is (= (count result3) 3))))
 
-  ;; (testing "Encrypt/Decript using :aes"
-  ;;   (let [key     (nonce/random-bytes 32)
-  ;;         iv16    (hex->bytes "00000000000000000000000000000000")
-  ;;         iv8     (hex->bytes "0011001100110011")
-  ;;         block16 (hex->bytes "000000000000000000000000000000AA")
-  ;;         block3  (hex->bytes "121314")
-  ;;         block6  (hex->bytes "221122112211")]
-  ;;     (println (vec (cr/encrypt block3 :key key :iv iv16)))
-  ;;     (println (vec (cr/encrypt block3 :key key :iv iv16)))))
-)
+;;   ;; (testing "Encrypt/Decript using :aes"
+;;   ;;   (let [key     (nonce/random-bytes 32)
+;;   ;;         iv16    (hex->bytes "00000000000000000000000000000000")
+;;   ;;         iv8     (hex->bytes "0011001100110011")
+;;   ;;         block16 (hex->bytes "000000000000000000000000000000AA")
+;;   ;;         block3  (hex->bytes "121314")
+;;   ;;         block6  (hex->bytes "221122112211")]
+;;   ;;     (println (vec (cr/encrypt block3 :key key :iv iv16)))
+;;   ;;     (println (vec (cr/encrypt block3 :key key :iv iv16)))))
+;; )
 
