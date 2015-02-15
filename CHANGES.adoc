@@ -17,6 +17,8 @@ Changes with backward compatibility:
 - Add partial support for nio ByteBuffer for kdf.
 - Add common protocol for mac "engine" (this allows low level clojure friendly access to
   the mac algoritm engine) and add implementations of that for hmac and poly1305.
+- Add common protocol for hash "engine" (this like mac, allows low level clojure friendly
+  access to hash algorithm engines).
 - Improve naming on hmac, shmac and poly1305 namespaces using `hash` function instead of algorithm
   name for mac calculation function.
 
