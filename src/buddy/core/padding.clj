@@ -42,7 +42,8 @@
   ([^bytes input ^long offset ^Keyword alg]
    (let [engine (padding-engine alg)]
      (.init engine (java.security.SecureRandom.))
-     (.addPadding engine input offset))))
+     (.addPadding engine input offset)
+     input)))
 
 (defn unpad!
   "Remove padding from given byte array and fill
@@ -52,7 +53,8 @@
    (let [engine (padding-engine alg)
          padsize (.padCount engine input)
          offset (- (clojure.core/count input) padsize)]
-     (bytes/fill input 0 :offset offset))))
+     (bytes/fill! input 0 :offset offset)
+     input)))
 
 (defn count
   "Get the padding size found on given byte array."
