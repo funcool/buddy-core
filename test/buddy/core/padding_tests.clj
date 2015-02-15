@@ -20,7 +20,7 @@
 
 (deftest pkcs7-padding
   (let [data (byte-array 10)]
-    (bytes/fill data 2)
+    (bytes/fill! data 2)
     (padding/pad! data 6)
 
     (is (padding/padded? data))
@@ -31,7 +31,7 @@
 
 (deftest tbc-padding
   (let [data (byte-array 10)]
-    (bytes/fill data 2)
+    (bytes/fill! data 2)
     (padding/pad! data 6 :tbc)
 
     (is (padding/padded? data :tbc))
@@ -42,7 +42,7 @@
 
 (deftest zerobyte-padding
   (let [data (byte-array 10)]
-    (bytes/fill data 2)
+    (bytes/fill! data 2)
     (padding/pad! data 6 :zerobyte)
 
     (is (padding/padded? data :zerobyte))
