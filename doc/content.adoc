@@ -212,6 +212,22 @@ like that one:
   (verify* [data signature key alg]))
 ----
 
+Behind the scenes of the high level api, a low level api is already defined with protocols and
+you can use it for your purposes:
+
+[source, clojure]
+----
+(require '[buddy.core.mac.proto :as impl])
+
+(let [engine (hmac/hmac-engine "secret" :sha256)]
+  (impl/update! engine (codecs/str->bytes "My first data"))
+  (impl/update! engine (codecs/str->bytes "My second data"))
+  (codecs/bytes->hex (impl/end! engine)))
+;; "924c4b82a56c0115eb9..."
+----
+
+This also applies to the rest of mac implementations found in *buddy-core* library.
+
 
 === SHMac (Salted)
 
