@@ -840,6 +840,24 @@ like that one:</p>
   <span class="tok-p">(</span><span class="tok-nf">verify*</span> <span class="tok-p">[</span><span class="tok-nv">data</span> <span class="tok-nv">signature</span> <span class="tok-nb">key </span><span class="tok-nv">alg</span><span class="tok-p">]))</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Behind the scenes of the high level api, a low level api is already defined with protocols and
+you can use it for your purposes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac.proto</span> <span class="tok-ss">:as</span> <span class="tok-nv">impl</span><span class="tok-p">])</span>
+
+<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">hmac/hmac-engine</span> <span class="tok-s">&quot;secret&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)]</span>
+  <span class="tok-p">(</span><span class="tok-nf">impl/update!</span> <span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;My first data&quot;</span><span class="tok-p">))</span>
+  <span class="tok-p">(</span><span class="tok-nf">impl/update!</span> <span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;My second data&quot;</span><span class="tok-p">))</span>
+  <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span> <span class="tok-p">(</span><span class="tok-nf">impl/end!</span> <span class="tok-nv">engine</span><span class="tok-p">)))</span>
+<span class="tok-c1">;; &quot;924c4b82a56c0115eb9...&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This also applies to the rest of mac implementations found in <strong>buddy-core</strong> library.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1733,7 +1751,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-02-15 20:33:07 CET
+Last updated 2015-02-22 10:33:13 CET
 </div>
 </div>
 </body>
