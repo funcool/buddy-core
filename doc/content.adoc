@@ -760,6 +760,19 @@ This is a brief list of available functions:
 | `buddy.core.bytes/concat`             | Concat two or more byte arrays
 |=========================================================================
 
+
+== FAQ
+
+*Buddy has own cryptographic algorithms implementations?*
+
+Mainly no, I'm not cryptography expert and for this I rely on the to battle tested Bouncy Castle java
+library that's dedicated to this purpose.
+
+*Buddy will support pgp?*
+
+Surely not! Because there already exists one good link:https://github.com/greglook/clj-pgp[library for that].
+
+
 == How to Contribute?
 
 === Philosophy
