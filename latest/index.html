@@ -480,7 +480,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>buddy-core - Cryptographic Api</h1>
 <div class="details">
 <span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.be&gt;</span><br>
-<span id="revdate">0.4.0</span>
+<span id="revdate">0.4.1</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -539,11 +539,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_paddings">10. Paddings</a></li>
 <li><a href="#_nonces_and_salts">11. Nonces and Salts</a></li>
 <li><a href="#_codecs_bytes">12. Codecs &amp; Bytes</a></li>
-<li><a href="#_how_to_contribute">13. How to Contribute?</a>
+<li><a href="#_faq">13. FAQ</a></li>
+<li><a href="#_how_to_contribute">14. How to Contribute?</a>
 <ul class="sectlevel2">
-<li><a href="#_philosophy">13.1. Philosophy</a></li>
-<li><a href="#_procedure">13.2. Procedure</a></li>
-<li><a href="#_license">13.3. License</a></li>
+<li><a href="#_philosophy">14.1. Philosophy</a></li>
+<li><a href="#_procedure">14.2. Procedure</a></li>
+<li><a href="#_license">14.3. License</a></li>
 </ul>
 </li>
 </ul>
@@ -628,7 +629,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 <div class="listingblock">
 <div class="title"><em>on project.clj</em></div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">buddy/buddy-core</span> <span class="tok-s">&quot;0.4.0&quot;</span><span class="tok-p">]</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">buddy/buddy-core</span> <span class="tok-s">&quot;0.4.1&quot;</span><span class="tok-p">]</span></code></pre>
 </div>
 </div>
 </div>
@@ -639,7 +640,7 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;buddy:buddy-core:0.4.0&quot;</span></code></pre>
+<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;buddy:buddy-core:0.4.1&quot;</span></code></pre>
 </div>
 </div>
 </div>
@@ -1645,10 +1646,28 @@ the limitation of minimum 8 bytes of size.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_how_to_contribute"><a class="link" href="#_how_to_contribute">13. How to Contribute?</a></h2>
+<h2 id="_faq"><a class="link" href="#_faq">13. FAQ</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Buddy has own cryptographic algorithms implementations?</strong></p>
+</div>
+<div class="paragraph">
+<p>Mainly no, I&#8217;m not cryptography expert and for this I rely on the to battle tested Bouncy Castle java
+library that&#8217;s dedicated to this purpose.</p>
+</div>
+<div class="paragraph">
+<p><strong>Buddy will support pgp?</strong></p>
+</div>
+<div class="paragraph">
+<p>Surely not! Because there already exists one good <a href="https://github.com/greglook/clj-pgp">library for that</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_to_contribute"><a class="link" href="#_how_to_contribute">14. How to Contribute?</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_philosophy"><a class="link" href="#_philosophy">13.1. Philosophy</a></h3>
+<h3 id="_philosophy"><a class="link" href="#_philosophy">14.1. Philosophy</a></h3>
 <div class="paragraph">
 <p>Five most important rules:</p>
 </div>
@@ -1676,7 +1695,7 @@ the limitation of minimum 8 bytes of size.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_procedure"><a class="link" href="#_procedure">13.2. Procedure</a></h3>
+<h3 id="_procedure"><a class="link" href="#_procedure">14.2. Procedure</a></h3>
 <div class="paragraph">
 <p><strong>buddy-core</strong> unlike Clojure and other Clojure contrib libs, does not have many
 restrictions for contributions. Just follow the following steps depending on the
@@ -1713,7 +1732,7 @@ situation:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_license"><a class="link" href="#_license">13.3. License</a></h3>
+<h3 id="_license"><a class="link" href="#_license">14.3. License</a></h3>
 <div class="paragraph">
 <p><em>buddy-core</em> is licensed under BSD (2-Clause) license:</p>
 </div>
@@ -1751,7 +1770,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-02-22 10:33:13 CET
+Last updated 2015-02-26 23:23:12 CET
 </div>
 </div>
 </body>
