@@ -14,7 +14,8 @@
 
 (ns buddy.core.mac.proto
   "Hash-based Message Authentication Codes
-  low level protocol definition.")
+  low level protocol definition."
+  (:refer-clojure :exclude [update]))
 
 (defprotocol IMac
   "Mac engine common interface definition."
