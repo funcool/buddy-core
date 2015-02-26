@@ -1,5 +1,12 @@
 = Changelog
 
+== Version 0.4.1
+
+Date: 2015-02-26
+
+- Remove override warnings on hash and mac related ns (thanks @geraldodev for report it)
+
+
 == Version 0.4.0
 
 Date: 2015-02-15
