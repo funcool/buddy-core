@@ -1,6 +1,6 @@
 = buddy-core - Cryptographic Api
 Andrey Antukh, <niwi@niwi.be>
-0.4.0
+0.4.1
 :toc: left
 :numbered:
 :source-highlighter: pygments
@@ -49,7 +49,7 @@ vector on your *_project.clj_* file:
 ._on project.clj_
 [source,clojure]
 ----
-[buddy/buddy-core "0.4.0"]
+[buddy/buddy-core "0.4.1"]
 ----
 
 === Gradle
@@ -58,7 +58,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 
 [source,groovy]
 ----
-compile "buddy:buddy-core:0.4.0"
+compile "buddy:buddy-core:0.4.1"
 ----
 
 === Get the Code
