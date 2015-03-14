@@ -5,5 +5,7 @@
 
 *buddy-core* module is dedicated to provide a Clojure friendly Cryptographic Api.
 
+[![Clojars Project](http://clojars.org/buddy/buddy-core/latest-version.svg)](http://clojars.org/buddy/buddy-core)
+
 See the [documentation](https://funcool.github.io/buddy-core/latest/) for more detailed
 information.
