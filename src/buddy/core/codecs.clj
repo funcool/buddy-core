@@ -48,15 +48,15 @@
 
 (defn bytes->base64
   "Encode a bytes array to base64
-and return utf8 string."
+  and return utf8 string."
   [^bytes data]
-  (Base64/encodeBase64URLSafeString data))
+  (Base64/encodeBase64String data))
 
 (defn bytes->bbase64
   "Encode a bytes array to base64 and
-return bytearray."
+  return bytearray."
   [^bytes data]
-  (Base64/encodeBase64URLSafe data))
+  (Base64/encodeBase64 data))
 
 (defn base64->bytes
   "Decode from base64 to bytes."
@@ -67,7 +67,7 @@ return bytearray."
   "Encode to urlsafe base64."
   [^String s]
   (-> (str->bytes s)
-      (Base64/encodeBase64URLSafeString)
+      (Base64/encodeBase64String)
       (str/trim)))
 
 (defn base64->str
