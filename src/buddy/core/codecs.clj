@@ -29,7 +29,7 @@
 
 (defn bytes->str
   "Convert octets to String."
-  ([data]
+  ([^bytes data]
    (bytes->str data "UTF-8"))
   ([^bytes data, ^String encoding]
    (String. data encoding)))
