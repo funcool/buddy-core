@@ -61,8 +61,8 @@
 
 (defprotocol Cipher
   "Common interface to both, stream and block ciphers."
-  (initialize! [_ params] "Initialize cipher")
-  (process-block! [_ input] "Encrypt/Decrypt a block of bytes."))
+  (initialize [_ params] "Initialize cipher")
+  (process-block [_ input] "Encrypt/Decrypt a block of bytes."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details.
@@ -127,9 +127,9 @@
         (.getBlockSize engine))
 
       Cipher
-      (initialize! [_ params]
+      (initialize [_ params]
         (initialize-cipher! engine params))
-      (process-block! [_ input]
+      (process-block [_ input]
         (block-cipher-process! engine input)))))
 
 (defn stream-cipher
@@ -141,26 +141,24 @@
     (reify
       StreamCipher ;; Mark only
       Cipher
-      (initialize! [_ params]
+      (initialize [_ params]
         (initialize-cipher! engine params))
-      (process-block! [_ input]
+      (process-block [_ input]
         (stream-cipher-process! engine input)))))
 
-(defn process-bytes!
-  "Backward compatibility alias for `process-block!`
-  function. This function will be removed in the
-  next stable version."
+(defn initialize!
+  "Initialize the cipher engine."
+  [engine {:keys [iv key op] :as params}]
+  (initialize engine params))
+
+(defn process-block!
+  "Encrypt or decrypt a block of bytes
+  using the specified engine.
+  The length of the block to encrypt or
+  decrypt depends strictly on the used
+  crypto engine."
   [engine input]
-  (process-block! engine input))
-
-
-(def ^{:doc "Deprecated alias for block-cipher."
-       :deprecated true}
-  engine block-cipher)
-
-(def ^{:doc "Deprecated alias for stream-cipher."
-       :deprecated true}
-  stream-engine stream-cipher)
+  (process-block engine input))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; High level api.
