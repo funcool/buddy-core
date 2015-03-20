@@ -4,7 +4,10 @@
 
   By convenience, it also exposes additional functions
   for generate random iv/salts."
-  (:import java.security.SecureRandom))
+  (:import java.security.SecureRandom
+           org.bouncycastle.crypto.BlockCipher
+           org.bouncycastle.crypto.modes.SICBlockCipher
+           org.bouncycastle.crypto.engines.ChaChaEngine))
 
 
 (defn random-bytes
@@ -32,3 +35,12 @@
      (.put buffer (random-bytes (.remaining buffer) sr))
      (.array buffer))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helpers for generate specific iv/nonces for engines
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmulti for-engine class
+  "Generate a nonce or iv as engine is expected.")
+(defmethod for-engine ChaChaEngine [e] (random-nonce 8))
+(defmethod for-engine SICBlockCipher [e] (random-nonce (.getBlockSize e)))
+(defmethod for-engine BlockCipher [e] (random-bytes (.getBlockSize e)))
