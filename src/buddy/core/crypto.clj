@@ -23,16 +23,21 @@
            org.bouncycastle.crypto.modes.CBCBlockCipher
            org.bouncycastle.crypto.modes.SICBlockCipher
            org.bouncycastle.crypto.modes.OFBBlockCipher
+           org.bouncycastle.crypto.modes.GCMBlockCipher
+           org.bouncycastle.crypto.modes.AEADBlockCipher
            org.bouncycastle.crypto.params.ParametersWithIV
+           org.bouncycastle.crypto.params.AEADParameters
            org.bouncycastle.crypto.params.KeyParameter
+           org.bouncycastle.crypto.BlockCipher
+           org.bouncycastle.crypto.StreamCipher
            clojure.lang.IFn
            clojure.lang.Keyword))
-
 
 (def ^{:doc "Supported block cipher modes."
        :dynamic true}
   *supported-modes* {:ecb #(identity %)
                      :cbc #(CBCBlockCipher. %)
+                     :gcm #(GCMBlockCipher. %)
                      :ctr #(SICBlockCipher. %)
                      :sic #(SICBlockCipher. %)
                      :ofb #(OFBBlockCipher. %1 (* 8 (.getBlockSize %1)))})
@@ -47,57 +52,118 @@
        :dynamic true}
   *supported-stream-ciphers* {:chacha #(ChaChaEngine.)})
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cipher protocol declaration.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol BlockCipher
-  "Common interface to block ciphers."
-  (get-block-size [_] "Get block size in bytes."))
+(defprotocol IBlockCipher
+  "Common protocol to block ciphers."
+  (^:private get-block-size* [_] "Get block size in bytes."))
 
-(defprotocol StreamCipher
-  "Common interface to stream ciphers.")
+(defprotocol IStreamCipher
+  "Common protocol to stream ciphers.")
 
-(defprotocol Cipher
-  "Common interface to both, stream and block ciphers."
-  (initialize [_ params] "Initialize cipher")
-  (process-block [_ input] "Encrypt/Decrypt a block of bytes."))
+(defprotocol ICipher
+  "Common protocol to both, stream and block ciphers."
+  (^:private initialize [_ params] "Initialize cipher")
+  (^:private process-block [_ input] [_ input inoffset output outoffset]
+    "Encrypt/Decrypt a block of bytes."))
+
+(defprotocol IAEADBlockCipher
+  "Common protocol to Authenticated Cipher."
+  (^:private calculate-authtag [_ output outoffset] "Calculate the authentication tag.")
+  (^:private get-output-size* [_ data] "Get the output size."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^{:private true
-       :doc "Check if op is a valid op keyword."
-       :static true}
-  valid-op? (comp boolean #{:encrypt :decrypt}))
+(extend-type StreamCipher
+  IStreamCipher
+  ICipher
+  (initialize [engine params]
+    (let [iv (:iv params)
+          key (:key params)
+          params' (if (nil? iv)
+                    (KeyParameter. key)
+                    (ParametersWithIV. (KeyParameter. key) iv))
+          encrypt (condp = (:op params)
+                    :encrypt true
+                    :decrypt false)]
+      (.init engine encrypt params')
+      engine))
 
-(defn- initialize-cipher!
-  [engine {:keys [iv key op]}]
-  {:pre [(bytes/bytes? key)
-         (valid-op? op)]}
-  (let [params (if (nil? iv)
-                 (KeyParameter. key)
-                 (ParametersWithIV. (KeyParameter. key) iv))
-        encrypt (condp = op
-                  :encrypt true
-                  :decrypt false)]
-    (.init engine encrypt params)
-    engine))
+  (process-block
+    ([engine input]
+     (let [len    (count input)
+           buffer (byte-array len)]
+       (.processBytes engine input 0 len buffer 0)
+       buffer))
+    ([engine input inoffset output outoffset]
+     (.processBytes engine input inoffset output outoffset))))
 
-(defn- block-cipher-process!
-  [engine input]
-  (let [buffer (byte-array (.getBlockSize engine))]
-    (.processBlock engine input 0 buffer 0)
-    buffer))
+(extend-type BlockCipher
+  IBlockCipher
+  (get-block-size* [engine]
+    (.getBlockSize engine))
 
-(defn- stream-cipher-process!
-  [engine input]
-  (let [len    (count input)
-        buffer (byte-array len)]
-    (.processBytes engine input 0 len buffer 0)
-    buffer))
+  ICipher
+  (initialize [engine params]
+    (let [iv (:iv params)
+          key (:key params)
+          params' (if (nil? iv)
+                    (KeyParameter. key)
+                    (ParametersWithIV. (KeyParameter. key) iv))
+          encrypt (condp = (:op params)
+                    :encrypt true
+                    :decrypt false)]
+      (.init engine encrypt params')
+      engine))
+
+  (process-block
+    ([engine input]
+     (let [buffer (byte-array (get-block-size* engine))]
+       (.processBlock engine input 0 buffer 0)
+       buffer))
+    ([engine input inoffset output outoffset]
+     (.processBlock engine input inoffset output outoffset))))
+
+(extend-type AEADBlockCipher
+  IAEADBlockCipher
+  (get-output-size* [engine length]
+    (.getOutputSize engine length))
+
+  (calculate-authtag [engine output outoffset]
+    (.doFinal engine output outoffset)
+    output)
+
+  IBlockCipher
+  (get-block-size* [engine]
+    (get-block-size* (.getUnderlyingCipher engine)))
+
+  ICipher
+  (initialize [engine params]
+    (let [iv (:iv params)
+          key (:key params)
+          aad (:aad params)
+          tagsize (:authtag-size params 128)
+          keyparam (KeyParameter. key)
+          params' (AEADParameters. keyparam tagsize iv aad)
+          encrypt (condp = (:op params :encrypt)
+                    :encrypt true
+                    :decrypt false)]
+      (.init engine encrypt params')
+      engine))
+
+  (process-block
+    ([engine input]
+     (let [buffer (byte-array (get-block-size* engine))]
+       (.processBytes engine input 0 buffer 0)
+       buffer))
+
+    ([engine input inoffset output outoffset]
+     (let [length (count input)]
+       (.processBytes engine input inoffset length output outoffset)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Low level api.
@@ -113,38 +179,34 @@
   [^Keyword mode]
   (contains? *supported-modes* mode))
 
+(defn get-block-size
+  "Given a block cipher, return the block size
+  in bytes."
+  [^BlockCipher engine]
+  (get-block-size* engine))
+
+(defn get-output-size
+  "Given a aead cipher, return the buffer size required for
+  a `process-block!` plus a `calculate-authtag!` with an input of
+  `len` bytes."
+  [^AEADBlockCipher engine ^long len]
+  (get-output-size* engine len))
+
 (defn block-cipher
   "Block cipher engine constructor."
   [^Keyword alg ^Keyword mode]
   {:pre [(algorithm-supported? :block alg)
          (mode-supported? mode)]}
   (let [modefactory (get *supported-modes* mode)
-        enginefactory (get *supported-block-ciphers* alg)
-        engine (modefactory (enginefactory))]
-    (reify
-      BlockCipher
-      (get-block-size [_]
-        (.getBlockSize engine))
-
-      Cipher
-      (initialize [_ params]
-        (initialize-cipher! engine params))
-      (process-block [_ input]
-        (block-cipher-process! engine input)))))
+        enginefactory (get *supported-block-ciphers* alg)]
+    (modefactory (enginefactory))))
 
 (defn stream-cipher
   "Stream cipher engine constructor."
   [^Keyword alg]
   {:pre [(algorithm-supported? :stream alg)]}
-  (let [enginefactory (get *supported-stream-ciphers* alg)
-        engine (enginefactory)]
-    (reify
-      StreamCipher ;; Mark only
-      Cipher
-      (initialize [_ params]
-        (initialize-cipher! engine params))
-      (process-block [_ input]
-        (stream-cipher-process! engine input)))))
+  (let [enginefactory (get *supported-stream-ciphers* alg)]
+    (enginefactory)))
 
 (defn initialize!
   "Initialize the cipher engine."
@@ -152,60 +214,48 @@
   (initialize engine params))
 
 (defn process-block!
-  "Encrypt or decrypt a block of bytes
-  using the specified engine.
-  The length of the block to encrypt or
-  decrypt depends strictly on the used
-  crypto engine."
-  [engine input]
-  (process-block engine input))
+  "Encrypt or decrypt a block of bytes using the specified engine.
+  The length of the block to encrypt or decrypt depends on the used
+  crypto engine. A great example are stream cipher engine
+  that allows blocks of 1 byte lenght."
+  ([engine input]
+   (process-block engine input))
+  ([engine input inoffset output outoffset]
+   (process-block engine input inoffset output outoffset)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; High level api.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn calculate-authtag!
+  [engine output offset]
+  (calculate-authtag engine output offset))
 
-(defn split-by-blocksize
+(defn- split-by-blocksize
   "Split a byte array in blocksize blocks.
-
   Given a arbitrary size bytearray and block size in bytes,
   returns a lazy sequence of bytearray blocks of blocksize
   size. If last block does not have enought data for fill
   all block, it is padded using zerobyte padding."
-  [^bytes input ^long blocksize]
-  (let [inputsize (count input)
-        seqgen (fn seqgen [& {:keys [cursormin cursormax remain]}]
-                 (cond
-                   (<= remain blocksize)
-                   (let [buffer (byte-array blocksize)]
-                     (System/arraycopy input cursormin buffer 0 remain)
-                     (list buffer))
+  ([^bytes input ^long blocksize]
+   (split-by-blocksize input blocksize false))
+  ([^bytes input ^long blocksize additional]
+   (let [inputsize (count input)]
+     (loop [cursormin 0
+            cursormax blocksize
+            remain inputsize
+            result []]
+       (cond
+         (= remain 0)
+         (if additional
+           (conj result (byte-array blocksize))
+           result)
 
-                   (> remain blocksize)
-                   (let [buffer (byte-array blocksize)]
-                     (System/arraycopy input cursormin buffer 0 blocksize)
-                     (cons buffer (lazy-seq (seqgen :cursormin cursormax
-                                                    :cursormax (+ cursormax blocksize)
-                                                    :remain (- inputsize cursormax)))))
-                   :else nil))]
-    (lazy-seq (seqgen :cursormin 0
-                      :cursormax blocksize
-                      :remain inputsize))))
+         (< remain blocksize)
+         (let [buffer (byte-array blocksize)]
+           (System/arraycopy input cursormin buffer 0 remain)
+           (conj result buffer))
 
-(defn encrypt
-  "Encrypt message, and return a result as byte array."
-  [input & {:keys [alg mode iv key] :or {alg :aes mode :ctr}}]
-  {:pre [(bytes/bytes? iv) (bytes/bytes? key)]}
-  (let [^bytes input (codecs/->byte-array input)]
-    (cond
-      (algorithm-supported? :block alg)
-      (let [cipher (block-cipher alg mode)
-            blocksize (get-block-size cipher)]
-        (initialize! cipher {:op :encrypt :iv iv :key key})
-        (apply bytes/concat (reduce (fn [acc block]
-                                      (conj acc (process-block! cipher block)))
-                                    [] (split-by-blocksize input blocksize))))
-
-      (algorithm-supported? :stream alg)
-      (let [cipher (stream-cipher alg)]
-        (initialize! cipher {:op :encrypt :iv iv :key key})
-        (process-block! cipher input)))))
+         (>= remain blocksize)
+         (let [buffer (byte-array blocksize)]
+           (System/arraycopy input cursormin buffer 0 blocksize)
+           (recur cursormax
+                  (+ cursormax blocksize)
+                  (- inputsize cursormax)
+                  (conj result buffer))))))))
