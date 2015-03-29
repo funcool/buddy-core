@@ -39,8 +39,8 @@
 ;; Helpers for generate specific iv/nonces for engines
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmulti for-engine class
-  "Generate a nonce or iv as engine is expected.")
+(defmulti for-engine class)
+
 (defmethod for-engine ChaChaEngine [e] (random-nonce 8))
 (defmethod for-engine SICBlockCipher [e] (random-nonce (.getBlockSize e)))
 (defmethod for-engine BlockCipher [e] (random-bytes (.getBlockSize e)))
