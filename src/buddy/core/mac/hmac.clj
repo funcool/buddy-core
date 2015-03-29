@@ -144,7 +144,3 @@
   "
   [input ^bytes signature key ^Keyword alg]
   (verify* input signature key alg))
-
-(def ^{:doc "Deprecated alias for `hash` function.`"
-       :deprecated true}
-  hmac hash)
