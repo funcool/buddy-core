@@ -23,8 +23,10 @@
   "Test if a first parameter is a byte
   array or not."
   [x]
-  (= (Class/forName "[B")
-     (.getClass x)))
+  (if (nil? x)
+    false
+    (= (Class/forName "[B")
+       (.getClass x))))
 
 (defn fill!
   "Assigns the specified byte value to each element
