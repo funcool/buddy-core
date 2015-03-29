@@ -1,4 +1,4 @@
-(defproject buddy/buddy-core "0.4.2"
+(defproject buddy/buddy-core "0.5.0-SNAPSHOT"
   :description "Security library for Clojure"
   :url "https://github.com/funcool/buddy-core"
   :license {:name "BSD (2-Clause)"
