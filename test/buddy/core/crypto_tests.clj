@@ -85,26 +85,22 @@
           (is (bytes/equals? result2 block6)))))
 ))
 
-;; (deftest buddy-high-level-crypto
-;;   (testing "Split by blocksize"
-;;     (let [input1 (codecs/str->bytes "aaaabbbb")
-;;           input2 (codecs/str->bytes "aaaabbb")
-;;           input3 (codecs/str->bytes "aaaabbbbc")
-;;           result1 (cr/split-by-blocksize input1 4)
-;;           result2 (cr/split-by-blocksize input2 4)
-;;           result3 (cr/split-by-blocksize input3 4)]
-;;       (is (= (count result1) 2))
-;;       (is (= (count result2) 2))
-;;       (is (= (count result3) 3))))
-
-;;   ;; (testing "Encrypt/Decript using :aes"
-;;   ;;   (let [key     (nonce/random-bytes 32)
-;;   ;;         iv16    (hex->bytes "00000000000000000000000000000000")
-;;   ;;         iv8     (hex->bytes "0011001100110011")
-;;   ;;         block16 (hex->bytes "000000000000000000000000000000AA")
-;;   ;;         block3  (hex->bytes "121314")
-;;   ;;         block6  (hex->bytes "221122112211")]
-;;   ;;     (println (vec (cr/encrypt block3 :key key :iv iv16)))
-;;   ;;     (println (vec (cr/encrypt block3 :key key :iv iv16)))))
-;; )
-
+(deftest aead-mode-block-cipher
+  (let [key (hex->bytes "0000000000000000000000000000000000000000000000000000000000000000")
+        data (nonce/random-bytes 256)
+        iv16 (nonce/random-bytes 16)
+        cipher (cr/block-cipher :aes :gcm)]
+    (cr/initialize! cipher {:iv iv16 :key key :op :encrypt})
+    (let [finalsize (cr/get-output-size cipher (count data))]
+      (is (= finalsize 272)))
+    (let [output (byte-array 272)
+          offset (cr/process-block! cipher data 0 output 0)
+          offset' (cr/calculate-authtag! cipher output offset)]
+      (cr/initialize! cipher {:iv iv16 :key key :op :decrypt})
+      (let [input output
+            finalsize (cr/get-output-size cipher (count input))]
+        (is (= finalsize 256))
+        (let [output (byte-array 256)
+              offset (cr/process-block! cipher input 0 output 0)
+              offset' (cr/calculate-authtag! cipher output offset)]
+          (is (bytes/equals? output data)))))))
