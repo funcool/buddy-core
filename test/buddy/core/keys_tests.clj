@@ -14,11 +14,12 @@
 
 (ns buddy.core.keys-tests
   (:require [clojure.test :refer :all]
-            [clojure.java.io :as io]
             [buddy.core.codecs :refer :all]
+            [buddy.core.nonce :as nonce]
+            [buddy.core.bytes :as bytes]
             [buddy.core.keys :as keys]))
 
-(deftest rsa-dsa-keys-test
+(deftest read-asynmetric-encryption-keys
   (testing "Read rsa priv key"
     (let [pkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
@@ -58,3 +59,33 @@
           pkey (keys/str->public-key keystr)]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey))
       (is (keys/public-key? pkey)))))
+
+(deftest key-wrapping-algorithms
+  (let [secret16 (nonce/random-bytes 16)
+        secret24 (nonce/random-bytes 24)
+        secret32 (nonce/random-bytes 32)
+        secret64 (nonce/random-bytes 64)
+        cek (nonce/random-bytes 32)
+        cek' (nonce/random-bytes 31)]
+
+    (testing "Wrap and unwrap a cek using aes128kw"
+      (let [result (keys/wrap cek secret16)
+            result' (keys/unwrap result secret16)]
+        (is (bytes/equals? result' cek))))
+
+    (testing "Wrap and unwrap a cek using aes192kw"
+      (let [result (keys/wrap cek secret24)
+            result' (keys/unwrap result secret24)]
+        (is (bytes/equals? result' cek))))
+
+    (testing "Wrap and unwrap a cek using aes256kw"
+      (let [result (keys/wrap cek secret32)
+            result' (keys/unwrap result secret32)]
+        (is (bytes/equals? result' cek))))
+
+    (testing "Wrap with wrong secret size"
+      (is (thrown? AssertionError (keys/wrap cek secret64))))
+
+    (testing "Wrap with wrong length cek"
+      (is (thrown? org.bouncycastle.crypto.DataLengthException (keys/wrap cek' secret16))))
+))

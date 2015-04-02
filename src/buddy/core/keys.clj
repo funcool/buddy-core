@@ -20,13 +20,16 @@
            org.bouncycastle.openssl.PEMKeyPair
            org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
            org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
-           ;; java.security.interfaces.RSAPublicKey
+           org.bouncycastle.crypto.engines.AESWrapEngine
+           org.bouncycastle.crypto.params.KeyParameter
+           org.bouncycastle.crypto.Wrapper
            java.security.PublicKey
            java.security.PrivateKey
            java.security.Security
            java.security.SecureRandom
            java.security.KeyPair
-           java.io.StringReader))
+           java.io.StringReader
+           clojure.lang.Keyword))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation
@@ -62,6 +65,8 @@
 ;; Public Api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Key reading functions
+
 (defn private-key
   "Private key constructor from file path."
   [^String path & [^String passphrase]]
@@ -88,3 +93,27 @@
   "Return true if key `k` is a private key."
   [k]
   (instance? PrivateKey k))
+
+;; Key encryption functions
+
+(defmulti wrap
+  "Wrap a key using some of key wrapping algorithms."
+  (fn [& [input secret algorithm]] algorithm) :default :aes)
+
+(defmulti unwrap
+  "Wrap a key using some of key wrapping algorithms."
+  (fn [& [input secret algorithm]] algorithm) :default :aes)
+
+(defmethod wrap :aes
+  [^bytes input ^bytes secret & args]
+  {:pre [(#{16 24 32} (count secret))]}
+  (let [^Wrapper cipher (AESWrapEngine.)]
+    (.init cipher true (KeyParameter. secret))
+    (.wrap cipher input 0 (count input))))
+
+(defmethod unwrap :aes
+  [^bytes input ^bytes secret & args]
+  {:pre [(#{16 24 32} (count secret))]}
+  (let [^Wrapper cipher (AESWrapEngine.)]
+    (.init cipher false (KeyParameter. secret))
+    (.unwrap cipher input 0 (count input))))
