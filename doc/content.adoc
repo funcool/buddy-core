@@ -587,10 +587,8 @@ mode of operation.
 | SIC (CTR)         | `:ctr`, `:sic`
 | CBC               | `:cbc`
 | OFB               | `:ofb`
+| GCM               | `:gcm`
 |========================================
-
-Encrypting data using buddy's crypto primitives is almost as easy. In case of block ciphers, you
-should know the block cipher and cipher mode you want to use.
 
 NOTE: currently buddy comes with limited number of ciphers and modes, but in near future
 more many more options should be added.
@@ -607,10 +605,13 @@ more many more options should be added.
       key32 (nonce/random-nonce 32)
       data  (codecs/hex->bytes "000000000000000000000000000000AA")]
   (crypto/initialize! eng {:key key32 :iv iv16 :op :encrypt})
-  (crypto/process-block! eng data))
+  (crypto/process-bytes! eng data))
 
 ;; => #<byte[] [B@efadff9>
 ----
+
+AEAD mode of operations also exposes additional function for caluclate the total size of the
+output including the authentication tag: `get-output-size`.
 
 
 === Stream Ciphers
@@ -622,7 +623,7 @@ and do not require any additional mode of operation.
 [options="header"]
 |========================================
 |Algorithm name     | Keywords
-| ChaCha           | `:chacha`
+| ChaCha            | `:chacha`
 |========================================
 
 
