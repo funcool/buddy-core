@@ -21,11 +21,12 @@
   (:import java.security.PublicKey
            java.security.PrivateKey
            java.security.Signature
+           java.security.Security
            clojure.lang.Keyword
            clojure.lang.IFn))
 
-(java.security.Security/addProvider
- (org.bouncycastle.jce.provider.BouncyCastleProvider.))
+(when (nil? (Security/getProvider "BC"))
+  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
 (def ^{:doc "Default buffer size for make signature of stream."
        :dynamic true}
