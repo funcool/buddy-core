@@ -7,7 +7,11 @@ Date: unreleased
 - General code refactoring on crypto ns.
 - Add support for AEAD block cipher modes.
 - Add helper for split data by block size.
-- Bug fix on bytes? predicate.
+- Add support for deflate compression algorithm.
+- Add support for AES Key Wrap algorith.
+- Fix wrong behavior of bytes? predicate.
+- Add several fixes on asymetric key reading functions.
+- Fix unexpected behavior of `count` function of padding algorithms.
 
 
 == Version 0.4.2
