@@ -1,8 +1,8 @@
-(defproject buddy/buddy-core "0.5.0-SNAPSHOT"
-  :description "Security library for Clojure"
+(defproject buddy/buddy-core "0.5.0"
+  :description "Cryptographic Api for Clojure."
   :url "https://github.com/funcool/buddy-core"
-  :license {:name "BSD (2-Clause)"
-            :url "http://opensource.org/licenses/BSD-2-Clause"}
+  :license {:name "Apache 2.0"
+            :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [commons-codec/commons-codec "1.10"]
                  [org.bouncycastle/bcprov-jdk15on "1.52"]
