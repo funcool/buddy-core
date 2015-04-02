@@ -20,57 +20,71 @@
            org.bouncycastle.openssl.PEMKeyPair
            org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
            org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
+           ;; java.security.interfaces.RSAPublicKey
+           java.security.PublicKey
+           java.security.PrivateKey
+           java.security.Security
            java.security.SecureRandom
+           java.security.KeyPair
            java.io.StringReader))
 
-(java.security.Security/addProvider
- (org.bouncycastle.jce.provider.BouncyCastleProvider.))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn read-pem->privkey
-  [reader ^String passphrase]
-  (let [parser    (PEMParser. reader)
-        keypair   (.readObject parser)
-        converter (doto (JcaPEMKeyConverter.)
-                    (.setProvider "BC"))]
-    (if (instance? PEMEncryptedKeyPair keypair)
-      (let [builder   (JcePEMDecryptorProviderBuilder.)
-            decryptor (.build builder (.toCharArray passphrase))]
-        (->> (.decryptKeyPair keypair decryptor)
-             (.getKeyPair converter)))
-      (.getKeyPair converter keypair))))
+(when (nil? (Security/getProvider "BC"))
+  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
-(defn read-pem->pubkey
-  [reader]
-  (let [parser    (PEMParser. reader)
-        keyinfo   (.readObject parser)
-        converter (doto (JcaPEMKeyConverter.)
-                    (.setProvider "BC"))]
-    (.getPublicKey converter keyinfo)))
+(defn- read-pem->keypair
+  [^String path ^String passphrase]
+  (with-open [reader (io/reader path)]
+    (let [parser    (PEMParser. reader)
+          keypair   (.readObject parser)
+          converter (doto (JcaPEMKeyConverter.)
+                      (.setProvider "BC"))]
+      (if (instance? PEMEncryptedKeyPair keypair)
+        (let [builder   (JcePEMDecryptorProviderBuilder.)
+              decryptor (.build builder (.toCharArray passphrase))]
+          (->> (.decryptKeyPair keypair decryptor)
+               (.getKeyPair converter)))
+        (.getKeyPair converter keypair)))))
+
+(defn- read-pem->pubkey
+  [path-or-reader]
+  (with-open [reader (io/reader path-or-reader)]
+    (let [parser    (PEMParser. reader)
+          keyinfo   (.readObject parser)
+          converter (doto (JcaPEMKeyConverter.)
+                      (.setProvider "BC"))]
+      (.getPublicKey converter keyinfo))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public Api
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn private-key
   "Private key constructor from file path."
   [^String path & [^String passphrase]]
-  (with-open [reader (io/reader path)]
-    (.getPrivate
-      (read-pem->privkey reader passphrase))))
-
-(defn public-key?
-  "Check if a given parameter corresponds to some
-  kind of public key instance."
-  [k]
-  (let [t (type k)]
-    (or (= org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey t)
-        (= org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPublicKey t)
-        (= org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey t))))
+  (let [keypair (read-pem->keypair path passphrase)]
+    (.getPrivate keypair)))
 
 (defn public-key
   "Public key constrcutor from file path."
   [^String path]
-  (with-open [reader (io/reader path)]
-    (read-pem->pubkey reader)))
+  (read-pem->pubkey path))
 
 (defn str->public-key
   "Public key constructor from string."
   [^String keydata]
   (with-open [reader (StringReader. keydata)]
     (read-pem->pubkey reader)))
+
+(defn public-key?
+  "Return true if key `k` is a public key."
+  [k]
+  (instance? PublicKey k))
+
+(defn private-key?
+  "Return true if key `k` is a private key."
+  [k]
+  (instance? PrivateKey k))
