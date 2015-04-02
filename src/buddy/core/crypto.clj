@@ -134,8 +134,7 @@
     (.getOutputSize engine length))
 
   (calculate-authtag [engine output outoffset]
-    (.doFinal engine output outoffset)
-    output)
+    (.doFinal engine output outoffset))
 
   IBlockCipher
   (get-block-size* [engine]
