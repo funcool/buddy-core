@@ -66,7 +66,7 @@
 (defprotocol ICipher
   "Common protocol to both, stream and block ciphers."
   (^:private initialize [_ params] "Initialize cipher")
-  (^:private process-block [_ input] [_ input inoffset output outoffset]
+  (^:private process-bytes [_ input] [_ input inoffset output outoffset]
     "Encrypt/Decrypt a block of bytes."))
 
 (defprotocol IAEADBlockCipher
@@ -93,7 +93,7 @@
       (.init engine encrypt params')
       engine))
 
-  (process-block
+  (process-bytes
     ([engine input]
      (let [len    (count input)
            buffer (byte-array len)]
@@ -120,7 +120,7 @@
       (.init engine encrypt params')
       engine))
 
-  (process-block
+  (process-bytes
     ([engine input]
      (let [buffer (byte-array (get-block-size* engine))]
        (.processBlock engine input 0 buffer 0)
@@ -154,7 +154,7 @@
       (.init engine encrypt params')
       engine))
 
-  (process-block
+  (process-bytes
     ([engine input]
      (let [buffer (byte-array (get-block-size* engine))]
        (.processBytes engine input 0 buffer 0)
@@ -186,7 +186,7 @@
 
 (defn get-output-size
   "Given a aead cipher, return the buffer size required for
-  a `process-block!` plus a `calculate-authtag!` with an input of
+  a `process-bytes!` plus a `calculate-authtag!` with an input of
   `len` bytes."
   [^AEADBlockCipher engine ^long len]
   (get-output-size* engine len))
@@ -212,15 +212,26 @@
   [engine {:keys [iv key op] :as params}]
   (initialize engine params))
 
-(defn process-block!
+(defn process-bytes!
   "Encrypt or decrypt a block of bytes using the specified engine.
   The length of the block to encrypt or decrypt depends on the used
   crypto engine. A great example are stream cipher engine
   that allows blocks of 1 byte lenght."
   ([engine input]
-   (process-block engine input))
+   (process-bytes engine input))
   ([engine input inoffset output outoffset]
-   (process-block engine input inoffset output outoffset)))
+   (process-bytes engine input inoffset output outoffset)))
+
+(defn process-block!
+  "Encrypt or decrypt a block of bytes using the specified engine.
+  The length of the block to encrypt or decrypt depends on the used
+  crypto engine. A great example are stream cipher engine
+  that allows blocks of 1 byte lenght.
+  This is an alias to `process-bytes! function."
+  ([engine input]
+   (process-bytes engine input))
+  ([engine input inoffset output outoffset]
+   (process-bytes engine input inoffset output outoffset)))
 
 (defn calculate-authtag!
   [engine output offset]

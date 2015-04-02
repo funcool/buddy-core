@@ -638,7 +638,7 @@ and do not require any additional mode of operation.
       key32 (nonce/random-nonce 32)
       data  (codecs/hex->bytes "0011")]
   (crypto/initialize! eng {:key key32 :iv iv8 :op :encrypt})
-  (crypto/process-block! eng data))
+  (crypto/process-bytes! eng data))
 
 ;; => #<byte[] [B@efadff9>
 ----
