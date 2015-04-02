@@ -60,8 +60,11 @@
   "Get the padding size found on given byte array."
   ([^bytes input] (count input :pkcs7))
   ([^bytes input ^Keyword alg]
-   (let [engine (padding-engine alg)]
-     (.padCount engine input))))
+   (try
+     (let [engine (padding-engine alg)]
+       (.padCount engine input))
+     (catch org.bouncycastle.crypto.InvalidCipherTextException e
+       0))))
 
 (defn padded?
   "Check if given byte array has padding using specified
