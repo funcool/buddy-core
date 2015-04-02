@@ -14,39 +14,47 @@
 
 (ns buddy.core.keys-tests
   (:require [clojure.test :refer :all]
+            [clojure.java.io :as io]
             [buddy.core.codecs :refer :all]
-            [buddy.core.keys :refer :all]))
+            [buddy.core.keys :as keys]))
 
 (deftest rsa-dsa-keys-test
   (testing "Read rsa priv key"
-    (let [pkey (private-key "test/_files/privkey.3des.rsa.pem" "secret")]
+    (let [pkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
 
   (testing "Read dsa priv key"
-    (let [pkey (private-key "test/_files/privkey.3des.dsa.pem" "secret")]
+    (let [pkey (keys/private-key "test/_files/privkey.3des.dsa.pem" "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPrivateKey))))
 
   (testing "Read rsa priv key with bad password"
     (is (thrown? org.bouncycastle.openssl.EncryptionException
-                (private-key "test/_files/privkey.3des.rsa.pem" "secret2"))))
+                (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret2"))))
 
   (testing "Read dsa priv key with bad password"
     (is (thrown? org.bouncycastle.openssl.EncryptionException
-                (private-key "test/_files/privkey.3des.dsa.pem" "secret2"))))
+                (keys/private-key "test/_files/privkey.3des.dsa.pem" "secret2"))))
 
   (testing "Read ecdsa priv key"
-    (let [pkey (private-key "test/_files/privkey.ecdsa.pem" "secret")]
-      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey))))
+    (let [pkey (keys/private-key "test/_files/privkey.ecdsa.pem" "secret")]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey))
+      (is (keys/private-key? pkey))))
 
   (testing "Read rsa pub key"
-    (let [pkey (public-key "test/_files/pubkey.3des.rsa.pem")]
+    (let [pkey (keys/public-key "test/_files/pubkey.3des.rsa.pem")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey))))
 
   (testing "Read dsa pub key"
-    (let [pkey (public-key "test/_files/pubkey.3des.dsa.pem")]
-      (is (public-key? pkey))
+    (let [pkey (keys/public-key "test/_files/pubkey.3des.dsa.pem")]
+      (is (keys/public-key? pkey))
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPublicKey))))
 
   (testing "Read ec pub key"
-    (let [pkey (public-key "test/_files/pubkey.ecdsa.pem")]
-      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey)))))
+    (let [pkey (keys/public-key "test/_files/pubkey.ecdsa.pem")]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey))))
+
+  (testing "Read public key from string."
+    (let [keystr (slurp "test/_files/pubkey.ecdsa.pem")
+          pkey (keys/str->public-key keystr)]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey))
+      (is (keys/public-key? pkey)))))
