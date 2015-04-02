@@ -8,7 +8,7 @@ Date: 2015-04-02
 - Add support for AEAD block cipher modes.
 - Add helper for split data by block size.
 - Add support for deflate compression algorithm.
-- Add support for AES Key Wrap algorith.
+- Add support for AES Key Wrap algorithm.
 - Add several fixes on asymetric key reading functions.
 - Fix wrong behavior of bytes? predicate.
 - Fix unexpected behavior of `count` function of padding algorithms.
