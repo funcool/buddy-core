@@ -7,5 +7,6 @@
 
 [![Clojars Project](http://clojars.org/buddy/buddy-core/latest-version.svg)](http://clojars.org/buddy/buddy-core)
 
-See the [documentation](https://funcool.github.io/buddy-core/latest/) for more detailed
+See the [documentation](https://funcool.github.io/buddy-core/latest/) or
+[api reference](https://funcool.github.io/buddy-core/latest/api/) for more detailed
 information.
