@@ -7,6 +7,17 @@
                  [commons-codec/commons-codec "1.10"]
                  [org.bouncycastle/bcprov-jdk15on "1.52"]
                  [org.bouncycastle/bcpkix-jdk15on "1.52"]]
+
   :source-paths ["src"]
+  :test-paths ["test"]
+  :jar-exclusions [#"\.cljx|\.swp|\.swo|user.clj"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
-  :test-paths ["test"])
+  :profiles {:dev {:codeina {:sources ["src"]
+                             :exclude [buddy.core.sign.impl]
+                             :language :clojure
+                             :output-dir "doc/api"
+                             :src-dir-uri "http://github.com/funcool/buddy-core/blob/master/"
+                             :src-linenum-anchor-prefix "L"}
+                   :plugins [[funcool/codeina "0.1.0-SNAPSHOT"
+                              :exclusions [org.clojure/clojure]]]}})
+
