@@ -1,0 +1,813 @@
+= buddy-core - Cryptographic Api
+Andrey Antukh, <niwi@niwi.be>
+0.5.0
+:toc: left
+:numbered:
+:source-highlighter: pygments
+:pygments-style: friendly
+:sectlinks:
+
+== Introduction
+
+Buddy *core* module is dedicated to cryptographic api.
+
+Including:
+
+- cryptographic hash algorithms (digest)
+- key derivation algorithms (kdf)
+- digital signatures
+- message authentication (mac)
+- block ciphers
+- stream ciphers
+- padding schemes
+- nonces and stalts
+
+
+== Project Maturity
+
+Since _buddy-core_ is a young project there can be some API breakage.
+
+
+== Install
+
+This section covers the _buddy-core_ library installing process and its requirements.
+
+
+=== Requirements
+
+_buddy-core_ is tested with these platforms:
+
+- JDK7
+- JDK8
+
+
+=== Leiningen
+
+The simplest way to use _suricatta_ in a clojure project, is by including it in the dependency
+vector on your *_project.clj_* file:
+
+._on project.clj_
+[source,clojure]
+----
+[buddy/buddy-core "0.5.0"]
+----
+
+=== Gradle
+
+If you are using gradle, this is a dependency line for gradle dsl:
+
+[source,groovy]
+----
+compile "buddy:buddy-core:0.5.0"
+----
+
+=== Get the Code
+
+_buddy-core_ is open source and can be found on link:https://github.com/funcool/buddy-core[github].
+
+You can clone the public repository with this command:
+
+[source,text]
+----
+git clone https://github.com/funcool/buddy-core
+----
+
+
+== Hash algorithms (digest)
+
+All hash algorithms are located in the `buddy.core.hash` namespace.
+
+.Available hash algorithms
+[options="header"]
+|===============================================
+| Hash algorithm name  | Digest size
+| SHA1                 | 160
+| SHA2                 | 256, 384, 512
+| SHA3                 | 256, 384, 512
+| MD5                  | 128
+| Tiger                | 192
+|===============================================
+
+
+=== Basic usage
+
+.Import namespace example:
+[source, clojure]
+----
+(require '[buddy.core.hash :as hash])
+(require '[buddy.core.codecs :refer :all])
+----
+
+.Usage examples:
+[source, clojure]
+----
+(hash/sha256 "foo bar")
+;; -> #<byte[] [B@162a657e>
+
+(-> (hash/sha256 "foo bar")
+    (bytes->hex))
+;; -> "fbc1a9f858ea9e177916964bd88c3d37b91a1e84412765e29950777f265c4b75"
+----
+
+
+=== Advanced usage
+
+Hash functions are implemented using protocols and can be extended
+to other types. The default implementations come with support
+for file-like objects (*File*, *URL*, URI* and *InputStream*).
+
+.Make hash of file example:
+[source, clojure]
+----
+;; Additional import for easy open files
+(require '[clojure.java.io :as io])
+
+(-> (hash/sha256 (io/input-stream "/tmp/some-file"))
+    (bytes->hex))
+;; -> "bba878639499c8449f69efbfc699413eebfaf41d4b7a7faa560bfaf7e93a43dd"
+----
+
+You can extend it for your own types using the
+*buddy.core.hash/Digest* protocol:
+
+[source,clojure]
+----
+(defprotocol Digest
+  (digest* [data algorithm]))
+----
+
+[NOTE]
+====
+Functions like *sha256* are aliases for the more generic
+function *digest*.
+====
+
+
+== Mac algorithms
+
+Buddy comes with three mac implementations: *HMac*, *SHMac* and *Poly1305*.
+
+
+=== HMac
+
+This is a hash based mac algorithm and it is available in *buddy.core.mac.hmac*
+namespace.
+
+
+==== Basic usage
+
+.Generate a hmac from string input
+[source, clojure]
+----
+;; Import required namespaces
+(require '[buddy.core.mac.hmac :as hmac])
+(require '[buddy.core.codecs :as codecs])
+
+;; Generate sha256 hmac over string
+(-> (hmac/hash "foo bar" "mysecretkey" :sha256)
+    (codecs/bytes->hex))
+;; => "61849448bdbb67b39d609471eead667e65b0d1b9e01b1c3bf7aa56b83e9c8083"
+----
+
+.Verify one hmac
+[source, clojure]
+----
+(-> (hmac/verify "foo bar" "61849448bdbb67b..." "mysecretkey" :sha256)
+    (codecs/bytes->hex))
+;; => true
+----
+
+The key parameter can be any type that implements the *ByteArray* protocol
+defined in the `buddy.core.codecs` namespace. It comes with default implementations for
+`byte[]` and `java.lang.String`.
+
+
+==== HMac for file like objects
+
+Like hash functions, hmac is implemented using Clojure
+protocols and comes with default implementations for: String, byte[],
+*File*, *URL*, *URI* and *InputStream*.
+
+[source,clojure]
+----
+(require '[clojure.java.io :as io])
+
+;; Generate hmac for file
+(-> (io/input-stream "/tmp/somefile")
+    (hmac/hash "mysecretkey" :sha256)
+    (codecs/bytes->hex))
+;; => "4cb793e600848da2053238003fce4c010233c49df3e6a04119b4287eb464c27e"
+----
+
+
+==== Advanced usage
+
+You can extend it for your own types using `buddy.core.mac.hmac/IHMac` protocol, that looks
+like that one:
+
+[source,clojure]
+----
+(defprotocol IHMac
+  (hash* [data key algorithm])
+  (verify* [data signature key alg]))
+----
+
+Behind the scenes of the high level api, a low level api is already defined with protocols and
+you can use it for your purposes:
+
+[source, clojure]
+----
+(require '[buddy.core.mac.proto :as impl])
+
+(let [engine (hmac/hmac-engine "secret" :sha256)]
+  (impl/update! engine (codecs/str->bytes "My first data"))
+  (impl/update! engine (codecs/str->bytes "My second data"))
+  (codecs/bytes->hex (impl/end! engine)))
+;; "924c4b82a56c0115eb9..."
+----
+
+This also applies to the rest of mac implementations found in *buddy-core* library.
+
+
+=== SHMac (Salted)
+
+
+This is a salted variant of hmac algorithm and is available in *buddy.core.mac.shmac*
+namespace.
+
+
+==== Usage example
+
+[source, clojure]
+----
+;; Import required namespaces
+(require '[buddy.core.mac.hmac :as shmac])
+(require '[buddy.core.codecs :as codecs])
+
+;; Generate sha256 shmac over string
+(-> (shmac/hash "foo bar" "salt" "mysecretkey" :sha256)
+    (codecs/bytes->hex))
+;; => "bd5f7a0040430a73f4845bac8f980c6398b4baae8a22efcc22038be0f4dd9678"
+----
+
+
+=== Poly1305
+
+Poly1305 is a cryptographic message authentication code
+(MAC) written by Daniel J. Bernstein. It can be used to verify the
+data integrity and the authenticity of a message.
+
+The security of Poly1305 is very close to the block cipher algorithm.
+As a result, the only way for an attacker to break Poly1305 is to break
+the cipher.
+
+Poly1305 offers cipher replaceability. If anything goes wrong with
+one, it can be substituted by another with identical security
+guarantees.
+
+Unlike *HMac*, it requires an initialization vector (IV). An IV is
+like a salt. It should be generated using a strong random number
+generator for security guarantees. Also, the IV should be of the same
+length as the chosen cipher block size.
+
+
+==== Basic usage
+
+The default specification talks about AES as default block cipher,
+but buddy comes with support for three block ciphers: AES, Serpent
+and Twofish.
+
+.Make mac using Serpent block cipher with random IV
+[source, clojure]
+----
+(require '[buddy.core.codecs :as codecs])
+(require '[buddy.core.mac.poly1305 :as poly])
+(require '[buddy.core.nonce :as nonce])
+
+(let [sig (poly/hash "some-data" "mysecret" :serpent)]
+  (codecs/bytes->hex sig))
+;; => "1976b1c490c306e7304a59dfacee4207"
+----
+
+
+== Public/Private keypairs
+
+Before explaining digital signatures, you need to read public/private
+keypairs and convert them to usable objects. Buddy has limited support
+for reading:
+
+- RSA keypair
+- ECDSA keypair
+
+
+=== RSA Keypair
+
+An RSA keypair is obviously used for RSA encryption/decryption, but it
+is also used for making digital signatures with RSA-derived
+algorithms.
+
+.Read keys
+[source,clojure]
+----
+(require '[buddy.core.keys :as keys])
+
+;; The last parameter is optional and is only mandatory
+;; if a private key is encrypted.
+(def privkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret")
+(def pubkey (keys/public-key "test/_files/pubkey.3des.rsa.pem"))
+----
+
+.Generate a RSA Keypair using openssl.
+[source,bash]
+----
+# Generate AES-256 encrypted private key
+openssl genrsa -aes256 -out privkey.pem 2048
+
+# Generate public key from previously created private key.
+openssl rsa -pubout -in privkey.pem -out pubkey.pem
+----
+
+
+=== ECDSA Keypair
+
+Like RSA keypairs, ECDSA is also used for making digital signatures
+and can be read like in the RSA examples.
+
+.Read keys.
+[source, clojure]
+----
+(require '[buddy.core.keys :as keys])
+
+;; The last parameter is optional and is only mandatory
+;; if a private key is encrypted.
+(def privkey (keys/private-key "test/_files/privkey.ecdsa.pem" "secret")
+(def pubkey (keys/public-key "test/_files/pubkey.ecdsa.pem"))
+----
+
+.Generate a ECDSA Keypair using openssl.
+[source, bash]
+----
+# Generate a params file
+openssl ecparam -name prime256v1 -out ecparams.pem
+
+# Generate a private key from params file
+openssl ecparam -in ecparams.pem -genkey -noout -out ecprivkey.pem
+
+# Generate a public key from private key
+openssl ec -in ecprivkey.pem -pubout -out ecpubkey.pem
+----
+
+
+== Digital Signatures
+
+Digital Signatures differ from Mac as Mac values are both generated
+and verified using the same secret key. Digital Signatures require a
+public/private keypair. It signs using a private key and verifies a
+signature using a public key.
+
+
+=== RSASSA PSS
+
+RSASSA-PSS is an improved probabilistic signature scheme with
+appendix. What that means is that you can use a private RSA key
+to sign data in combination with some random input.
+
+link:http://www.ietf.org/rfc/rfc3447.txt[rfc3447.txt]
+
+.Sign sample string using rsassa-pss.
+[source, clojure]
+----
+(require '[buddy.core.keys :as keys])
+(require '[buddy.core.sign.rsapss :as rsapss])
+
+;; Read private key
+(def rsaprivkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret"))
+
+;; Make signature
+(def signature (rsapss/sign "foo" rsaprivkey :sha256))
+
+;; Now signature contains a byte[] with signature of "foo" string
+----
+
+.Verify signature using rsassa-pss.
+[source, clojure]
+----
+;; Read private key
+(def rsapubkey (keys/private-key "test/_files/pubkey.3des.rsa.pem"))
+
+;; Make verification
+(rsapss/verify "foo" signature rsapubkey :sha256))
+;; => true
+----
+
+
+=== RSASSA PKCS1 v1.5
+
+RSASSA-PSS is an probabilistic signature scheme with appendix.
+What that means is that you can use a private RSA key to sign data.
+
+link:http://www.ietf.org/rfc/rfc3447.txt[rfc3447.txt]
+
+
+.Sign sample string using rsassa-pkcs.
+[source, clojure]
+----
+(require '[buddy.core.keys :as keys])
+(require '[buddy.core.sign.rsapkcs :as rsapkcs])
+
+;; Read private key
+(def rsaprivkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret"))
+
+;; Make signature
+(def signature (rsapkcs/sign "foo" rsaprivkey :sha256))
+
+;; Now signature contains a byte[] with signature of "foo" string
+----
+
+.Verify signature using rsassa-pkcs.
+[source, clojure]
+----
+;; Read private key
+(def rsapubkey (keys/private-key "test/_files/pubkey.3des.rsa.pem"))
+
+;; Make verification
+(rsapkcs/verify "foo" signature rsapubkey :sha256))
+;; => true
+----
+
+
+=== Eliptic Curve DSA
+
+Elliptic Curve Digital Signature Algorithm (ECDSA) is a variant of the
+Digital Signature Algorithm (DSA) which uses elliptic curve cryptography.
+
+.Sign sample string using ecdsa.
+[source, clojure]
+----
+(require '[buddy.core.keys :as keys])
+(require '[buddy.core.sign.ecdsa :as ecdsa])
+
+;; Read private key
+(def ecdsaprivkey (keys/private-key "test/_files/privkey.ecdsa.pem" "secret"))
+
+;; Make signature
+(def signature (ecdsa/sign "foo" ecdsaprivkey :sha256))
+----
+
+.Verify signature using ecdsa.
+[source, clojure]
+----
+;; Read private key
+(def ecdsapubkey (keys/private-key "test/_files/pubkey.ecdsa.pem"))
+
+;; Make verification
+(ecdsa/verify "foo" signature ecdsapubkey :sha256))
+;; => true
+----
+
+
+== Key Derivation Functions
+
+Key derivation functions are often used in conjunction with non-secret parameters
+to derive one or more keys from a common secret value.
+
+*buddy* commes with several of them:
+
+.Supported key derivation functions.
+[options="header"]
+|==============================================================================
+|Algorithm name | Constructor              | Notes
+|HKDF           | `buddy.core.kdf/hkdf`    | HMAC based KDF
+|KDF1           | `buddy.core.kdf/kdf1`    |
+|KDF2           | `buddy.core.kdf/kdf2`    |
+|CMKDF          | `buddy.core.kdf/cmkdf`   | Counter Mode KDF
+|FMKDF          | `buddy.core.kdf/fmkdf`   | Feedback Mode KDF
+|DPIMKDF        | `buddy.core.kdf/dpimkdf` | Double-Pipeline Iteration Mode KDF
+|==============================================================================
+
+[NOTE]
+====
+All key derivation functions work with byte arrays. For the
+following examples, the functions in `buddy.core.codecs` convert
+strings to byte arrays.
+====
+
+
+=== HKDF
+
+HMAC-based Extract-and-Expand Key Derivation Function (HKDF) is implemented according to IETF RFC 5869
+
+.Example using hkdf
+[source, clojure]
+----
+(require '[buddy.core.codecs :as codecs])
+(require '[buddy.core.kdf :as kdf])
+
+;; Using hkdf derivation functions. It requires a
+;; key, salt and optionally info field that can
+;; contain any random data.
+
+(let [kfn (kdf/hkdf (codecs/str->bytes "mysecretkey")
+                    (codecs/str->bytes "mypublicsalt")
+                    nil ;; info parameter can be nil
+                    :sha256)]
+  (-> (kdf/generate-byte-array! kfn 8)
+      (codecs/bytes->hex)))
+
+;; => "0faba553152fce4f"
+----
+
+
+=== KDF1/2
+
+KDF1/2 hash-based key derivation functions for derived keys and ivs as defined by IEEE P1363a/ISO 18033.
+
+.Example using kdf1 or kdf2
+[source, clojure]
+----
+(require '[buddy.core.codecs :as codecs])
+(require '[buddy.core.kdf :as kdf])
+
+;; kdf1 and kdf2 are very similar and have the same
+;; constructor signature. Requires: key data, salt
+;; and hash algorithm keyword.
+
+(let [kfn (kdf/kdf2 (codecs/str->bytes "mysecretkey")
+                    (codecs/str->bytes "mypublicsalt")
+                    :sha256)]
+  (-> (kdf/generate-byte-array! kfn 8)
+      (codecs/bytes->hex)))
+
+;; => "0faba553152fce4f"
+----
+
+
+=== Counter Mode KDF
+
+Hash-based KDF with counter mode defined by the publicly available NIST SP 800-108 specification.
+
+
+=== Feedback Mode KDF
+
+Hash-based KDF with feedback mode defined by the publicly available NIST SP 800-108 specification.
+
+
+=== Double-Pipeline Iteration Mode KDF
+
+Hash-based KDF with Double-Pipeline Iteration Mode defined by the publicly available
+NIST SP 800-108 specification.
+
+
+== Ciphers
+
+Ciphers support in buddy is available on `buddy.core.crypto` namespace.
+
+
+=== Block Ciphers
+
+In cryptography, a block cipher is a deterministic algorithm operating on fixed-length groups of bits,
+called blocks, with an unvarying transformation that is specified by a symmetric key.
+
+.This is a list of currently supported block ciphers in buddy
+[options="header"]
+|========================================
+|Algorithm name     | Keywords
+| AES               | `:aes`
+| Twofish           | `:twofish`
+| Blowfish          | `:blowfish`
+|========================================
+
+Additionally, for good security, is mandatory to combine a block cipher with some cipher
+mode of operation.
+
+.This is a list of currently supported of cipher mode of operation
+[options="header"]
+|========================================
+|Algorithm name     | Keywords
+| SIC (CTR)         | `:ctr`, `:sic`
+| CBC               | `:cbc`
+| OFB               | `:ofb`
+| GCM               | `:gcm`
+|========================================
+
+NOTE: currently buddy comes with limited number of ciphers and modes, but in near future
+more many more options should be added.
+
+.Example encrypt
+[source, clojure]
+----
+(require '[buddy.core.crypto :as crypto])
+(require '[buddy.core.nonce :as nonce])
+(require '[buddy.core.codecs :as codecs])
+
+(let [eng   (crypto/block-cipher :twofish :cbc)
+      iv16  (nonce/random-nonce 16)
+      key32 (nonce/random-nonce 32)
+      data  (codecs/hex->bytes "000000000000000000000000000000AA")]
+  (crypto/initialize! eng {:key key32 :iv iv16 :op :encrypt})
+  (crypto/process-bytes! eng data))
+
+;; => #<byte[] [B@efadff9>
+----
+
+AEAD mode of operations also exposes additional function for caluclate the total size of the
+output including the authentication tag: `get-output-size`.
+
+
+=== Stream Ciphers
+
+Stream ciphers differ from block ciphers, in that they works with arbitrary length input
+and do not require any additional mode of operation.
+
+.This is a list of currently supported of stream ciphers in buddy
+[options="header"]
+|========================================
+|Algorithm name     | Keywords
+| ChaCha            | `:chacha`
+|========================================
+
+
+.Example encrypt
+[source, clojure]
+----
+(require '[buddy.core.crypto :as crypto])
+(require '[buddy.core.codecs :as codecs])
+(require '[buddy.core.nonce :as nonce])
+
+(let [eng   (crypto/stream-cipher :chacha)
+      iv8   (nonce/random-nonce 8)
+      key32 (nonce/random-nonce 32)
+      data  (codecs/hex->bytes "0011")]
+  (crypto/initialize! eng {:key key32 :iv iv8 :op :encrypt})
+  (crypto/process-bytes! eng data))
+
+;; => #<byte[] [B@efadff9>
+----
+
+NOTE: the iv and key size depends estrictly on cipher engine, in this case, chacha
+engine requires 8 bytes iv.
+
+NOTE: for decrypt, only change `:op` value to `:decrypt`
+
+You can call `crypto/initialize!` any times as you want, it simply reinitializes the engine.
+
+
+== Paddings
+
+Padding schemes are often used for fill the empty bytes of byte array of data to an concrete
+blocksize.
+
+.This is a list of currently supported padding schemes
+[options="header"]
+|========================================
+|Algorithm name     | Keywords
+| Zero Byte         | `:zerobyte`
+| PKCS7             | `:pkcs7`
+| TBC               | `:tbc`
+|========================================
+
+Let see an example on how to use it:
+
+[source, clojure]
+----
+(require '[buddy.core.padding :as padding])
+(require '[buddy.core.bytes :as bytes])
+
+(def data (byte-array 10))
+
+;; Fill the array with byte value 10
+(bytes/fill! data 10)
+
+;; Add padding to the byte array with offset value: 7
+;; This is a side effect and it will mutate the data
+;; byte array.
+(vec (padding/pad! data 7 :pkcs7))
+;; =>[10 10 10 10 10 10 10 3 3 3]
+
+;; Show the size of applied padding
+(padding/count data :pkcs7)
+;; => 3
+
+;; Remove padding
+(vec (padding/unpad! data 7 :pkcs7))
+;; =>[10 10 10 10 10 10 10 0 0 0]
+----
+
+The default padding scheme is `:pkcs7` and that parameter can be ommited.
+
+
+== Nonces and Salts
+
+This library comes with helpers for generate random salts and cryptographically secure
+nonces:
+
+.Generate a cryptographically secure nonce
+[source, clojure]
+----
+(require '[buddy.core.nonce :as nonce])
+
+(vec (nonce/random-nonce 16))
+;; => [0 0 1 75 -114 49 -91 107 67 -124 -49 -2 -96 100 42 18]
+
+(vec (nonce/random-nonce 16))
+;; => [0 0 1 75 -114 49 -88 -102 92 88 111 69 46 93 1 -86]
+----
+
+The *random-nonce* function returns a byte array with minimum length of 8 bytes, because
+is the size of the current time in miliseconds.
+
+.Generate a cryptographically secure salt
+[source, clojure]
+----
+(require '[buddy.core.nonce :as nonce])
+
+(vec (nonce/random-bytes 16))
+;; =>[-50 20 -120 -38 -32 -121 -15 109 86 -99 85 -73 28 -92 -67 -64]
+
+(vec (nonce/random-bytes 16))
+;; => [84 -88 51 120 122 -30 78 -31 -96 -22 119 122 29 -54 -64 -73]
+----
+
+Like *random-nonce* functiom, *random-bytes* returns a byte array but it not have
+the limitation of minimum 8 bytes of size.
+
+
+== Codecs & Bytes
+
+This library comes with helpers for working with codecs (hex, base64, ...) and byte arrays.
+
+This is a brief list of available functions:
+
+
+.Available hash algorithms
+[options="header", cols="1,2"]
+|=========================================================================
+| Namespace/Function                    | Description
+| `buddy.core.codecs/str->bytes`        | Converts a string into byte array
+| `buddy.core.codecs/bytes->str`        | Converts byte array to string using UTF8 encoding
+| `buddy.core.codecs/bytes->hex`        | Converts byte array to hexadecimal string
+| `buddy.core.codecs/hex->bytes`        | Converts hexadecimal strings into byte array
+| `buddy.core.codecs/bytes->base64`     | Converts byte array to base64 string
+| `buddy.core.codecs/base64->bytes`     | Converts base64 string into byte array
+| `buddy.core.codecs/bytes->safebase64` | Converts byte array into safe url base64 string
+| `buddy.core.codecs/safebase64->bytes` | Converts safe url base64 string into byte array
+| `buddy.core.codecs/long->bytes`       | Get byte array representation of long
+| `buddy.core.codecs/bytes->long`       | Get long from byte array
+| `buddy.core.bytes/bytes?`             | Predicate for test byte arrays
+| `buddy.core.bytes/fill!`               | Fill byte array with data
+| `buddy.core.bytes/slice`              | Create a new byte array as slice of other
+| `buddy.core.bytes/copy`               | Copy the byte array.
+| `buddy.core.bytes/equals?`            | Constant time equals predicate for byte arrays
+| `buddy.core.bytes/concat`             | Concat two or more byte arrays
+|=========================================================================
+
+
+== FAQ
+
+*Buddy has own cryptographic algorithms implementations?*
+
+Mainly no, I'm not cryptography expert and for this I rely on the to battle tested Bouncy Castle java
+library that's dedicated to this purpose.
+
+*Buddy will support pgp?*
+
+Surely not! Because there already exists one good link:https://github.com/greglook/clj-pgp[library for that].
+
+
+== How to Contribute?
+
+=== Philosophy
+
+Five most important rules:
+
+- Beautiful is better than ugly.
+- Explicit is better than implicit.
+- Simple is better than complex.
+- Complex is better than complicated.
+- Readability counts.
+
+All contributions to _buddy-core_ should keep these important rules in mind.
+
+
+=== Procedure
+
+**buddy-core** unlike Clojure and other Clojure contrib libs, does not have many
+restrictions for contributions. Just follow the following steps depending on the
+situation:
+
+**Bugfix**:
+
+- Fork the GitHub repo.
+- Fix a bug/typo on a new branch.
+- Make a pull-request to master.
+
+**New feature**:
+
+- Open new issue with the new feature proposal.
+- If it is accepted, follow the same steps as "bugfix".
+
+
+=== License
+
+_buddy-core_ is licensed under Apache 2.0 License. You can see the complete text
+of the license on the root of the repository on `LICENSE` file.
