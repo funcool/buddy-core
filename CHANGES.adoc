@@ -4,28 +4,28 @@
 
 Date: 2015-04-02
 
-- General code refactoring on crypto ns.
-- Add support for AEAD block cipher modes.
-- Add helper for split data by block size.
-- Add support for deflate compression algorithm.
-- Add support for AES Key Wrap algorithm.
-- Add several fixes on asymetric key reading functions.
-- Fix wrong behavior of bytes? predicate.
-- Fix unexpected behavior of `count` function of padding algorithms.
+* General code refactoring on crypto ns.
+* Add support for AEAD block cipher modes.
+* Add helper for split data by block size.
+* Add support for deflate compression algorithm.
+* Add support for AES Key Wrap algorithm.
+* Add several fixes on asymetric key reading functions.
+* Fix wrong behavior of bytes? predicate.
+* Fix unexpected behavior of `count` function of padding algorithms.
 
 
 == Version 0.4.2
 
 Date: 2015-03-14
 
-- Update bouncycastle version from 1.51 to 1.52
+* Update bouncycastle version from 1.51 to 1.52
 
 
 == Version 0.4.1
 
 Date: 2015-02-26
 
-- Remove override warnings on hash and mac related ns (thanks @geraldodev for report it)
+* Remove override warnings on hash and mac related ns (thanks @geraldodev for report it)
 
 
 == Version 0.4.0
@@ -34,33 +34,33 @@ Date: 2015-02-15
 
 New features:
 
-- Add buddy.core.nonce namespace with functions for generate secure random ivs and
+* Add buddy.core.nonce namespace with functions for generate secure random ivs and
   secure nonces.
-- Add buddy.core.padding namespace with interface to common padding algorithms.
+* Add buddy.core.padding namespace with interface to common padding algorithms.
 
 Changes with backward compatibility:
 
-- Replace record usage in kdf ns with reify.
-- Rename kdf protocol method names to more consistent ones.
-- Add partial support for nio ByteBuffer for kdf.
-- Add common protocol for mac "engine" (this allows low level clojure friendly access to
+* Replace record usage in kdf ns with reify.
+* Rename kdf protocol method names to more consistent ones.
+* Add partial support for nio ByteBuffer for kdf.
+* Add common protocol for mac "engine" (this allows low level clojure friendly access to
   the mac algoritm engine) and add implementations of that for hmac and poly1305.
-- Add common protocol for hash "engine" (this like mac, allows low level clojure friendly
+* Add common protocol for hash "engine" (this like mac, allows low level clojure friendly
   access to hash algorithm engines).
-- Improve naming on hmac, shmac and poly1305 namespaces using `hash` function instead of algorithm
+* Improve naming on hmac, shmac and poly1305 namespaces using `hash` function instead of algorithm
   name for mac calculation function.
-- Unify digital signature function names to: `sign` and `verify`.
+* Unify digital signature function names to: `sign` and `verify`.
 
 Backward incompatible changes:
 
-- Rename kdf protocol from KDFType to IKDF.
-- Remove make-random-bytes function from buddy.core.keys ns.
-- Improve consistency naming on hash related protocol and its method.
-- Remove iv parameter on poly1305 high level abstraction (still available on "engine" constructor).
+* Rename kdf protocol from KDFType to IKDF.
+* Remove make-random-bytes function from buddy.core.keys ns.
+* Improve consistency naming on hash related protocol and its method.
+* Remove iv parameter on poly1305 high level abstraction (still available on "engine" constructor).
 
 
 == Version 0.3.0
 
 Date: 2015-01-18
 
-- First version splitted from monolitic buddy package.
+* First version splitted from monolitic buddy package.
