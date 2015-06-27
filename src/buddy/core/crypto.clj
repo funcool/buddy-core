@@ -237,8 +237,9 @@
   [engine output offset]
   (calculate-authtag engine output offset))
 
-(defn- split-by-blocksize
+(defn split-by-blocksize
   "Split a byte array in blocksize blocks.
+
   Given a arbitrary size bytearray and block size in bytes,
   returns a lazy sequence of bytearray blocks of blocksize
   size. If last block does not have enought data for fill
