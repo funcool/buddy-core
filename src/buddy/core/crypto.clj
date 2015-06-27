@@ -13,9 +13,13 @@
 ;; limitations under the License.
 
 (ns buddy.core.crypto
-  "Modes implementation"
+  "Crypto engines low-level abstraction."
   (:require [buddy.core.bytes :as bytes]
-            [buddy.core.codecs :as codecs])
+            [buddy.core.padding :as padding]
+            [buddy.core.mac.hmac :as hmac]
+            [buddy.core.nonce :as nonce]
+            [buddy.core.codecs :as codecs]
+            [slingshot.slingshot :refer [throw+ try+]])
   (:import org.bouncycastle.crypto.engines.TwofishEngine
            org.bouncycastle.crypto.engines.BlowfishEngine
            org.bouncycastle.crypto.engines.AESEngine
@@ -30,6 +34,7 @@
            org.bouncycastle.crypto.params.KeyParameter
            org.bouncycastle.crypto.BlockCipher
            org.bouncycastle.crypto.StreamCipher
+           org.bouncycastle.crypto.InvalidCipherTextException
            clojure.lang.IFn
            clojure.lang.Keyword))
 
@@ -270,3 +275,272 @@
                   (+ cursormax blocksize)
                   (- inputsize cursormax)
                   (conj result buffer))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; High-Level Api
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Links to rfcs:
+;; - http://tools.ietf.org/html/draft-mcgrew-aead-aes-cbc-hmac-sha2-05
+
+(def ^:private keylength? #(= (count %1) %2))
+(def ^:private ivlength? #(= (count %1) %2))
+
+(defn- encrypt-cbc
+  [cipher input key iv]
+  (let [blocksize (get-block-size cipher)
+        blocks (split-by-blocksize input blocksize true)
+        inputsize (count input)]
+    (initialize! cipher {:op :encrypt :iv iv :key key})
+    (apply bytes/concat
+           (loop [blocks blocks
+                  processed []
+                  pos 0]
+             (let [block (first blocks)
+                   last? (empty? (rest blocks))]
+               (if-not last?
+                 (recur (rest blocks)
+                        (conj processed (process-block! cipher block))
+                        (+ pos (count block)))
+                 (let [remaining (- inputsize pos)]
+                   (padding/pad! block remaining)
+                   (conj processed (process-block! cipher block)))))))))
+
+(defn- decrypt-cbc
+  [cipher input key iv]
+  (let [blocksize (get-block-size cipher)
+        blocks (split-by-blocksize input blocksize false)]
+    (initialize! cipher {:op :decrypt :iv iv :key key})
+    (apply bytes/concat
+           (loop [blocks blocks
+                  processed []]
+             (let [block (process-block! cipher (first blocks))
+                   last? (empty? (rest blocks))]
+               (if-not last?
+                 (recur (rest blocks)
+                        (conj processed block))
+                 (let [result (padding/unpad block)]
+                   (conj processed result))))))))
+
+(defn- encrypt-gcm
+  [cipher input key iv aad]
+  (initialize! cipher {:iv iv :key key :tagsize 128 :op :encrypt :aad aad})
+  (let [outputlength (get-output-size cipher (count input))
+        output (byte-array outputlength)
+        offset (process-block! cipher input 0 output 0)]
+    (try+
+     (calculate-authtag! cipher output offset)
+     (catch InvalidCipherTextException e
+       (let [message (str "Couldn't generate gcm authentication tag: " (.getMessage e))]
+         (throw+ {:type :encryption :cause :authtag :message message} e))))
+    output))
+
+(defn- decrypt-gcm
+  [cipher ciphertext key iv aad]
+  (initialize! cipher {:iv iv :key key :tagsize 128 :op :decrypt :aad aad})
+  (let [input (bytes/copy ciphertext)
+        inputlength (count ciphertext)
+        outputlength (get-output-size cipher inputlength)
+        output (byte-array outputlength)
+        offset (process-block! cipher input 0 output 0)]
+    (try+
+     (calculate-authtag! cipher output offset)
+     (catch InvalidCipherTextException e
+       (let [message (str "Couldn't validate gcm authentication tag: " (.getMessage e))]
+         (throw+ {:type :validation :cause :authtag :message message} e))))
+    output))
+
+;; TODO: maybe use hierarchies for remove repetitions
+(defmulti generate-iv identity)
+(defmethod generate-iv :aes128-cbc-hmac-sha256 [_] (nonce/random-bytes 16))
+(defmethod generate-iv :aes192-cbc-hmac-sha384 [_] (nonce/random-bytes 16))
+(defmethod generate-iv :aes256-cbc-hmac-sha512 [_] (nonce/random-bytes 16))
+(defmethod generate-iv :aes128-gcm [_] (nonce/random-bytes 12))
+(defmethod generate-iv :aes192-gcm [_] (nonce/random-bytes 12))
+(defmethod generate-iv :aes256-gcm [_] (nonce/random-bytes 12))
+
+(defn- extract-encryption-key
+  [key algorithm]
+  {:pre [(bytes/bytes? key)]}
+  (case algorithm
+    :aes128-cbc-hmac-sha256 (bytes/slice key 16 32)
+    :aes192-cbc-hmac-sha384 (bytes/slice key 24 48)
+    :aes256-cbc-hmac-sha512 (bytes/slice key 32 64)))
+
+(defn- extract-authentication-key
+  [key algorithm]
+  {:pre [(bytes/bytes? key)]}
+  (case algorithm
+    :aes128-cbc-hmac-sha256 (bytes/slice key 0 16)
+    :aes192-cbc-hmac-sha384 (bytes/slice key 0 24)
+    :aes256-cbc-hmac-sha512 (bytes/slice key 0 32)))
+
+(defn- generate-authtag
+  [{:keys [algorithm input authkey iv] :as params}]
+  (let [data (bytes/concat iv input)
+        fulltag (hmac/hash data authkey algorithm)
+        truncatesize (quot (count fulltag) 2)]
+    (bytes/slice fulltag 0 truncatesize)))
+
+(defn- verify-authtag
+  [tag params]
+  (let [tag' (generate-authtag params)]
+    (bytes/equals? tag tag')))
+
+(defmulti encrypt* :algorithm)
+(defmulti decrypt* :algorithm)
+
+(defmethod encrypt* :aes128-cbc-hmac-sha256
+  [{:keys [algorithm input key iv ] :as params}]
+  {:pre [(keylength? key 32) (ivlength? iv 16)]}
+  (let [cipher (block-cipher :aes :cbc)
+        encryptionkey (extract-encryption-key key algorithm)
+        authkey (extract-authentication-key key algorithm)
+        ciphertext (encrypt-cbc cipher input encryptionkey iv)
+        tag (generate-authtag {:algorithm :sha256
+                               :input ciphertext
+                               :authkey authkey
+                               :iv iv})]
+    (bytes/concat ciphertext tag)))
+
+(defmethod decrypt* :aes128-cbc-hmac-sha256
+  [{:keys [algorithm input key iv] :as params}]
+  {:pre [(keylength? key 32) (ivlength? iv 16)]}
+  (let [cipher (block-cipher :aes :cbc)
+        encryptionkey (extract-encryption-key key algorithm)
+        authkey (extract-authentication-key key algorithm)
+        [ciphertext authtag] (let [inputlen (count input)
+                                   taglen (quot 32 2) ciphertext (bytes/slice input 0 (- inputlen taglen))
+                                   tag (bytes/slice input (- inputlen taglen) inputlen)]
+                               [ciphertext tag])]
+    (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha256 :input ciphertext))
+      (throw+ {:type :validation :cause :authtag :message "Message seems corrupt or manipulated."}))
+    (decrypt-cbc cipher ciphertext encryptionkey iv)))
+
+(defmethod encrypt* :aes192-cbc-hmac-sha384
+  [{:keys [algorithm input key iv] :as params}]
+  {:pre [(keylength? key 48) (ivlength? iv 16)]}
+  (let [cipher (block-cipher :aes :cbc)
+        encryptionkey (extract-encryption-key key algorithm)
+        authkey (extract-authentication-key key algorithm)
+        ciphertext (encrypt-cbc cipher input encryptionkey iv)
+        tag (generate-authtag {:algorithm :sha384
+                               :input ciphertext
+                               :authkey authkey
+                               :iv iv})]
+    (bytes/concat ciphertext tag)))
+
+(defmethod decrypt* :aes192-cbc-hmac-sha384
+  [{:keys [algorithm input key iv] :as params}]
+  {:pre [(keylength? key 48) (ivlength? iv 16)]}
+  (let [cipher (block-cipher :aes :cbc)
+        encryptionkey (extract-encryption-key key algorithm)
+        authkey (extract-authentication-key key algorithm)
+        [ciphertext authtag] (let [inputlen (count input)
+                                   taglen (quot 48 2) ciphertext (bytes/slice input 0 (- inputlen taglen))
+                                   tag (bytes/slice input (- inputlen taglen) inputlen)]
+                               [ciphertext tag])]
+    (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha384 :input ciphertext))
+      (throw+ {:type :validation :cause :authtag :message "Message seems corrupt or manipulated."}))
+    (decrypt-cbc cipher ciphertext encryptionkey iv)))
+
+(defmethod encrypt* :aes256-cbc-hmac-sha512
+  [{:keys [algorithm input key iv] :as params}]
+  {:pre [(keylength? key 64) (ivlength? iv 16)]}
+  (let [cipher (block-cipher :aes :cbc)
+        encryptionkey (extract-encryption-key key algorithm)
+        authkey (extract-authentication-key key algorithm)
+        ciphertext (encrypt-cbc cipher input encryptionkey iv)
+        tag (generate-authtag {:algorithm :sha512
+                               :input ciphertext
+                               :authkey authkey
+                               :iv iv})]
+    (bytes/concat ciphertext tag)))
+
+(defmethod decrypt* :aes256-cbc-hmac-sha512
+  [{:keys [algorithm input key iv] :as params}]
+  {:pre [(keylength? key 64) (ivlength? iv 16)]}
+  (let [cipher (block-cipher :aes :cbc)
+        encryptionkey (extract-encryption-key key algorithm)
+        authkey (extract-authentication-key key algorithm)
+        [ciphertext authtag] (let [inputlen (count input)
+                                   taglen (quot 64 2) ciphertext (bytes/slice input 0 (- inputlen taglen))
+                                   tag (bytes/slice input (- inputlen taglen) inputlen)]
+                               [ciphertext tag])]
+    (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha512 :input ciphertext))
+      (throw+ {:type :validation :cause :authtag :message "Message seems corrupt or manipulated."}))
+    (decrypt-cbc cipher ciphertext encryptionkey iv)))
+
+(defmethod encrypt* :aes128-gcm
+  [{:keys [algorithm input key iv aad] :as params}]
+  {:pre [(keylength? key 16) (ivlength? iv 12)]}
+  (let [cipher (block-cipher :aes :gcm)]
+    (encrypt-gcm cipher input key iv aad)))
+
+(defmethod decrypt* :aes128-gcm
+  [{:keys [algorithm input key iv aad] :as params}]
+  {:pre [(keylength? key 16) (ivlength? iv 12)]}
+  (let [cipher (block-cipher :aes :gcm)]
+    (decrypt-gcm cipher input key iv aad)))
+
+(defmethod encrypt* :aes192-gcm
+  [{:keys [algorithm input key iv aad] :as params}]
+  {:pre [(keylength? key 24) (ivlength? iv 12)]}
+  (let [cipher (block-cipher :aes :gcm)]
+    (encrypt-gcm cipher input key iv aad)))
+
+(defmethod decrypt* :aes192-gcm
+  [{:keys [algorithm input key iv aad] :as params}]
+  {:pre [(keylength? key 24) (ivlength? iv 12)]}
+  (let [cipher (block-cipher :aes :gcm)]
+    (decrypt-gcm cipher input key iv aad)))
+
+(defmethod encrypt* :aes256-gcm
+  [{:keys [algorithm input key iv aad] :as params}]
+  {:pre [(keylength? key 32) (ivlength? iv 12)]}
+  (let [cipher (block-cipher :aes :gcm)]
+    (encrypt-gcm cipher input key iv aad)))
+
+(defmethod decrypt* :aes256-gcm
+  [{:keys [algorithm input key iv aad] :as params}]
+  {:pre [(keylength? key 32) (ivlength? iv 12)]}
+  (let [cipher (block-cipher :aes :gcm)]
+    (decrypt-gcm cipher input key iv aad)))
+
+(defn encrypt
+  "Encrypt arbitrary length data using one of the supported encryption
+  scheme. The default encryption scheme is: `:aes128-cbc-hmac-sha256`.
+
+  Example: `(encrypt \"hello world\" mykey myiv)`
+
+  You can specify an other encryption scheme passing an additional
+  parameter.
+
+  Example: `(encrypt \"hello world\" mykey myiv {:algorithm :aes128-cbc-hmac-sha512})`
+
+  See the documentation for know the complete list of supported
+  encryption schemes.
+
+  The input, key and iv parameters should be of any type
+  that can be coerced to byte array."
+  ([input key iv]
+   (encrypt input key iv {}))
+  ([input key iv {:keys [algorithm] :or {algorithm :aes128-cbc-hmac-sha256} :as options}]
+   (let [key (codecs/->byte-array key)
+         iv  (codecs/->byte-array iv)]
+     (encrypt* {:algorithm algorithm :input input :key key :iv iv}))))
+
+(defn decrypt
+  "Decrypt data encrypted using the `encrypt` function.
+
+  The input, key and iv parameters should be of any type
+  that can be coerced to byte array."
+  ([input key iv]
+   (decrypt input key iv {}))
+  ([input key iv {:keys [algorithm] :or {algorithm :aes128-cbc-hmac-sha256}}]
+   (let [key (codecs/->byte-array key)
+         iv  (codecs/->byte-array iv)]
+     (decrypt* {:algorithm algorithm
+                :input input
+                :key key
+                :iv iv}))))
