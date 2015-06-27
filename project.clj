@@ -6,8 +6,8 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [commons-codec/commons-codec "1.10"]
                  [org.bouncycastle/bcprov-jdk15on "1.52"]
+                 [slingshot "0.12.2"]
                  [org.bouncycastle/bcpkix-jdk15on "1.52"]]
-
   :source-paths ["src"]
   :test-paths ["test"]
   :jar-exclusions [#"\.cljx|\.swp|\.swo|user.clj"]
