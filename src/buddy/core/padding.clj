@@ -38,23 +38,35 @@
 
 (defn pad!
   "Add padding using one of supported padding algorithms."
-  ([^bytes input ^long offset] (pad! input offset :pkcs7))
+  ([^bytes input ^long offset]
+   (pad! input offset :pkcs7))
   ([^bytes input ^long offset ^Keyword alg]
    (let [engine (padding-engine alg)]
      (.init engine (java.security.SecureRandom.))
-     (.addPadding engine input offset)
+     (.addPadding engine input offset))))
+
+(defn pad
+  "Add padding using one of supported padding algorithms.
+  This is a side effect free version of pad! function."
+  ([^bytes input ^long offset] (pad input offset :pkcs7))
+  ([^bytes input ^long offset ^Keyword alg]
+   (let [^bytes input (bytes/copy input)]
+     (pad! input offset alg)
      input)))
 
-(defn unpad!
+(defn unpad
   "Remove padding from given byte array and fill
   the unpadded bytes with 0"
-  ([^bytes input] (unpad! input :pkcs7))
+  ([^bytes input]
+   (unpad input :pkcs7))
   ([^bytes input ^Keyword alg]
    (let [engine (padding-engine alg)
-         padsize (.padCount engine input)
+         padsize (try
+                   (.padCount engine input)
+                   (catch org.bouncycastle.crypto.InvalidCipherTextException e
+                     0))
          offset (- (clojure.core/count input) padsize)]
-     (bytes/fill! input 0 :offset offset)
-     input)))
+     (bytes/slice input 0 offset))))
 
 (defn count
   "Get the padding size found on given byte array."
@@ -74,11 +86,3 @@
   ([^bytes input ^Keyword alg]
    (pos? (count input alg))))
 
-;; (defn pad
-;;   "Add padding using one of supported padding algorithms.
-;;   This is a side effect free version of pad! function."
-;;   ([^bytes input ^long offset] (pad input offset :pkcs7))
-;;   ([^bytes input ^long offset ^Keyword alg]
-;;    (let [^bytes input (bytes/copy input)]
-;;      (pad! input offset alg)
-;;      input)))

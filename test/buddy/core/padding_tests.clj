@@ -26,8 +26,8 @@
     (is (padding/padded? data))
     (is (= (padding/count data) 4))
 
-    (padding/unpad! data)
-    (is (= 4 (padding/count data :zerobyte)))))
+    (let [result (padding/unpad data :pkcs7)]
+      (is (bytes/equals? result (bytes/slice data 0 6))))))
 
 (deftest tbc-padding
   (let [data (byte-array 10)]
@@ -37,8 +37,8 @@
     (is (padding/padded? data :tbc))
     (is (= (padding/count data :tbc) 4))
 
-    (padding/unpad! data :tbc)
-    (is (= 4 (padding/count data :zerobyte)))))
+    (let [result (padding/unpad data :tbc)]
+      (is (bytes/equals? result (bytes/slice data 0 6))))))
 
 (deftest zerobyte-padding
   (let [data (byte-array 10)]
@@ -48,8 +48,8 @@
     (is (padding/padded? data :zerobyte))
     (is (= (padding/count data :zerobyte) 4))
 
-    (padding/unpad! data :zerobyte)
-    (is (= 4 (padding/count data :zerobyte)))))
+    (let [result (padding/unpad data :zerobyte)]
+      (is (bytes/equals? result (bytes/slice data 0 6))))))
 
 
 
