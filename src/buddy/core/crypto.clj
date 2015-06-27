@@ -35,6 +35,7 @@
            org.bouncycastle.crypto.BlockCipher
            org.bouncycastle.crypto.StreamCipher
            org.bouncycastle.crypto.InvalidCipherTextException
+           java.nio.ByteBuffer
            clojure.lang.IFn
            clojure.lang.Keyword))
 
@@ -359,6 +360,13 @@
 (defmethod generate-iv :aes192-gcm [_] (nonce/random-bytes 12))
 (defmethod generate-iv :aes256-gcm [_] (nonce/random-bytes 12))
 
+(defn- aad->bytes
+  [aad]
+  (let [length (* (count aad) 8)
+        buffer (ByteBuffer/allocate 8)]
+    (.putLong buffer length)
+    (.array buffer)))
+
 (defn- extract-encryption-key
   [key algorithm]
   {:pre [(bytes/bytes? key)]}
@@ -376,8 +384,11 @@
     :aes256-cbc-hmac-sha512 (bytes/slice key 0 32)))
 
 (defn- generate-authtag
-  [{:keys [algorithm input authkey iv] :as params}]
-  (let [data (bytes/concat iv input)
+  [{:keys [algorithm input authkey iv aad] :as params}]
+  (let [al (if aad
+             (aad->bytes aad)
+             (byte-array 0))
+        data (bytes/concat aad iv input al)
         fulltag (hmac/hash data authkey algorithm)
         truncatesize (quot (count fulltag) 2)]
     (bytes/slice fulltag 0 truncatesize)))
@@ -391,7 +402,7 @@
 (defmulti decrypt* :algorithm)
 
 (defmethod encrypt* :aes128-cbc-hmac-sha256
-  [{:keys [algorithm input key iv ] :as params}]
+  [{:keys [algorithm input key iv aad] :as params}]
   {:pre [(keylength? key 32) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
         encryptionkey (extract-encryption-key key algorithm)
@@ -400,6 +411,7 @@
         tag (generate-authtag {:algorithm :sha256
                                :input ciphertext
                                :authkey authkey
+                               :aad aad
                                :iv iv})]
     (bytes/concat ciphertext tag)))
 
