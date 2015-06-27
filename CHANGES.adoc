@@ -1,5 +1,26 @@
 = Changelog
 
+== Version 0.6.0
+
+Date: unreleased
+
+* Replace `unpad!` function with `unpad` on padding namespace.
+  The removed function had wrong name and wrong implementation
+  (instead of removing padding, as it name was indicating, it
+  replaces the previous padding with zeropading).
+* Add `pad` function to paddings namespace.
+  This is a side effect free version of the `pad!`.
+* Add high level interface for encrypt arbitrary length data
+  using an encryption scheme. A initial supported encryption
+  schemes are:
+** `:aes128-cbc-hmac-sha256`
+** `:aes192-cbc-hmac-sha384`
+** `:aes256-cbc-hmac-sha512`
+** `:aes128-gcm`
+** `:aes192-gcm`
+** `:aes256-gcm`
+
+
 == Version 0.5.0
 
 Date: 2015-04-02
