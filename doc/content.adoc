@@ -643,6 +643,48 @@ NOTE: for decrypt, only change `:op` value to `:decrypt`
 You can call `crypto/initialize!` any times as you want, it simply reinitializes the engine.
 
 
+=== High level encryption schemes
+
+Since version 0.6.0, _buddy-core_ comes with high level crypto interface that allows user
+encrypt arbitrary length data using one of the well established encryption schemes.
+
+The api consists in two simple functions. Let see an example of how to encrypt arbitrary
+length text and decrypt it:
+
+[source, clojure]
+----
+(require '[buddy.core.crypto :as crypto])
+(require '[buddy.core.codecs :as codecs])
+(require '[buddy.core.nonce :as nonce])
+(require '[buddy.core.hash :as hash])
+
+(def original-text
+  (codecs/str->bytes "Hello World."))
+
+(def iv (nonce/random-bytes 16))   ;; 16 bytes random iv
+(def key (hash/sha256 "mysecret")) ;; 32 bytes key
+
+;; Encrypt the original-text content using previously
+;; declared iv and key.
+(def encrypted (crypto/encrypt original-text key iv
+                               {:algorithm :aes128-cbc-hmac-sha256}))
+
+;; And now, decrypt it using the same parameters:
+(-> (crypto/decrypt encrypted key iv {:algorithm :aes128-cbc-hmac-sha256})
+    (codecs/bytes->str))
+;; => "Hello World."
+----
+
+This is a complete list of supported encryption schemes:
+
+* `:aes128-cbc-hmac-sha256` (default)
+* `:aes192-cbc-hmac-sha384`
+* `:aes256-cbc-hmac-sha512`
+* `:aes128-gcm`
+* `:aes192-gcm`
+* `:aes256-gcm`
+
+
 == Paddings
 
 Padding schemes are often used for fill the empty bytes of byte array of data to an concrete
