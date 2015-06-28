@@ -815,7 +815,13 @@ library that's dedicated to this purpose.
 Surely not! Because there already exists one good link:https://github.com/greglook/clj-pgp[library for that].
 
 
-== How to Contribute?
+== Developers Guide
+
+=== Contributing
+
+Unlike Clojure and other Clojure contributed libraries _catacumba_ does not have many
+restrictions for contributions. Just open an issue or pull request.
+
 
 === Philosophy
 
@@ -830,22 +836,26 @@ Five most important rules:
 All contributions to _buddy-core_ should keep these important rules in mind.
 
 
-=== Procedure
+=== Source Code
 
-**buddy-core** unlike Clojure and other Clojure contrib libs, does not have many
-restrictions for contributions. Just follow the following steps depending on the
-situation:
+_buddy-core_ is open source and can be found on link:https://github.com/funcool/buddy-core[github].
 
-**Bugfix**:
+You can clone the public repository with this command:
 
-- Fork the GitHub repo.
-- Fix a bug/typo on a new branch.
-- Make a pull-request to master.
+[source,bash]
+----
+git clone https://github.com/funcool/buddy-core
+----
 
-**New feature**:
 
-- Open new issue with the new feature proposal.
-- If it is accepted, follow the same steps as "bugfix".
+=== Run tests
+
+For running tests just execute this:
+
+[source,bash]
+----
+lein test
+----
 
 
 === License
