@@ -46,10 +46,9 @@ _buddy-core_ is tested with these platforms:
 
 === Leiningen
 
-The simplest way to use _suricatta_ in a clojure project, is by including it in the dependency
+The simplest way to use _buddy-core_ in a clojure project, is by including it in the dependency
 vector on your *_project.clj_* file:
 
-._on project.clj_
 [source,clojure]
 ----
 [buddy/buddy-core "0.6.0"]
