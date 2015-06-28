@@ -421,7 +421,7 @@
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
 (defmethod encrypt* :aes192-cbc-hmac-sha384
-  [{:keys [algorithm input key iv] :as params}]
+  [{:keys [algorithm input key iv aad] :as params}]
   {:pre [(keylength? key 48) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
         encryptionkey (extract-encryption-key key algorithm)
@@ -430,7 +430,8 @@
         tag (generate-authtag {:algorithm :sha384
                                :input ciphertext
                                :authkey authkey
-                               :iv iv})]
+                               :iv iv
+                               :aad aad})]
     (bytes/concat ciphertext tag)))
 
 (defmethod decrypt* :aes192-cbc-hmac-sha384
@@ -448,7 +449,7 @@
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
 (defmethod encrypt* :aes256-cbc-hmac-sha512
-  [{:keys [algorithm input key iv] :as params}]
+  [{:keys [algorithm input key iv aad] :as params}]
   {:pre [(keylength? key 64) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
         encryptionkey (extract-encryption-key key algorithm)
@@ -457,7 +458,8 @@
         tag (generate-authtag {:algorithm :sha512
                                :input ciphertext
                                :authkey authkey
-                               :iv iv})]
+                               :iv iv
+                               :aad aad})]
     (bytes/concat ciphertext tag)))
 
 (defmethod decrypt* :aes256-cbc-hmac-sha512
