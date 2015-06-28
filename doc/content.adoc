@@ -819,7 +819,7 @@ Surely not! Because there already exists one good link:https://github.com/greglo
 
 === Contributing
 
-Unlike Clojure and other Clojure contributed libraries _catacumba_ does not have many
+Unlike Clojure and other Clojure contributed libraries _buddy-core_ does not have many
 restrictions for contributions. Just open an issue or pull request.
 
 
