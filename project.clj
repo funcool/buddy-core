@@ -15,7 +15,7 @@
   :profiles {:dev {:codeina {:sources ["src"]
                              :exclude [buddy.core.sign.impl]
                              :language :clojure
-                             :output-dir "doc/api"
+                             :output-dir "doc/dist/latest/api"
                              :src-dir-uri "http://github.com/funcool/buddy-core/blob/master/"
                              :src-linenum-anchor-prefix "L"}
                    :plugins [[funcool/codeina "0.1.0-SNAPSHOT"
