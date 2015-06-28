@@ -304,7 +304,7 @@
                         (conj processed (process-block! cipher block))
                         (+ pos (count block)))
                  (let [remaining (- inputsize pos)]
-                   (padding/pad! block remaining)
+                   (padding/pad! block remaining :pkcs7)
                    (conj processed (process-block! cipher block)))))))))
 
 (defn- decrypt-cbc
@@ -320,7 +320,7 @@
                (if-not last?
                  (recur (rest blocks)
                         (conj processed block))
-                 (let [result (padding/unpad block)]
+                 (let [result (padding/unpad block :pkcs7)]
                    (conj processed result))))))))
 
 (defn- encrypt-gcm
