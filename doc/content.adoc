@@ -23,7 +23,7 @@ Including:
 - block ciphers
 - stream ciphers
 - padding schemes
-- nonces and stalts
+- nonces and salts
 
 
 == Project Maturity
