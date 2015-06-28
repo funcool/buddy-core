@@ -1,6 +1,6 @@
 = buddy-core - Cryptographic Api
-Andrey Antukh, <niwi@niwi.be>
-0.5.0
+Andrey Antukh, <niwi@niwi.nz>
+0.6.0
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -52,7 +52,7 @@ vector on your *_project.clj_* file:
 ._on project.clj_
 [source,clojure]
 ----
-[buddy/buddy-core "0.5.0"]
+[buddy/buddy-core "0.6.0"]
 ----
 
 === Gradle
@@ -61,18 +61,7 @@ If you are using gradle, this is a dependency line for gradle dsl:
 
 [source,groovy]
 ----
-compile "buddy:buddy-core:0.5.0"
-----
-
-=== Get the Code
-
-_buddy-core_ is open source and can be found on link:https://github.com/funcool/buddy-core[github].
-
-You can clone the public repository with this command:
-
-[source,text]
-----
-git clone https://github.com/funcool/buddy-core
+compile "buddy:buddy-core:0.6.0"
 ----
 
 
