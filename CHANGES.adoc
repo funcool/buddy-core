@@ -2,7 +2,7 @@
 
 == Version 0.6.0
 
-Date: unreleased
+Date: 2015-06-28
 
 * Replace `unpad!` function with `unpad` on padding namespace.
   The removed function had wrong name and wrong implementation
