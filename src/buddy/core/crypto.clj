@@ -351,15 +351,6 @@
          (throw+ {:type :validation :cause :authtag :message message} e))))
     output))
 
-;; TODO: maybe use hierarchies for remove repetitions
-(defmulti generate-iv identity)
-(defmethod generate-iv :aes128-cbc-hmac-sha256 [_] (nonce/random-bytes 16))
-(defmethod generate-iv :aes192-cbc-hmac-sha384 [_] (nonce/random-bytes 16))
-(defmethod generate-iv :aes256-cbc-hmac-sha512 [_] (nonce/random-bytes 16))
-(defmethod generate-iv :aes128-gcm [_] (nonce/random-bytes 12))
-(defmethod generate-iv :aes192-gcm [_] (nonce/random-bytes 12))
-(defmethod generate-iv :aes256-gcm [_] (nonce/random-bytes 12))
-
 (defn- aad->bytes
   [aad]
   (let [length (* (count aad) 8)
