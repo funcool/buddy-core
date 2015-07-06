@@ -163,8 +163,7 @@ namespace.
 .Verify one hmac
 [source, clojure]
 ----
-(-> (hmac/verify "foo bar" "61849448bdbb67b..." "mysecretkey" :sha256)
-    (codecs/bytes->hex))
+(hmac/verify "foo bar" "61849448bdbb67b..." "mysecretkey" :sha256)
 ;; => true
 ----
 
