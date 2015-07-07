@@ -385,7 +385,8 @@ namespace.</p>
 <div class="listingblock">
 <div class="title">Verify one hmac</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">hmac/verify</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-s">&quot;61849448bdbb67b...&quot;</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">hmac/verify</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">(</span><span class="tok-nf">codecs/hex-&gt;bytes</span> <span class="tok-s">&quot;61849448bdbb67b...&quot;</span><span class="tok-p">)</span>
+             <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)</span>
 <span class="tok-c1">;; =&gt; true</span></code></pre>
 </div>
 </div>
@@ -1396,7 +1397,7 @@ of the license on the root of the repository on <code>LICENSE</code> file.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-07-06 18:24:03 EEST
+Last updated 2015-07-07 08:30:03 EEST
 </div>
 </div>
 </body>
