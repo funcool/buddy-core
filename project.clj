@@ -14,10 +14,10 @@
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
   :profiles {:dev {:codeina {:sources ["src"]
                              :exclude [buddy.core.sign.impl]
-                             :language :clojure
-                             :output-dir "doc/dist/latest/api"
-                             :src-dir-uri "http://github.com/funcool/buddy-core/blob/master/"
-                             :src-linenum-anchor-prefix "L"}
-                   :plugins [[funcool/codeina "0.1.0-SNAPSHOT"
-                              :exclusions [org.clojure/clojure]]]}})
+                             :reader :clojure
+                             :target "doc/dist/latest/api"
+                             :src-uri "http://github.com/funcool/buddy-core/blob/master/"
+                             :src-uri-prefix "#L"}
+                   :plugins [[funcool/codeina "0.2.0" :exclusions [org.clojure/clojure]]
+                             [lein-ancient "0.6.7"]]}})
 
