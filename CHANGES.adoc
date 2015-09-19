@@ -5,6 +5,8 @@
 Date: unreleased
 
 * Set default clojure version to 1.7.0
+* Remove slinghsot dependency. buddy.core.crypto ns now raises
+  plain instances of clojure.lang.ExceptionInfo.
 
 
 == Version 0.6.0
