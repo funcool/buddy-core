@@ -17,6 +17,6 @@
                              :target "doc/dist/latest/api"
                              :src-uri "http://github.com/funcool/buddy-core/blob/master/"
                              :src-uri-prefix "#L"}
-                   :plugins [[funcool/codeina "0.2.0" :exclusions [org.clojure/clojure]]
+                   :plugins [[funcool/codeina "0.3.0" :exclusions [org.clojure/clojure]]
                              [lein-ancient "0.6.7"]]}})
 
