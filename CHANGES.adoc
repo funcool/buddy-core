@@ -2,7 +2,7 @@
 
 == Version 0.7.0
 
-Date: unreleased
+Date: 2015-09-19
 
 * Set default clojure version to 1.7.0
 * Remove slinghsot dependency. buddy.core.crypto ns now raises
