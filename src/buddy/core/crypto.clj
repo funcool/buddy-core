@@ -18,8 +18,7 @@
             [buddy.core.padding :as padding]
             [buddy.core.mac.hmac :as hmac]
             [buddy.core.nonce :as nonce]
-            [buddy.core.codecs :as codecs]
-            [slingshot.slingshot :refer [throw+ try+]])
+            [buddy.core.codecs :as codecs])
   (:import org.bouncycastle.crypto.engines.TwofishEngine
            org.bouncycastle.crypto.engines.BlowfishEngine
            org.bouncycastle.crypto.engines.AESEngine
@@ -329,11 +328,12 @@
   (let [outputlength (get-output-size cipher (count input))
         output (byte-array outputlength)
         offset (process-block! cipher input 0 output 0)]
-    (try+
-     (calculate-authtag! cipher output offset)
-     (catch InvalidCipherTextException e
-       (let [message (str "Couldn't generate gcm authentication tag: " (.getMessage e))]
-         (throw+ {:type :encryption :cause :authtag :message message} e))))
+    (try
+      (calculate-authtag! cipher output offset)
+      (catch InvalidCipherTextException e
+        (let [message (str "Couldn't generate gcm authentication tag: "
+                           (.getMessage e))]
+          (throw (ex-info message {:type :encryption :cause :authtag})))))
     output))
 
 (defn- decrypt-gcm
@@ -344,11 +344,12 @@
         outputlength (get-output-size cipher inputlength)
         output (byte-array outputlength)
         offset (process-block! cipher input 0 output 0)]
-    (try+
-     (calculate-authtag! cipher output offset)
-     (catch InvalidCipherTextException e
-       (let [message (str "Couldn't validate gcm authentication tag: " (.getMessage e))]
-         (throw+ {:type :validation :cause :authtag :message message} e))))
+    (try
+      (calculate-authtag! cipher output offset)
+      (catch InvalidCipherTextException e
+        (let [message (str "Couldn't validate gcm authentication tag: "
+                           (.getMessage e))]
+          (throw (ex-info message {:type :validation :cause :authtag})))))
     output))
 
 (defn- aad->bytes
@@ -417,7 +418,8 @@
                                    tag (bytes/slice input (- inputlen taglen) inputlen)]
                                [ciphertext tag])]
     (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha256 :input ciphertext))
-      (throw+ {:type :validation :cause :authtag :message "Message seems corrupt or manipulated."}))
+      (throw (ex-info "Message seems corrupt or manipulated."
+                      {:type :validation :cause :authtag})))
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
 (defmethod encrypt* :aes192-cbc-hmac-sha384
@@ -445,7 +447,8 @@
                                    tag (bytes/slice input (- inputlen taglen) inputlen)]
                                [ciphertext tag])]
     (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha384 :input ciphertext))
-      (throw+ {:type :validation :cause :authtag :message "Message seems corrupt or manipulated."}))
+      (throw (ex-info "Message seems corrupt or manipulated."
+                      {:type :validation :cause :authtag})))
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
 (defmethod encrypt* :aes256-cbc-hmac-sha512
@@ -473,7 +476,8 @@
                                    tag (bytes/slice input (- inputlen taglen) inputlen)]
                                [ciphertext tag])]
     (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha512 :input ciphertext))
-      (throw+ {:type :validation :cause :authtag :message "Message seems corrupt or manipulated."}))
+      (throw (ex-info "Message seems corrupt or manipulated."
+                      {:type :validation :cause :authtag})))
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
 (defmethod encrypt* :aes128-gcm
