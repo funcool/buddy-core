@@ -46,29 +46,45 @@
 ;; Protocol definitions (abstractions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol IDigest
-  (^:private digest* [input algorithm] "Low level interface, always returns bytes"))
-
 (defprotocol IHash
+  (-digest [input engine] "Low level interface, always returns bytes"))
+
+(defprotocol IDigest
   "Mac engine common interface definition."
-  (^:private update [_ bytes offset length] "Update bytes in a current instance.")
-  (^:private end [_] "Return the computed mac and reset the engine."))
+  (-reset [_] "Reset the hash engine to its initial state.")
+  (-update [_ input offset length] "Update bytes in a current instance.")
+  (-end [_] "Return the computed mac and reset the engine."))
+
+(extend-protocol IDigest
+  Digest
+  (-reset [it]
+    (.reset it))
+  (-update [it input offset length]
+    (.update it input offset length))
+  (-end [it]
+    (let [buffer (byte-array (.getDigestSize it))]
+      (.doFinal it buffer 0)
+      buffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Low level api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn reset!
+  [engine]
+  (-reset engine))
+
 (defn update!
   ([engine input]
-   (update engine input 0 (count input)))
+   (-update engine input 0 (count input)))
   ([engine input offset]
-   (update engine input offset (count input)))
+   (-update engine input offset (count input)))
   ([engine input offset length]
-   (update engine input offset length)))
+   (-update engine input offset length)))
 
 (defn end!
   [engine]
-  (end engine))
+  (-end engine))
 
 (defn resolve-digest
   "Helper function for make Digest instances
@@ -77,67 +93,54 @@
   (cond
    (instance? Keyword alg) (let [factory (*available-digests* alg)]
                              (factory))
-   (instance? IFn alg) (alg)
-   (instance? Digest alg) alg))
-
-(defn hash-engine
-  "Create a hash engine instance."
-  [^Keyword alg]
-  (let [engine (resolve-digest alg)]
-    (reify
-      IHash
-      (update [_ input offset length]
-        (.update engine input offset length))
-      (end [_]
-        (let [buffer (byte-array (.getDigestSize engine))]
-          (.doFinal engine buffer 0)
-          buffer)))))
+   (instance? Digest alg) alg
+   (instance? IFn alg) (alg)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details for different data types.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- hash-plain-data
-  [^bytes input ^Keyword alg]
-  (let [engine (hash-engine alg)]
-    (update! engine input)
-    (end! engine)))
+  [^bytes input engine]
+  (-reset engine)
+  (-update engine input 0 (count input))
+  (-end engine))
 
 (defn- hash-stream-data
-  [^java.io.InputStream input ^Keyword alg]
-  (let [engine (hash-engine alg)
-        buffer (byte-array 5120)]
+  [^java.io.InputStream input engine]
+  (-reset engine)
+  (let [buffer (byte-array 5120)]
     (loop []
       (let [readed (.read input buffer 0 5120)]
         (when-not (= readed -1)
-          (update! engine buffer 0 readed)
+          (-update engine buffer 0 readed)
           (recur))))
-    (end! engine)))
+    (-end engine)))
 
-(extend-protocol IDigest
+(extend-protocol IHash
   (Class/forName "[B")
-  (digest* [^bytes input ^Keyword alg]
-    (hash-plain-data input alg))
+  (-digest [^bytes input engine]
+    (hash-plain-data input engine))
 
   String
-  (digest* [^String input ^Keyword alg]
-    (hash-plain-data (str->bytes input) alg))
+  (-digest [^String input engine]
+    (hash-plain-data (str->bytes input) engine))
 
   java.io.InputStream
-  (digest* [^java.io.InputStream input ^Keyword alg]
-    (hash-stream-data input alg))
+  (-digest [^java.io.InputStream input engine]
+    (hash-stream-data input engine))
 
   java.io.File
-  (digest* [^java.io.File input ^Keyword alg]
-    (hash-stream-data (io/input-stream input) alg))
+  (-digest [^java.io.File input engine]
+    (hash-stream-data (io/input-stream input) engine))
 
   java.net.URL
-  (digest* [^java.net.URL input ^Keyword alg]
-    (hash-stream-data (io/input-stream input) alg))
+  (-digest [^java.net.URL input engine]
+    (hash-stream-data (io/input-stream input) engine))
 
   java.net.URI
-  (digest* [^java.net.URI input ^Keyword alg]
-    (hash-stream-data (io/input-stream input) alg)))
+  (-digest [^java.net.URI input engine]
+    (hash-stream-data (io/input-stream input) engine)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; High level public api.
@@ -145,14 +148,40 @@
 
 (defn digest
   "Generic function for create cryptographic hash."
-  [input ^Keyword alg]
-  (digest* input alg))
+  [input alg-or-engine]
+  (let [engine (resolve-digest alg-or-engine)]
+    (-digest input engine)))
 
-(def sha256 #(digest % :sha256))
-(def sha384 #(digest % :sha384))
-(def sha512 #(digest % :sha512))
-(def sha3-256 #(digest % :sha3-256))
-(def sha3-384 #(digest % :sha3-384))
-(def sha3-512 #(digest % :sha3-512))
-(def sha1 #(digest % :sha1))
-(def md5 #(digest % :md5))
+(defn sha256
+  [input]
+  (digest input :sha256))
+
+(defn sha384
+  [input]
+  (digest input :sha384))
+
+(defn sha512
+  [input]
+  (digest input :sha512))
+
+(defn sha3-256
+  [input]
+  (digest input :sha3-256))
+
+(defn sha3-384
+  [input]
+  (digest input :sha3-384))
+
+(defn sha3-512
+  [input]
+  (digest input :sha3-512))
+
+(defn sha1
+  {:deprecated true}
+  [input]
+  (digest input :sha1))
+
+(defn md5
+  {:deprecated true}
+  [input]
+  (digest input :md5))

@@ -25,7 +25,7 @@
     (let [plain-text "FooBar"
           hashed     (-> (hash/sha3-256 plain-text)
                          (bytes->hex))]
-      (is (= hashed "0a3c119a02a37e50fbaf8a3776559c76de7a969097c05bd0f41f60cf25210745"))))
+      (is (= hashed "3007b60101d12b393d3f78d92aa573809b769b7ba05806657c3028bd11e7265f"))))
   (testing "File hashing"
     (let [path       "test/_files/pubkey.ecdsa.pem"
           valid-hash "7aa01e35e65701c9a9d8f71c4cbf056acddc9be17fdff06b4c7af1b0b34ddc29"]
