@@ -39,7 +39,7 @@
    :tiger    #(TigerDigest.)
    :md5      #(MD5Digest.)
    :sha3-256 #(SHA3Digest. 256)
-   :sha3-384 #(SHA3Digest. 284)
+   :sha3-384 #(SHA3Digest. 384)
    :sha3-512 #(SHA3Digest. 512)})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
