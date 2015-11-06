@@ -26,6 +26,7 @@
            org.bouncycastle.crypto.digests.SHA256Digest
            org.bouncycastle.crypto.digests.SHA384Digest
            org.bouncycastle.crypto.digests.SHA512Digest
+           org.bouncycastle.crypto.digests.Blake2bDigest
            clojure.lang.IFn
            clojure.lang.Keyword))
 
@@ -151,6 +152,32 @@
   [input alg-or-engine]
   (let [engine (resolve-digest alg-or-engine)]
     (-digest input engine)))
+
+(defn blake2b
+  "BLAKE2 is a cryptographic hash function faster than MD5,
+  SHA-1, SHA-2, and SHA-3, yet is at least as secure as the
+  latest standard SHA-3."
+  [input length]
+  (let [engine (Blake2b. nil length nil nil)]
+    (-digest input engine)))
+
+(defn blake2b-128
+  "BLAKE2 cryptographic hash function with fixed output
+  digest size to 128 bits."
+  [input]
+  (blake2b input 128))
+
+(defn blake2b-256
+  "BLAKE2 cryptographic hash function with fixed output
+  digest size to 256 bits."
+  [input]
+  (blake2b input 256))
+
+(defn blake2b-512
+  "BLAKE2 cryptographic hash function with fixed output
+  digest size to 512 bits."
+  [input]
+  (blake2b input 512))
 
 (defn sha256
   [input]
