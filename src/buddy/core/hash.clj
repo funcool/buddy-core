@@ -158,26 +158,26 @@
   SHA-1, SHA-2, and SHA-3, yet is at least as secure as the
   latest standard SHA-3."
   [input length]
-  (let [engine (Blake2b. nil length nil nil)]
+  (let [engine (Blake2bDigest. nil length nil nil)]
     (-digest input engine)))
 
 (defn blake2b-128
   "BLAKE2 cryptographic hash function with fixed output
   digest size to 128 bits."
   [input]
-  (blake2b input 128))
+  (blake2b input 16))
 
 (defn blake2b-256
   "BLAKE2 cryptographic hash function with fixed output
   digest size to 256 bits."
   [input]
-  (blake2b input 256))
+  (blake2b input 32))
 
 (defn blake2b-512
   "BLAKE2 cryptographic hash function with fixed output
   digest size to 512 bits."
   [input]
-  (blake2b input 512))
+  (blake2b input 64))
 
 (defn sha256
   [input]
