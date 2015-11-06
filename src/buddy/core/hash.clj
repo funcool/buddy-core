@@ -47,16 +47,16 @@
 ;; Protocol definitions (abstractions)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol IHash
+(defprotocol IDigest
   (-digest [input engine] "Low level interface, always returns bytes"))
 
-(defprotocol IDigest
+(defprotocol IEngine
   "Mac engine common interface definition."
   (-reset [_] "Reset the hash engine to its initial state.")
   (-update [_ input offset length] "Update bytes in a current instance.")
   (-end [_] "Return the computed mac and reset the engine."))
 
-(extend-protocol IDigest
+(extend-protocol IEngine
   Digest
   (-reset [it]
     (.reset it))
@@ -118,7 +118,7 @@
           (recur))))
     (-end engine)))
 
-(extend-protocol IHash
+(extend-protocol IDigest
   (Class/forName "[B")
   (-digest [^bytes input engine]
     (hash-plain-data input engine))
