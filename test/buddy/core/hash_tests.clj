@@ -86,6 +86,12 @@
              (str "c8877087da56e072870daa843f176e94"
                   "53115929094c3a40c463a196c29bf7ba")))))
 
+  (testing "skein 512/256"
+    (let [hashed1 (hash/skein "" 64 32)]
+      (is (= (bytes->hex hashed1)
+             (str "39ccc4554a8b31853b9de7a1fe638a24"
+                  "cce6b35a55f2431009e18780335d2621")))))
+
   (testing "skein 512"
     (let [hashed1 (hash/skein-512 "")
           hashed2 (hash/skein "" 64)
