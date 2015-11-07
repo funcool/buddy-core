@@ -1,5 +1,16 @@
 = Changelog
 
+== Version 0.8.0
+
+Date: Unreleased
+
+- Fix unexpected exception on sha3-384 hasher.
+- Minor refactor on hash impl.
+- Add blake2b hash.
+- BREAKING CHANGE: unify MAC impl under one unique
+  namespace and make the api more flexible.
+
+
 == Version 0.7.0
 
 Date: 2015-09-19
