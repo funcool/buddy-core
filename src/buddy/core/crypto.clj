@@ -43,17 +43,17 @@
 ;; Protocols
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:no-doc
+(def ^:no-doc ^:static
   +block-cipher-engines+
   {:aes     #(AESFastEngine.)
    :serpent #(SerpentEngine.)
    :twofish #(TwofishEngine.)})
 
-(def ^:no-doc
+(def ^:no-doc ^:static
   +stream-cipher-engines+
   {:chacha #(ChaChaEngine.)})
 
-(def ^{:doc false}
+(def ^:no-doc ^:static
   +cipher-modes+
   {:ecb #(identity %)
    :cbc #(CBCBlockCipher. %)

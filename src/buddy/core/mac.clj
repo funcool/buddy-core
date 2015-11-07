@@ -49,11 +49,11 @@
   (-update [_ input offset length] "Update the engine state.")
   (-end [_] "Generates the mac"))
 
-(defmulti -engine
+(defmulti ^:no-doc -engine
   "A engine constructor."
   :alg)
 
-(def ^{:doc false}
+(def ^:no-doc ^:static
   +cipher-engines+
   {:aes     #(AESFastEngine.)
    :serpent #(SerpentEngine.)

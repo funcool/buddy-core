@@ -1,7 +1,6 @@
 {:dev
  {:aliases {"test-all" ["with-profile" "dev,1.8:dev,1.6:dev,1.5:dev:dev" "test"]}
   :codeina {:sources ["src"]
-            :exclude [buddy.core.sign.impl]
             :reader :clojure
             :target "doc/dist/latest/api"
             :src-uri "http://github.com/funcool/buddy-core/blob/master/"
