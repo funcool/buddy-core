@@ -15,7 +15,7 @@
 (ns buddy.core.hash
   "Basic crypto primitives that used for more high
   level abstractions."
-  (:refer-clojure :exclude [update])
+  (:refer-clojure :exclude [update reset!])
   (:require [buddy.core.codecs :refer :all]
             [clojure.java.io :as io])
   (:import org.bouncycastle.crypto.Digest
