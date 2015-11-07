@@ -30,9 +30,8 @@
            clojure.lang.IFn
            clojure.lang.Keyword))
 
-(def ^{:doc "Available digests."
-       :dynamic true}
-  *available-digests*
+(def ^{:doc false}
+  +digest-engines+
   {:sha256   #(SHA256Digest.)
    :sha384   #(SHA384Digest.)
    :sha512   #(SHA512Digest.)
@@ -87,15 +86,17 @@
   [engine]
   (-end engine))
 
-(defn resolve-digest
+(defn resolve-digest-engine
   "Helper function for make Digest instances
   from algorithm parameter."
-  [alg]
+  {:doc false}
+  [engine]
   (cond
-   (instance? Keyword alg) (let [factory (*available-digests* alg)]
-                             (factory))
-   (instance? Digest alg) alg
-   (instance? IFn alg) (alg)))
+   (instance? Keyword engine)
+   (when-let [factory (get +digest-engines+ engine)]
+     (factory))
+   (instance? Digest engine) engine
+   (instance? IFn engine) (engine)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details for different data types.
@@ -150,7 +151,7 @@
 (defn digest
   "Generic function for create cryptographic hash."
   [input alg-or-engine]
-  (let [engine (resolve-digest alg-or-engine)]
+  (let [engine (resolve-digest-engine alg-or-engine)]
     (-digest input engine)))
 
 (defn blake2b
