@@ -18,81 +18,100 @@
             [buddy.core.bytes :as bytes]
             [buddy.core.keys :refer :all]
             [buddy.core.nonce :as nonce]
-            [buddy.core.mac.poly1305 :as poly]
-            [buddy.core.mac.hmac :as hmac]
-            [buddy.core.mac.shmac :as shmac]
-            [clojure.java.io :as io]))
 
-(deftest buddy-core-mac-hmac
+            [buddy.core.mac :as mac]
+            [clojure.java.io :as io])
+  (:import org.bouncycastle.crypto.digests.SHA256Digest
+           org.bouncycastle.crypto.macs.HMac))
+
+
+(deftest hmac-tests
   (let [secretkey "my.secret.key"
         path      "test/_files/pubkey.ecdsa.pem"]
 
     (testing "Multiple sign using hmac sha256"
-      (is (bytes/equals? (hmac/hash "foo" secretkey :sha256)
-                         (hmac/hash "foo" secretkey :sha256))))
+      (is (bytes/equals? (mac/hash "foo" {:key secretkey :alg :hmac+sha256})
+                         (mac/hash "foo" {:key secretkey :alg :hmac+sha256}))))
 
     (testing "Test Vector"
-      (let [key (hex->bytes (str "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aaaaaaaaaaaaaaaaaaaaaaaaaa"
-                                 "aa"))
+      (let [key (hex->bytes (str "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
             data (str->bytes "Test Using Larger Than Block-Size Key - Hash Key First")
             result "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54"]
-        (is (= result (bytes->hex (hmac/hash data key :sha256))))))
+        (is (= result (bytes->hex (mac/hash data {:key key :alg :hmac+sha256}))))
+        (is (= result (bytes->hex (mac/hash data {:key key :alg :hmac :digest :sha256}))))
+        (is (= result (bytes->hex (mac/hash data {:key key :alg :hmac :digest (SHA256Digest.)}))))))
 
     (testing "Sign/Verify string"
-      (let [sig (hmac/hash "foo" secretkey :sha384)]
-        (is (true? (hmac/verify "foo" sig secretkey :sha384)))))
+      (let [sig (mac/hash "foo" {:key secretkey :alg :hmac+sha384})]
+        (is (true? (mac/verify "foo" sig {:key secretkey :alg :hmac+sha384})))))
 
     (testing "Sign/Verify input stream"
-      (let [sig (hmac/hash (io/input-stream path) secretkey :sha512)]
-        (is (true? (hmac/verify (io/input-stream path) sig secretkey :sha512)))))
+      (let [sig (mac/hash (io/input-stream path) {:key secretkey :alg :hmac+sha512})]
+        (is (true? (mac/verify (io/input-stream path) sig {:key secretkey :alg :hmac+sha512})))))
 
     (testing "Sign/Verify file"
-      (let [sig (hmac/hash (java.io.File. path) secretkey :sha512)]
-        (is (true? (hmac/verify (java.io.File. path) sig secretkey :sha512)))))
+      (let [sig (mac/hash (java.io.File. path) {:key secretkey :alg :hmac+sha512})]
+        (is (true? (mac/verify (java.io.File. path) sig {:key secretkey :alg :hmac+sha512})))))
 
     (testing "Sign/Verify url"
-      (let [sig (hmac/hash (.toURL (java.io.File. path)) secretkey :sha512)]
-        (is (true? (hmac/verify (.toURL (java.io.File. path)) sig secretkey :sha512)))))
+      (let [sig (mac/hash (.toURL (java.io.File. path)) {:key secretkey :alg :hmac+sha512})]
+        (is (true? (mac/verify (.toURL (java.io.File. path)) sig {:key secretkey :alg :hmac+sha512})))))
 
     (testing "Sign/Verify uri"
-      (let [sig (hmac/hash (.toURI (java.io.File. path)) secretkey :sha512)]
-        (is (true? (hmac/verify (.toURI (java.io.File. path)) sig secretkey :sha512)))))
+      (let [sig (mac/hash (.toURI (java.io.File. path)) {:key secretkey :alg :hmac+sha512})]
+        (is (true? (mac/verify (.toURI (java.io.File. path)) sig {:key secretkey :alg :hmac+sha512})))))
+    ))
 
-    (testing "Sign/Verify salted hmac with string"
-      (let [sig (shmac/shmac "foo" secretkey "salt" :sha256)]
-        (is (true? (shmac/verify "foo" sig secretkey "salt" :sha256)))))))
-
-(deftest buddy-core-mac-poly1305
+(deftest poly1305-tests
   (let [plaintext "text"
-        secretkey "secret"]
-    (testing "Poly1305 encrypt/verify (using string key)"
-      (let [mac-bytes1 (poly/poly1305 plaintext secretkey :aes)
-            mac-bytes2 (poly/poly1305 plaintext secretkey :aes)]
-        (is (not (bytes/equals? mac-bytes1 mac-bytes2))))
+        iv (nonce/random-bytes 16)    ;; IV required by poly1305
+        iv' (nonce/random-bytes 16)
+        key (nonce/random-bytes 32)]  ;; KEY required by poly1305
 
-      (let [mac-bytes1 (poly/hash plaintext secretkey :aes)
-            mac-bytes2 (poly/hash plaintext secretkey :aes)]
-        (is (not (bytes/equals? mac-bytes1 mac-bytes2)))))
+    (testing "Poly1305 with same iv"
+      (let [result1 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv})
+            result2 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv})]
+        (is (bytes/equals? result1 result2))))
 
-  (testing "File mac"
-    (let [path       "test/_files/pubkey.ecdsa.pem"
-          macbytes   (poly/poly1305 (io/input-stream path) secretkey :aes)]
-      (is (poly/verify (io/input-stream path) macbytes secretkey :aes))))
+    (testing "Poly1305 with different iv"
+      (let [result1 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv})
+            result2 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv'})]
+        (is (not (bytes/equals? result1 result2)))))
 
-  (testing "Poly1305-Twofish env/verify"
-    (let [signature (poly/poly1305 plaintext secretkey :twofish)]
-      (is (poly/verify plaintext signature secretkey :twofish))))
+    (testing "Poly1305 verify"
+      (let [rs (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv})]
+        (is (mac/verify plaintext rs {:key key :alg :poly1305+aes :iv iv}))
+        (is (not (mac/verify plaintext rs {:key key :alg :poly1305+aes :iv iv'})))))
 
-  (testing "Poly1305-Serpent env/verify"
-    (let [signature (poly/poly1305 plaintext secretkey :serpent)]
-      (is (poly/verify plaintext signature secretkey :serpent))))
-))
+    (testing "Poly1305 constructor"
+      (let [result1 (mac/hash plaintext {:key key :alg :poly1305 :cipher :aes :iv iv})
+            result2 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv})
+            result3 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv'})]
+        (is (bytes/equals? result1 result2))
+        (is (not (bytes/equals? result1 result3)))))
+
+    (testing "Poly1305 + Twofish"
+      (let [result1 (mac/hash plaintext {:key key :alg :poly1305 :cipher :twofish :iv iv})
+            result2 (mac/hash plaintext {:key key :alg :poly1305+twofish :iv iv})
+            result3 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv})]
+        (is (bytes/equals? result1 result2))
+        (is (not (bytes/equals? result1 result3)))))
+
+    (testing "Poly1305 + Serpent"
+      (let [result1 (mac/hash plaintext {:key key :alg :poly1305 :cipher :serpent :iv iv})
+            result2 (mac/hash plaintext {:key key :alg :poly1305+serpent :iv iv})
+            result3 (mac/hash plaintext {:key key :alg :poly1305+twofish :iv iv})
+            result4 (mac/hash plaintext {:key key :alg :poly1305+aes :iv iv})]
+        (is (bytes/equals? result1 result2))
+        (is (not (bytes/equals? result1 result3)))
+        (is (not (bytes/equals? result1 result4)))))
+
+  (testing "Poly1305 + Serpent + File"
+    (let [path "test/_files/pubkey.ecdsa.pem"
+          sig  (mac/hash (io/input-stream path) {:key key :alg :poly1305+serpent :iv iv})]
+      (is (mac/verify (io/input-stream path) sig {:key key :alg :poly1305+serpent :iv iv}))))
+  ))
