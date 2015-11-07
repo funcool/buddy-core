@@ -140,5 +140,9 @@
   (Class/forName "[B")
   (->byte-array [it] it)
 
+  nil
+  (->byte-array [_]
+    (byte-array 0))
+
   String
   (->byte-array [data] (str->bytes data)))
