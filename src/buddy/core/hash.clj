@@ -168,11 +168,11 @@
   [input]
   (blake2b input 16))
 
-(defn blake2b-256
-  "BLAKE2 cryptographic hash function with fixed output
-  digest size to 256 bits."
-  [input]
-  (blake2b input 32))
+;; (defn blake2b-256
+;;   "BLAKE2 cryptographic hash function with fixed output
+;;   digest size to 256 bits."
+;;   [input]
+;;   (blake2b input 32))
 
 (defn blake2b-512
   "BLAKE2 cryptographic hash function with fixed output
