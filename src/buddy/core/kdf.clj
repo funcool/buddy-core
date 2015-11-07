@@ -81,7 +81,7 @@
   than KDF's based on just a hash function."
   [^bytes keydata ^bytes salt ^bytes info ^Keyword alg]
   (let [params  (HKDFParameters. keydata salt info)
-        digest  (hash/resolve-digest alg)
+        digest  (hash/resolve-digest-engine alg)
         kdfimpl (HKDFBytesGenerator. digest)]
     (.init kdfimpl params)
     (reify
@@ -100,7 +100,7 @@
   "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
   [^bytes keydata ^bytes salt ^Keyword alg]
   (let [params  (KDFParameters. keydata salt)
-        digest  (hash/resolve-digest alg)
+        digest  (hash/resolve-digest-engine alg)
         kdfimpl (KDF1BytesGenerator. digest)]
     (.init kdfimpl params)
     (reify
@@ -115,7 +115,7 @@
   "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
   [^bytes keydata ^bytes salt ^Keyword alg]
   (let [params  (KDFParameters. keydata salt)
-        digest  (hash/resolve-digest alg)
+        digest  (hash/resolve-digest-engine alg)
         kdfimpl (KDF2BytesGenerator. digest)]
     (.init kdfimpl params)
     (reify
@@ -135,7 +135,7 @@
   NIST SP 800-108 specification."
   [^bytes keydata ^bytes salt ^Keyword alg & [{:keys [r] :or {r 32}}]]
   (let [params  (KDFCounterParameters. keydata salt r)
-        digest  (hash/resolve-digest alg)
+        digest  (hash/resolve-digest-engine alg)
         mac     (HMac. digest)
         kdfimpl (KDFCounterBytesGenerator. mac)]
     (.init kdfimpl params)
@@ -161,7 +161,7 @@
   (let [params  (if use-counter
                   (KDFFeedbackParameters/createWithCounter keydata salt salt r)
                   (KDFFeedbackParameters/createWithoutCounter keydata salt salt))
-        digest  (hash/resolve-digest alg)
+        digest  (hash/resolve-digest-engine alg)
         mac     (HMac. digest)
         kdfimpl (KDFFeedbackBytesGenerator. mac)]
     (.init kdfimpl params)
@@ -184,7 +184,7 @@
   (let [params  (if use-counter
                   (KDFDoublePipelineIterationParameters/createWithCounter keydata salt r)
                   (KDFDoublePipelineIterationParameters/createWithoutCounter keydata salt))
-        digest  (hash/resolve-digest alg)
+        digest  (hash/resolve-digest-engine alg)
         mac     (HMac. digest)
         kdfimpl (KDFDoublePipelineIterationBytesGenerator. mac)]
     (.init kdfimpl params)

@@ -16,7 +16,7 @@
   "Crypto engines low-level abstraction."
   (:require [buddy.core.bytes :as bytes]
             [buddy.core.padding :as padding]
-            [buddy.core.mac.hmac :as hmac]
+            [buddy.core.mac :as mac]
             [buddy.core.nonce :as nonce]
             [buddy.core.codecs :as codecs])
   (:import org.bouncycastle.crypto.engines.TwofishEngine
@@ -381,7 +381,7 @@
              (aad->bytes aad)
              (byte-array 0))
         data (bytes/concat aad iv input al)
-        fulltag (hmac/hash data authkey algorithm)
+        fulltag (mac/hash data {:key authkey :alg :hmac :digest algorithm})
         truncatesize (quot (count fulltag) 2)]
     (bytes/slice fulltag 0 truncatesize)))
 

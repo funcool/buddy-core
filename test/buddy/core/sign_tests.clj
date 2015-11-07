@@ -17,8 +17,6 @@
             [buddy.core.codecs :as codecs :refer :all]
             [buddy.core.bytes :as bytes]
             [buddy.core.keys :refer :all]
-            [buddy.core.mac.hmac :as hmac]
-            [buddy.core.mac.shmac :as shmac]
             [buddy.core.sign.rsapss :as rsapss]
             [buddy.core.sign.rsapkcs15 :as rsapkcs]
             [buddy.core.sign.ecdsa :as ecdsa]
