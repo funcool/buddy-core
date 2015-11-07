@@ -144,17 +144,17 @@
 
 (defmethod -engine :poly1305+aes
   [options]
-  (let [cipher ((:aes +cipher-engines+))]
+  (let [cipher (resolve-cipher-engine :aes)]
     (Poly1305. cipher)))
 
 (defmethod -engine :poly1305+twofish
   [options]
-  (let [cipher ((:twofish +cipher-engines+))]
+  (let [cipher (resolve-cipher-engine :twofish)]
     (Poly1305. cipher)))
 
 (defmethod -engine :poly1305+serpent
   [options]
-  (let [cipher ((:serpent +cipher-engines+))]
+  (let [cipher (resolve-cipher-engine :serpent)]
     (Poly1305. cipher)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
