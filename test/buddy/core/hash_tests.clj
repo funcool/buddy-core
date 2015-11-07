@@ -65,12 +65,46 @@
                   "63b931bd47417a81a538327af927da3e")))))
 
   (testing "blake2 512"
-    (let [hashed (hash/blake2b-512 "")]
-      (is (= (str/upper-case (bytes->hex hashed))
+    (let [hashed1 (hash/blake2b-512 "")
+          hashed2 (hash/blake2b "" 64)
+          hashed3 (hash/digest "" :blake2b-512)]
+      (is (bytes/equals? hashed1 hashed2))
+      (is (bytes/equals? hashed1 hashed3))
+      (is (= (str/upper-case (bytes->hex hashed1))
              (str "786A02F742015903C6C6FD852552D272"
                   "912F4740E15847618A86E217F71F5419"
                   "D25E1031AFEE585313896444934EB04B"
                   "903A685B1448B755D56F701AFE9BE2CE")))))
+
+  (testing "skein 256"
+    (let [hashed1 (hash/skein-256 "")
+          hashed2 (hash/skein "" 32)
+          hashed3 (hash/digest "" :skein-256)]
+      (is (bytes/equals? hashed1 hashed2))
+      (is (bytes/equals? hashed1 hashed3))
+      (is (= (bytes->hex hashed1)
+             (str "c8877087da56e072870daa843f176e94"
+                  "53115929094c3a40c463a196c29bf7ba")))))
+
+  (testing "skein 512"
+    (let [hashed1 (hash/skein-512 "")
+          hashed2 (hash/skein "" 64)
+          hashed3 (hash/digest "" :skein-512)]
+      (is (bytes/equals? hashed1 hashed2))
+      (is (bytes/equals? hashed1 hashed3))
+      (is (= (bytes->hex hashed1)
+             (str "bc5b4c50925519c290cc634277ae3d62"
+                  "57212395cba733bbad37a4af0fa06af4"
+                  "1fca7903d06564fea7a2d3730dbdb80c"
+                  "1f85562dfcc070334ea4d1d9e72cba7a")))))
+
+  ;; (testing "blake2 256"
+  ;;   (let [hashed1 (hash/blake2b-256 "abc")
+  ;;         hashed2 (hash/digest "abc" :blake2b-256)]
+  ;;     (is (bytes/equals? hashed1 hashed2))
+  ;;     (is (= (str/upper-case (bytes->hex hashed1))
+  ;;            (str "508C5E8C327C14E2E1A72BA34EEB452F"
+  ;;                 "37458B209ED63A294D999B4C86675e982")))))
 
   (testing "sha1"
     (let [hashed (hash/sha1 "")]

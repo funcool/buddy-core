@@ -27,10 +27,9 @@
            org.bouncycastle.crypto.digests.SHA384Digest
            org.bouncycastle.crypto.digests.SHA512Digest
            org.bouncycastle.crypto.digests.Blake2bDigest
-           clojure.lang.IFn
-           clojure.lang.Keyword))
+           org.bouncycastle.crypto.digests.SkeinDigest))
 
-(def ^{:doc false}
+(def ^:no-doc ^:static
   +digest-engines+
   {:sha256   #(SHA256Digest.)
    :sha384   #(SHA384Digest.)
@@ -40,7 +39,13 @@
    :md5      #(MD5Digest.)
    :sha3-256 #(SHA3Digest. 256)
    :sha3-384 #(SHA3Digest. 384)
-   :sha3-512 #(SHA3Digest. 512)})
+   :sha3-512 #(SHA3Digest. 512)
+   :blake2b-128 #(Blake2bDigest. nil 16 nil nil)
+   :blake2b-256 #(Blake2bDigest. nil 32 nil nil)
+   :blake2b-512 #(Blake2bDigest. nil 64 nil nil)
+   :skein-256 #(SkeinDigest. 256 256)
+   :skein-512 #(SkeinDigest. 512 512)
+   :skein-1024 #(SkeinDigest. 1024 1024)})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol definitions (abstractions)
@@ -92,11 +97,11 @@
   {:doc false}
   [engine]
   (cond
-   (instance? Keyword engine)
+   (keyword? engine)
    (when-let [factory (get +digest-engines+ engine)]
      (factory))
    (instance? Digest engine) engine
-   (instance? IFn engine) (engine)))
+   (fn? engine) (engine)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details for different data types.
@@ -179,6 +184,37 @@
   digest size to 512 bits."
   [input]
   (blake2b input 64))
+
+(defn skein
+  "Skein is a cryptographic hash function based on
+  Threefish tweakable block cipher compressed using
+  Unique Block Iteration and is one of five finalists
+  in the NIST hash function competition for SHA3."
+  ([input state]
+   (skein input state state))
+  ([input state length]
+   (let [state (* state 8)
+         length (* length 8)
+         engine (SkeinDigest. state length)]
+     (-digest input engine))))
+
+(defn skein-256
+  "Skein cryptographic hash function with fixed output
+  digest size to 256."
+  [input]
+  (skein input 32 32))
+
+(defn skein-512
+  "Skein cryptographic hash function with fixed output
+  digest size to 256."
+  [input]
+  (skein input 64 64))
+
+(defn skein-1024
+  "Skein cryptographic hash function with fixed output
+  digest size to 256."
+  [input]
+  (skein input 128 128))
 
 (defn sha256
   [input]
