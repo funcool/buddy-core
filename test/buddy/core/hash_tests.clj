@@ -82,4 +82,13 @@
           stream (io/input-stream path)]
       (is (= (bytes->hex (hash/sha256 stream))
              (str "7aa01e35e65701c9a9d8f71c4cbf056a"
-                  "cddc9be17fdff06b4c7af1b0b34ddc29"))))))
+                  "cddc9be17fdff06b4c7af1b0b34ddc29")))))
+
+  (testing "low-level api"
+    (let [engine (org.bouncycastle.crypto.digests.SHA1Digest.)]
+      (hash/update! engine (str->bytes ""))
+      (let [data (hash/end! engine)]
+        (is (= (bytes->hex data)
+               "da39a3ee5e6b4b0d3255bfef95601890afd80709"))))))
+
+
