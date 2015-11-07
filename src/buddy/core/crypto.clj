@@ -20,8 +20,9 @@
             [buddy.core.nonce :as nonce]
             [buddy.core.codecs :as codecs])
   (:import org.bouncycastle.crypto.engines.TwofishEngine
+           org.bouncycastle.crypto.engines.SerpentEngine
            org.bouncycastle.crypto.engines.BlowfishEngine
-           org.bouncycastle.crypto.engines.AESEngine
+           org.bouncycastle.crypto.engines.AESFastEngine
            org.bouncycastle.crypto.engines.ChaChaEngine
            org.bouncycastle.crypto.modes.CBCBlockCipher
            org.bouncycastle.crypto.modes.SICBlockCipher
@@ -38,24 +39,28 @@
            clojure.lang.IFn
            clojure.lang.Keyword))
 
-(def ^{:doc "Supported block cipher modes."
-       :dynamic true}
-  *supported-modes* {:ecb #(identity %)
-                     :cbc #(CBCBlockCipher. %)
-                     :gcm #(GCMBlockCipher. %)
-                     :ctr #(SICBlockCipher. %)
-                     :sic #(SICBlockCipher. %)
-                     :ofb #(OFBBlockCipher. %1 (* 8 (.getBlockSize %1)))})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Protocols
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^{:doc "Supported block ciphers."
-       :dynamic true}
-  *supported-block-ciphers* {:twofish #(TwofishEngine.)
-                             :blowfish #(BlowfishEngine.)
-                             :aes #(AESEngine.)})
+(def ^:no-doc
+  +block-cipher-engines+
+  {:aes     #(AESFastEngine.)
+   :serpent #(SerpentEngine.)
+   :twofish #(TwofishEngine.)})
 
-(def ^{:doc "Supported block ciphers."
-       :dynamic true}
-  *supported-stream-ciphers* {:chacha #(ChaChaEngine.)})
+(def ^:no-doc
+  +stream-cipher-engines+
+  {:chacha #(ChaChaEngine.)})
+
+(def ^{:doc false}
+  +cipher-modes+
+  {:ecb #(identity %)
+   :cbc #(CBCBlockCipher. %)
+   :gcm #(GCMBlockCipher. %)
+   :ctr #(SICBlockCipher. %)
+   :sic #(SICBlockCipher. %)
+   :ofb #(OFBBlockCipher. % (* 8 (.getBlockSize %)))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cipher protocol declaration.
@@ -63,21 +68,21 @@
 
 (defprotocol IBlockCipher
   "Common protocol to block ciphers."
-  (^:private get-block-size* [_] "Get block size in bytes."))
+  (-block-size [_] "Get block size in bytes."))
 
 (defprotocol IStreamCipher
   "Common protocol to stream ciphers.")
 
 (defprotocol ICipher
   "Common protocol to both, stream and block ciphers."
-  (^:private initialize [_ params] "Initialize cipher")
-  (^:private process-bytes [_ input] [_ input inoffset output outoffset]
+  (-init [_ params] "Initialize cipher")
+  (-process-bytes [_ input] [_ input inoffset output outoffset]
     "Encrypt/Decrypt a block of bytes."))
 
 (defprotocol IAEADBlockCipher
   "Common protocol to Authenticated Cipher."
-  (^:private calculate-authtag [_ output outoffset] "Calculate the authentication tag.")
-  (^:private get-output-size* [_ data] "Get the output size."))
+  (-auth-tag [_ output outoffset] "Calculate the authentication tag.")
+  (-output-size [_ data] "Get the output size."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details.
@@ -86,7 +91,7 @@
 (extend-type StreamCipher
   IStreamCipher
   ICipher
-  (initialize [engine params]
+  (-init [engine params]
     (let [iv (:iv params)
           key (:key params)
           params' (if (nil? iv)
@@ -98,7 +103,7 @@
       (.init engine encrypt params')
       engine))
 
-  (process-bytes
+  (-process-bytes
     ([engine input]
      (let [len    (count input)
            buffer (byte-array len)]
@@ -109,11 +114,11 @@
 
 (extend-type BlockCipher
   IBlockCipher
-  (get-block-size* [engine]
+  (-block-size [engine]
     (.getBlockSize engine))
 
   ICipher
-  (initialize [engine params]
+  (-init [engine params]
     (let [iv (:iv params)
           key (:key params)
           params' (if (nil? iv)
@@ -125,9 +130,9 @@
       (.init engine encrypt params')
       engine))
 
-  (process-bytes
+  (-process-bytes
     ([engine input]
-     (let [buffer (byte-array (get-block-size* engine))]
+     (let [buffer (byte-array (-block-size engine))]
        (.processBlock engine input 0 buffer 0)
        buffer))
     ([engine input inoffset output outoffset]
@@ -135,18 +140,18 @@
 
 (extend-type AEADBlockCipher
   IAEADBlockCipher
-  (get-output-size* [engine length]
+  (-output-size [engine length]
     (.getOutputSize engine length))
 
-  (calculate-authtag [engine output outoffset]
+  (-auth-tag [engine output outoffset]
     (.doFinal engine output outoffset))
 
   IBlockCipher
-  (get-block-size* [engine]
-    (get-block-size* (.getUnderlyingCipher engine)))
+  (-block-size [engine]
+    (-block-size (.getUnderlyingCipher engine)))
 
   ICipher
-  (initialize [engine params]
+  (-init [engine params]
     (let [iv (:iv params)
           key (:key params)
           aad (:aad params)
@@ -159,9 +164,9 @@
       (.init engine encrypt params')
       engine))
 
-  (process-bytes
+  (-process-bytes
     ([engine input]
-     (let [buffer (byte-array (get-block-size* engine))]
+     (let [buffer (byte-array (-block-size engine))]
        (.processBytes engine input 0 buffer 0)
        buffer))
 
@@ -176,46 +181,46 @@
 (defn- algorithm-supported?
   [^Keyword type ^Keyword cipher]
   (condp = type
-    :block (contains? *supported-block-ciphers* cipher)
-    :stream (contains? *supported-stream-ciphers* cipher)))
+    :block (contains? +block-cipher-engines+ cipher)
+    :stream (contains? +stream-cipher-engines+ cipher)))
 
 (defn- mode-supported?
-  [^Keyword mode]
-  (contains? *supported-modes* mode))
+  [mode]
+  (contains? +cipher-modes+ mode))
 
 (defn get-block-size
   "Given a block cipher, return the block size
   in bytes."
-  [^BlockCipher engine]
-  (get-block-size* engine))
+  [engine]
+  (-block-size engine))
 
 (defn get-output-size
   "Given a aead cipher, return the buffer size required for
   a `process-bytes!` plus a `calculate-authtag!` with an input of
   `len` bytes."
-  [^AEADBlockCipher engine ^long len]
-  (get-output-size* engine len))
+  [engine len]
+  (-output-size engine len))
 
 (defn block-cipher
   "Block cipher engine constructor."
-  [^Keyword alg ^Keyword mode]
+  [alg mode]
   {:pre [(algorithm-supported? :block alg)
          (mode-supported? mode)]}
-  (let [modefactory (get *supported-modes* mode)
-        enginefactory (get *supported-block-ciphers* alg)]
+  (let [modefactory (get +cipher-modes+ mode)
+        enginefactory (get +block-cipher-engines+ alg)]
     (modefactory (enginefactory))))
 
 (defn stream-cipher
   "Stream cipher engine constructor."
   [^Keyword alg]
   {:pre [(algorithm-supported? :stream alg)]}
-  (let [enginefactory (get *supported-stream-ciphers* alg)]
+  (let [enginefactory (get +stream-cipher-engines+ alg)]
     (enginefactory)))
 
 (defn initialize!
   "Initialize the cipher engine."
   [engine {:keys [iv key op] :as params}]
-  (initialize engine params))
+  (-init engine params))
 
 (defn process-bytes!
   "Encrypt or decrypt a block of bytes using the specified engine.
@@ -223,9 +228,9 @@
   crypto engine. A great example are stream cipher engine
   that allows blocks of 1 byte lenght."
   ([engine input]
-   (process-bytes engine input))
+   (-process-bytes engine input))
   ([engine input inoffset output outoffset]
-   (process-bytes engine input inoffset output outoffset)))
+   (-process-bytes engine input inoffset output outoffset)))
 
 (defn process-block!
   "Encrypt or decrypt a block of bytes using the specified engine.
@@ -234,13 +239,13 @@
   that allows blocks of 1 byte lenght.
   This is an alias to `process-bytes! function."
   ([engine input]
-   (process-bytes engine input))
+   (-process-bytes engine input))
   ([engine input inoffset output outoffset]
-   (process-bytes engine input inoffset output outoffset)))
+   (-process-bytes engine input inoffset output outoffset)))
 
 (defn calculate-authtag!
   [engine output offset]
-  (calculate-authtag engine output offset))
+  (-auth-tag engine output offset))
 
 (defn split-by-blocksize
   "Split a byte array in blocksize blocks.
