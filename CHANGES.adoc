@@ -5,10 +5,17 @@
 Date: Unreleased
 
 - Fix unexpected exception on sha3-384 hasher.
-- Minor refactor on hash impl.
-- Add blake2b hash.
+- Add blake2b hash engine.
+- Add skein hash engine.
+- BREAKING CHANGE: the hash api has ben notably
+  changed for improve consistency and usability.
 - BREAKING CHANGE: unify MAC impl under one unique
   namespace and make the api more flexible.
+- BREAKING CHANGE: the digital signatures
+  algorithm api has been rewritten and unified
+  under `buddy.core.dsa` ns.
+- The crypto internal api is changed for consistency
+  with mac, hash and dsa changes.
 
 
 == Version 0.7.0
