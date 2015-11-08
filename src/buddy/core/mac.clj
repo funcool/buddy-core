@@ -157,26 +157,6 @@
     (Poly1305. cipher)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Low-Level Api
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn reset!
-  [engine]
-  (-reset engine))
-
-(defn update!
-  ([engine input]
-   (-update engine input 0 (count input)))
-  ([engine input offset]
-   (-update engine input offset (count input)))
-  ([engine input offset length]
-   (-update engine input offset length)))
-
-(defn end!
-  [engine]
-  (-end engine))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Implementation details for different data types.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
