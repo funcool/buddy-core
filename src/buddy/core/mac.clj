@@ -80,7 +80,6 @@
   "Noramalizes 32 bytes array key to poly1305
   formatted byte array key."
   [^bytes key]
-  {:pre [(= (count key) 32)]}
   (let [key (bytes/copy key)]
     (Poly1305KeyGenerator/clamp key)
     key))
