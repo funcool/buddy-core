@@ -2,7 +2,7 @@
 
 == Version 0.8.0
 
-Date: Unreleased
+Date: 2015-11-08
 
 - Fix unexpected exception on sha3-384 hasher.
 - Add blake2b hash engine.
