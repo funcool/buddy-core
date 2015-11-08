@@ -14,6 +14,8 @@ Date: Unreleased
 - BREAKING CHANGE: the digital signatures
   algorithm api has been rewritten and unified
   under `buddy.core.dsa` ns.
+- BREAKING CHANGE: the kdf api has been rewritten
+  for to be more accurate and more human friendly.
 - The crypto internal api is changed for consistency
   with mac, hash and dsa changes.
 
