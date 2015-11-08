@@ -14,7 +14,8 @@
 
 (ns buddy.core.kdf
   "Key derivation function interface."
-  (:require [buddy.core.hash :as hash])
+  (:require [buddy.core.hash :as hash]
+            [buddy.core.codecs :as codecs])
   (:import org.bouncycastle.crypto.generators.KDF1BytesGenerator
            org.bouncycastle.crypto.generators.KDF2BytesGenerator
            org.bouncycastle.crypto.generators.HKDFBytesGenerator
@@ -27,171 +28,206 @@
            org.bouncycastle.crypto.params.KDFFeedbackParameters
            org.bouncycastle.crypto.params.KDFDoublePipelineIterationParameters
            org.bouncycastle.crypto.macs.HMac
+           org.bouncycastle.crypto.DerivationFunction
            org.bouncycastle.crypto.Mac
            java.nio.ByteBuffer
            clojure.lang.Keyword))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Protocol
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defprotocol IKDF
-  "Generic type that unify access to any implementation
-  of kdf implemented in buddy."
-  (generate-byte-array [_ length] "Generate byte array of specified length.")
-  (generate-byte-buffer [_ length] "Generate byte buffer of specified length."))
-
-(defn- generate-byte-array*
-  [impl length]
-  (let [buffer (byte-array length)]
-    (.generateBytes impl buffer 0 length)
-    buffer))
-
-(defn- generate-byte-buffer*
-  [impl length]
-  (let [buffer (generate-byte-array* impl length)]
-    (ByteBuffer/wrap buffer)))
+  (-get-bytes [_ length] "Get the next N bytes from kdf."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn generate-byte-array!
-  "Generate a byte array of specified length."
-  [engine ^long length]
-  (generate-byte-array engine length))
+(defmulti engine
+  "Key derivation function engine constructor."
+  :alg)
 
-(defn generate-byte-buffer!
-  "Generate a byte buffer of specified length."
-  [engine ^long length]
-  (generate-byte-buffer engine length))
+(defn get-bytes
+  [engine length]
+  (-get-bytes engine length))
 
-(defn generate-bytes!
-  "Generate a byte array of specified length.
-  WARNING: this method is deprecated but maintained
-  untile next version for backward compatibility."
-  [impl ^long length]
-  (generate-byte-array! impl length))
+(defn get-buffer
+  [engine length]
+  (ByteBuffer/wrap (-get-bytes engine length)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; HKDF interface
+;; Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn hkdf
-  "HMAC-based Extract-and-Expand Key Derivation Function (HKDF) implemented
-  according to IETF RFC 5869, May 2010 as specified by H. Krawczyk, IBM
-  Research &amp; P. Eronen, Nokia. It uses a HMac internally to compute de OKM
-  (output keying material) and is likely to have better security properties
-  than KDF's based on just a hash function."
-  [^bytes keydata ^bytes salt ^bytes info ^Keyword alg]
-  (let [params  (HKDFParameters. keydata salt info)
-        digest  (hash/resolve-digest-engine alg)
-        kdfimpl (HKDFBytesGenerator. digest)]
-    (.init kdfimpl params)
-    (reify
-      IKDF
-      (generate-byte-array [_ length]
-        (generate-byte-array* kdfimpl length))
+(extend-protocol IKDF
+  DerivationFunction
+  (-get-bytes [it length]
+    (let [buffer (byte-array length)]
+      (.generateBytes it buffer 0 length)
+      buffer)))
 
-      (generate-byte-buffer [_ length]
-        (generate-byte-buffer* kdfimpl length)))))
+(defmethod engine :hkdf
+  [{:keys [key salt info digest]}]
+  (let [key (codecs/->byte-array key)
+        salt (codecs/->byte-array salt)
+        info (when info (codecs/->byte-array info))
+        params (HKDFParameters. key salt info)
+        digest (hash/resolve-digest-engine digest)
+        engine (HKDFBytesGenerator. digest)]
+    (.init engine params)
+    engine))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; KDF1/2 interface
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmethod engine :hkdf+sha256
+  [options]
+  (engine (assoc options :alg :hkdf :digest :sha256)))
 
-(defn kdf1
-  "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
-  [^bytes keydata ^bytes salt ^Keyword alg]
-  (let [params  (KDFParameters. keydata salt)
-        digest  (hash/resolve-digest-engine alg)
-        kdfimpl (KDF1BytesGenerator. digest)]
-    (.init kdfimpl params)
-    (reify
-      IKDF
-      (generate-byte-array [_ length]
-        (generate-byte-array* kdfimpl length))
+(defmethod engine :hkdf+sha386
+  [options]
+  (engine (assoc options :alg :hkdf :digest :sha386)))
 
-      (generate-byte-buffer [_ length]
-        (generate-byte-buffer* kdfimpl length)))))
+(defmethod engine :hkdf+sha512
+  [options]
+  (engine (assoc options :alg :hkdf :digest :sha512)))
 
-(defn kdf2
-  "DF2 generator for derived keys and ivs as defined by IEEE P1363a/ISO 18033"
-  [^bytes keydata ^bytes salt ^Keyword alg]
-  (let [params  (KDFParameters. keydata salt)
-        digest  (hash/resolve-digest-engine alg)
-        kdfimpl (KDF2BytesGenerator. digest)]
-    (.init kdfimpl params)
-    (reify
-      IKDF
-      (generate-byte-array [_ length]
-        (generate-byte-array* kdfimpl length))
+(defmethod engine :hkdf+blake2b-512
+  [options]
+  (engine (assoc options :alg :hkdf :digest :blake2b-512)))
 
-      (generate-byte-buffer [_ length]
-        (generate-byte-buffer* kdfimpl length)))))
+(defmethod engine :kdf1
+  [{:keys [key salt digest]}]
+  (let [key (codecs/->byte-array key)
+        salt (codecs/->byte-array salt)
+        params (KDFParameters. key salt)
+        digest (hash/resolve-digest-engine digest)
+        engine (KDF1BytesGenerator. digest)]
+    (.init engine params)
+    engine))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Counter mode KDF
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmethod engine :kdf1+sha256
+  [options]
+  (engine (assoc options :alg :kdf1 :digest :sha256)))
 
-(defn cmkdf
-  "Counter mode KDF defined by the publicly available
-  NIST SP 800-108 specification."
-  [^bytes keydata ^bytes salt ^Keyword alg & [{:keys [r] :or {r 32}}]]
-  (let [params  (KDFCounterParameters. keydata salt r)
-        digest  (hash/resolve-digest-engine alg)
-        mac     (HMac. digest)
-        kdfimpl (KDFCounterBytesGenerator. mac)]
-    (.init kdfimpl params)
-    (reify
-      IKDF
-      (generate-byte-array [_ length]
-        (generate-byte-array* kdfimpl length))
+(defmethod engine :kdf1+sha386
+  [options]
+  (engine (assoc options :alg :kdf1 :digest :sha386)))
 
-      (generate-byte-buffer [_ length]
-        (generate-byte-buffer* kdfimpl length)))))
+(defmethod engine :kdf1+sha512
+  [options]
+  (engine (assoc options :alg :kdf1 :digest :sha512)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Feedback mode KDF
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmethod engine :kdf1+blake2b-512
+  [options]
+  (engine (assoc options :alg :kdf1 :digest :blake2b-512)))
 
-(defn fmkdf
-  "Counter mode KDF defined by the publicly available
-  NIST SP 800-108 specification."
-  [^bytes keydata ^bytes salt ^Keyword alg & [{:keys [r use-counter] :or {r 32 use-counter true}}]]
-  ;; KDFFeedbackParameters takes iv and salt as parameter but
-  ;; at this momment, iv is totally ignored:
-  ;; https://github.com/bcgit/bc-java/../generators/KDFFeedbackBytesGenerator.java#L137
-  (let [params  (if use-counter
-                  (KDFFeedbackParameters/createWithCounter keydata salt salt r)
-                  (KDFFeedbackParameters/createWithoutCounter keydata salt salt))
-        digest  (hash/resolve-digest-engine alg)
-        mac     (HMac. digest)
-        kdfimpl (KDFFeedbackBytesGenerator. mac)]
-    (.init kdfimpl params)
-    (reify
-      IKDF
-      (generate-byte-array [_ length]
-        (generate-byte-array* kdfimpl length))
+(defmethod engine :kdf2
+  [{:keys [key salt digest]}]
+  (let [key (codecs/->byte-array key)
+        salt (codecs/->byte-array salt)
+        params (KDFParameters. key salt)
+        digest (hash/resolve-digest-engine digest)
+        engine (KDF2BytesGenerator. digest)]
+    (.init engine params)
+    engine))
 
-      (generate-byte-buffer [_ length]
-        (generate-byte-buffer* kdfimpl length)))))
+(defmethod engine :kdf2+sha256
+  [options]
+  (engine (assoc options :alg :kdf2 :digest :sha256)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Feedback mode KDF
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmethod engine :kdf2+sha386
+  [options]
+  (engine (assoc options :alg :kdf2 :digest :sha386)))
 
-(defn dpimkdf
-  "Double-Pipeline Iteration Mode KDF defined by the publicly
-  available NIST SP 800-108 specification."
-  [^bytes keydata ^bytes salt ^Keyword alg & [{:keys [r use-counter] :or {r 32 use-counter true}}]]
-  (let [params  (if use-counter
-                  (KDFDoublePipelineIterationParameters/createWithCounter keydata salt r)
-                  (KDFDoublePipelineIterationParameters/createWithoutCounter keydata salt))
-        digest  (hash/resolve-digest-engine alg)
-        mac     (HMac. digest)
-        kdfimpl (KDFDoublePipelineIterationBytesGenerator. mac)]
-    (.init kdfimpl params)
-    (reify
-      IKDF
-      (generate-byte-array [_ length]
-        (generate-byte-array* kdfimpl length))
+(defmethod engine :kdf2+sha512
+  [options]
+  (engine (assoc options :alg :kdf2 :digest :sha512)))
 
-      (generate-byte-buffer [_ length]
-        (generate-byte-buffer* kdfimpl length)))))
+(defmethod engine :kdf2+blake2b-512
+  [options]
+  (engine (assoc options :alg :kdf2 :digest :blake2b-512)))
+
+(defmethod engine :cmkdf
+  [{:keys [key salt digest r] :or {r 32}}]
+  (let [key (codecs/->byte-array key)
+        salt (codecs/->byte-array salt)
+        params (KDFCounterParameters. key salt r)
+        digest (hash/resolve-digest-engine digest)
+        mac (HMac. digest)
+        engine (KDFCounterBytesGenerator. mac)]
+    (.init engine params)
+    engine))
+
+(defmethod engine :cmkdf+sha256
+  [options]
+  (engine (assoc options :alg :cmkdf :digest :sha256)))
+
+(defmethod engine :cmkdf+sha386
+  [options]
+  (engine (assoc options :alg :cmkdf :digest :sha386)))
+
+(defmethod engine :cmkdf+sha512
+  [options]
+  (engine (assoc options :alg :cmkdf :digest :sha512)))
+
+(defmethod engine :cmkdf+blake2b-512
+  [options]
+  (engine (assoc options :alg :cmkdf :digest :blake2b-512)))
+
+(defmethod engine :fmkdf
+  [{:keys [key salt digest r counter] :or {r 32 counter true}}]
+  (let [key (codecs/->byte-array key)
+        salt (codecs/->byte-array salt)
+        params (if counter
+                 (KDFFeedbackParameters/createWithCounter key salt nil r)
+                 (KDFFeedbackParameters/createWithoutCounter key salt nil))
+        digest (hash/resolve-digest-engine digest)
+        mac (HMac. digest)
+        engine (KDFFeedbackBytesGenerator. mac)]
+    (.init engine params)
+    engine))
+
+(defmethod engine :fmkdf+sha256
+  [options]
+  (engine (assoc options :alg :fmkdf :digest :sha256)))
+
+(defmethod engine :fmkdf+sha386
+  [options]
+  (engine (assoc options :alg :fmkdf :digest :sha386)))
+
+(defmethod engine :fmkdf+sha512
+  [options]
+  (engine (assoc options :alg :fmkdf :digest :sha512)))
+
+(defmethod engine :fmkdf+blake2b-512
+  [options]
+  (engine (assoc options :alg :fmkdf :digest :blake2b-512)))
+
+(defmethod engine :dpimkdf
+  [{:keys [key salt digest r counter] :or {r 32 counter true}}]
+  (let [key (codecs/->byte-array key)
+        salt (codecs/->byte-array salt)
+        params (if counter
+                 (KDFDoublePipelineIterationParameters/createWithCounter key salt r)
+                 (KDFDoublePipelineIterationParameters/createWithoutCounter key salt))
+        digest (hash/resolve-digest-engine digest)
+        mac (HMac. digest)
+        engine (KDFDoublePipelineIterationBytesGenerator. mac)]
+    (.init engine params)
+    engine))
+
+(defmethod engine :dpimkdf+sha256
+  [options]
+  (engine (assoc options :alg :dpimkdf :digest :sha256)))
+
+(defmethod engine :dpimkdf+sha386
+  [options]
+  (engine (assoc options :alg :dpimkdf :digest :sha386)))
+
+(defmethod engine :dpimkdf+sha512
+  [options]
+  (engine (assoc options :alg :dpimkdf :digest :sha512)))
+
+(defmethod engine :dpimkdf+blake2b-512
+  [options]
+  (engine (assoc options :alg :dpimkdf :digest :blake2b-512)))
+
