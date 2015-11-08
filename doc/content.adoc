@@ -1,6 +1,6 @@
 = buddy-core - Cryptographic Api
 Andrey Antukh, <niwi@niwi.nz>
-0.7.0
+0.8.0
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -9,6 +9,7 @@ Andrey Antukh, <niwi@niwi.nz>
 :idseparator: -
 :idprefix:
 :toclevels: 2
+
 
 == Introduction
 
@@ -26,42 +27,22 @@ Including:
 - nonces and salts
 
 
-== Project Maturity
+=== Project Maturity
 
 Since _buddy-core_ is a young project there can be some API breakage.
 
 
-== Install
+=== Install
 
-This section covers the _buddy-core_ library installing process and its requirements.
-
-
-=== Requirements
-
-_buddy-core_ is tested with these platforms:
-
-- JDK7
-- JDK8
-
-
-=== Leiningen
-
-The simplest way to use _buddy-core_ in a clojure project, is by including it in the dependency
-vector on your *_project.clj_* file:
+The simplest way to use _buddy-core_ in a clojure project, is by including it in the
+dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
-[buddy/buddy-core "0.7.0"]
+[funcool/buddy-core "0.8.0"]
 ----
 
-=== Gradle
-
-If you are using gradle, this is a dependency line for gradle dsl:
-
-[source,groovy]
-----
-compile "buddy:buddy-core:0.7.0"
-----
+And is tested under JDK7 and JDK8.
 
 
 == Hash algorithms (digest)
@@ -77,6 +58,8 @@ All hash algorithms are located in the `buddy.core.hash` namespace.
 | SHA3                 | 256, 384, 512
 | MD5                  | 128
 | Tiger                | 192
+| Blake2b              | 512
+| Skein                | 256, 512, 1024, arbitrary size
 |===============================================
 
 
@@ -119,12 +102,12 @@ for file-like objects (*File*, *URL*, URI* and *InputStream*).
 ----
 
 You can extend it for your own types using the
-*buddy.core.hash/Digest* protocol:
+*buddy.core.hash/IDigest* protocol:
 
 [source,clojure]
 ----
 (defprotocol Digest
-  (digest* [data algorithm]))
+  (-digest [data engine]))
 ----
 
 [NOTE]
@@ -136,149 +119,126 @@ function *digest*.
 
 == Mac algorithms
 
-Buddy comes with three mac implementations: *HMac*, *SHMac* and *Poly1305*.
+Buddy comes with three mac implementations: *hmac*, *shmac* and *poly1305*; and
+all them are located under `buddy.core.mac` namespace.
 
 
 === HMac
 
-This is a hash based mac algorithm and it is available in *buddy.core.mac.hmac*
-namespace.
+Is a specific construction for calculating a message authentication code (MAC)
+involving a cryptographic hash function in combination with a secret cryptographic
+key.
 
+Any cryptographic hash function, such as MD5 or SHA-1, may be used in the
+calculation of an HMAC; the resulting MAC algorithm is termed HMAC-MD5 or
+HMAC-SHA1 accordingly. The cryptographic strength of the HMAC depends upon
+the cryptographic strength of the underlying hash function, the size of its
+hash output, and on the size and quality of the key.
 
-==== Basic usage
-
-.Generate a hmac from string input
+.Example generate a hmac from plain string using sha256 digest
 [source, clojure]
 ----
 ;; Import required namespaces
-(require '[buddy.core.mac.hmac :as hmac])
+(require '[buddy.core.mac :as mac])
 (require '[buddy.core.codecs :as codecs])
 
 ;; Generate sha256 hmac over string
-(-> (hmac/hash "foo bar" "mysecretkey" :sha256)
+(-> (mac/hash "foo bar" {:key "mysecretkey" :alg :hmac-sha256})
     (codecs/bytes->hex))
 ;; => "61849448bdbb67b39d609471eead667e65b0d1b9e01b1c3bf7aa56b83e9c8083"
 ----
 
-.Verify one hmac
+.Example verifying a hmac
 [source, clojure]
 ----
-(hmac/verify "foo bar" (codecs/hex->bytes "61849448bdbb67b...")
-             "mysecretkey" :sha256)
+(mac/verify "foo bar" (codecs/hex->bytes "61849448bdbb67b...")
+            {:key "mysecretkey" :alg :hmac-sha256})
 ;; => true
 ----
 
 The key parameter can be any type that implements the *ByteArray* protocol
-defined in the `buddy.core.codecs` namespace. It comes with default implementations for
-`byte[]` and `java.lang.String`.
+defined in the `buddy.core.codecs` namespace. It comes with default implementations
+for `byte[]` and `java.lang.String` and `nil`.
 
 
-==== HMac for file like objects
+=== Poly1305
 
-Like hash functions, hmac is implemented using Clojure
-protocols and comes with default implementations for: String, byte[],
-*File*, *URL*, *URI* and *InputStream*.
+Poly1305 is a cryptographic message authentication code (MAC) written by Daniel
+J. Bernstein. It can be used to verify the data integrity and the authenticity of
+a message.
 
+The security of Poly1305 is very close to the block cipher algorithm. As a result,
+the only way for an attacker to break Poly1305 is to break the cipher.
+
+Poly1305 offers cipher replaceability. If anything goes wrong with one, it can
+be substituted by another with identical security guarantees.
+
+Unlike *hmac*, it requires an initialization vector (IV). An IV is like a salt.
+It should be generated using a strong random number generator for security
+guarantees. Also, the IV should be of the same length as the chosen cipher block
+size.
+
+.Example using poly1305 mac algorithm for generate mac from string
+[source, clojure]
+----
+(require '[buddy.core.codecs :as codecs])
+(require '[buddy.core.mac :as mac])
+(require '[buddy.core.nonce :as nonce])
+
+(def key (nonce/random-bytes 32))
+(def iv (nonce/random-bytes 32))
+
+(-> (mac/hash "some-data" {:key key :iv iv :alg :poly1305+aes})
+    (codecs/bytes->hex))
+;; => "1976b1c490c306e7304a59dfacee4207"
+----
+
+The default specification talks about AES as default block cipher but the algorith
+in fact can work other block ciphers without any problem. So you can use `serpent`
+and twofish among the default aes:
+
+[source, clojure]
+----
+(-> (mac/hash "some-data" {:key key :iv iv :alg :poly1305+twofish})
+    (codecs/bytes->hex))
+;; => "6e7304a59dfacee42071976b1c490c30"
+----
+
+
+=== Advanced Usage
+
+==== Generate mac for file like objects
+
+Like with hash functions, you can use String, byte[], *File*, *URL*, *URI* and
+*InputStream* as input value for mac functions:
+
+.Example generating hmac from input stream
 [source,clojure]
 ----
 (require '[clojure.java.io :as io])
 
 ;; Generate hmac for file
 (-> (io/input-stream "/tmp/somefile")
-    (hmac/hash "mysecretkey" :sha256)
+    (mac/hash {:key "mysecretkey" :alg :hmac-sha256})
     (codecs/bytes->hex))
-;; => "4cb793e600848da2053238003fce4c010233c49df3e6a04119b4287eb464c27e"
+;; => "4cb793e600848da205323800..."
 ----
 
 
-==== Advanced usage
+==== Low-Level Api
 
-You can extend it for your own types using `buddy.core.mac.hmac/IHMac` protocol, that looks
-like that one:
-
-[source,clojure]
-----
-(defprotocol IHMac
-  (hash* [data key algorithm])
-  (verify* [data signature key alg]))
-----
-
-Behind the scenes of the high level api, a low level api is already defined with protocols and
-you can use it for your purposes:
+Behind the scenes of the high level api, a low level api is already defined
+with protocols and you can use it for your purposes:
 
 [source, clojure]
 ----
-(require '[buddy.core.mac.proto :as impl])
-
-(let [engine (hmac/hmac-engine "secret" :sha256)]
-  (impl/update! engine (codecs/str->bytes "My first data"))
-  (impl/update! engine (codecs/str->bytes "My second data"))
-  (codecs/bytes->hex (impl/end! engine)))
+(let [engine (mac/-engine {:alg :hnac+sha256})]
+  (mac/-update engine (codecs/str->bytes "hello") 0 5)
+  (codecs/bytes->hex (mac/-end engine)))
 ;; "924c4b82a56c0115eb9..."
 ----
 
 This also applies to the rest of mac implementations found in *buddy-core* library.
-
-
-=== SHMac (Salted)
-
-
-This is a salted variant of hmac algorithm and is available in *buddy.core.mac.shmac*
-namespace.
-
-
-==== Usage example
-
-[source, clojure]
-----
-;; Import required namespaces
-(require '[buddy.core.mac.hmac :as shmac])
-(require '[buddy.core.codecs :as codecs])
-
-;; Generate sha256 shmac over string
-(-> (shmac/hash "foo bar" "salt" "mysecretkey" :sha256)
-    (codecs/bytes->hex))
-;; => "bd5f7a0040430a73f4845bac8f980c6398b4baae8a22efcc22038be0f4dd9678"
-----
-
-
-=== Poly1305
-
-Poly1305 is a cryptographic message authentication code
-(MAC) written by Daniel J. Bernstein. It can be used to verify the
-data integrity and the authenticity of a message.
-
-The security of Poly1305 is very close to the block cipher algorithm.
-As a result, the only way for an attacker to break Poly1305 is to break
-the cipher.
-
-Poly1305 offers cipher replaceability. If anything goes wrong with
-one, it can be substituted by another with identical security
-guarantees.
-
-Unlike *HMac*, it requires an initialization vector (IV). An IV is
-like a salt. It should be generated using a strong random number
-generator for security guarantees. Also, the IV should be of the same
-length as the chosen cipher block size.
-
-
-==== Basic usage
-
-The default specification talks about AES as default block cipher,
-but buddy comes with support for three block ciphers: AES, Serpent
-and Twofish.
-
-.Make mac using Serpent block cipher with random IV
-[source, clojure]
-----
-(require '[buddy.core.codecs :as codecs])
-(require '[buddy.core.mac.poly1305 :as poly])
-(require '[buddy.core.nonce :as nonce])
-
-(let [sig (poly/hash "some-data" "mysecret" :serpent)]
-  (codecs/bytes->hex sig))
-;; => "1976b1c490c306e7304a59dfacee4207"
-----
 
 
 == Public/Private keypairs
@@ -351,113 +311,59 @@ openssl ec -in ecprivkey.pem -pubout -out ecpubkey.pem
 
 == Digital Signatures
 
-Digital Signatures differ from Mac as Mac values are both generated
-and verified using the same secret key. Digital Signatures require a
-public/private keypair. It signs using a private key and verifies a
-signature using a public key.
+Digital Signature algorithms has similar purposes that MAC but comes
+with some tradeoffs such as them provides additional security feature
+(Non-repudiation) with cost in the performance. You can read a great
+explanation about the differences with MAC
+link:http://crypto.stackexchange.com/a/5647[here].
 
+*buddy-core* comes with support for: 
+link:https://en.wikipedia.org/wiki/PKCS_1[rsassa-pss],
+link:https://en.wikipedia.org/wiki/PKCS_1[rsassa-pkcs] and 
+link:https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm[ecdsa].
 
-=== RSASSA PSS
-
-RSASSA-PSS is an improved probabilistic signature scheme with
-appendix. What that means is that you can use a private RSA key
-to sign data in combination with some random input.
-
-RFC: http://www.ietf.org/rfc/rfc3447.txt
-
-.Sign sample string using rsassa-pss.
+.Example signing string using rsassa-pss+sha256
 [source, clojure]
 ----
 (require '[buddy.core.keys :as keys])
-(require '[buddy.core.sign.rsapss :as rsapss])
+(require '[buddy.core.dsa :as dsa])
 
 ;; Read private key
-(def rsaprivkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret"))
+(def privkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret"))
 
 ;; Make signature
-(def signature (rsapss/sign "foo" rsaprivkey :sha256))
+(def signature (dsa/sign "foo" {:key privkey :alg :rsassa-pss+sha256}))
 
 ;; Now signature contains a byte[] with signature of "foo" string
 ----
 
-.Verify signature using rsassa-pss.
+.Example verifying signature
 [source, clojure]
 ----
 ;; Read private key
-(def rsapubkey (keys/private-key "test/_files/pubkey.3des.rsa.pem"))
+(def pubkey (keys/private-key "test/_files/pubkey.3des.rsa.pem"))
 
 ;; Make verification
-(rsapss/verify "foo" signature rsapubkey :sha256))
+(dsa/verify "foo" signature {:key pubkey :alg :rsassa-pss+sha256})
 ;; => true
 ----
 
 
-=== RSASSA PKCS1 v1.5
+Here is a table with complete list of supported algorithms and its variants:
 
-RSASSA-PSS is an probabilistic signature scheme with appendix.
-What that means is that you can use a private RSA key to sign data.
-
-RFC: http://www.ietf.org/rfc/rfc3447.txt
-
-
-.Sign sample string using rsassa-pkcs.
-[source, clojure]
-----
-(require '[buddy.core.keys :as keys])
-(require '[buddy.core.sign.rsapkcs :as rsapkcs])
-
-;; Read private key
-(def rsaprivkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret"))
-
-;; Make signature
-(def signature (rsapkcs/sign "foo" rsaprivkey :sha256))
-
-;; Now signature contains a byte[] with signature of "foo" string
-----
-
-.Verify signature using rsassa-pkcs.
-[source, clojure]
-----
-;; Read private key
-(def rsapubkey (keys/private-key "test/_files/pubkey.3des.rsa.pem"))
-
-;; Make verification
-(rsapkcs/verify "foo" signature rsapubkey :sha256))
-;; => true
-----
+[options="header", cols="1,3"]
+|===============================================
+| Algorithm name  | `:alg` keyword value
+| RSASSA-PSS      | `:rsassa-pss+sha256`, `:rsassa-pss+sha384`, `:rsassa-pss+sha512`
+| RSASSA-PKCS 1.5 | `:rsassa-pkcs15+sha256`, `:rsassa-pkcs15+sha384`, `:rsassa-pkcs15+sha512`
+| ECDSA           | `:ecdsa+sha256`, `:ecdsa+sha384`, `:ecdsa+sha512`
+|===============================================
 
 
-=== Eliptic Curve DSA
-
-Elliptic Curve Digital Signature Algorithm (ECDSA) is a variant of the
-Digital Signature Algorithm (DSA) which uses elliptic curve cryptography.
-
-.Sign sample string using ecdsa.
-[source, clojure]
-----
-(require '[buddy.core.keys :as keys])
-(require '[buddy.core.sign.ecdsa :as ecdsa])
-
-;; Read private key
-(def ecdsaprivkey (keys/private-key "test/_files/privkey.ecdsa.pem" "secret"))
-
-;; Make signature
-(def signature (ecdsa/sign "foo" ecdsaprivkey :sha256))
-----
-
-.Verify signature using ecdsa.
-[source, clojure]
-----
-;; Read private key
-(def ecdsapubkey (keys/private-key "test/_files/pubkey.ecdsa.pem"))
-
-;; Make verification
-(ecdsa/verify "foo" signature ecdsapubkey :sha256))
-;; => true
-----
+NOTE: *ECDSA* algorithm requires EC type of asymentric key pair.
 
 
-== Key Derivation Functions
+== Key Derivation Functions (KDF)
 
 Key derivation functions are often used in conjunction with non-secret parameters
 to derive one or more keys from a common secret value.
