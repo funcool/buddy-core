@@ -52,7 +52,6 @@
             result "cb448b440c42ac8ad084fc8a8795c98f5b7802359c305eabd57ecdb20e248896"]
         (is (= result sig))))
 
-
     (testing "Test simple hmac sha384"
       (let [secretkey "b"
             data "a"
@@ -66,9 +65,6 @@
             sig (bytes->hex (mac/hash data {:key secretkey :alg :hmac+sha512}))
             result "68c1687fa7cb5170ff800580a0cec29dc0ccb515aaf95587bdfe5c923730a7852e2beefefd6be31d97aa612ad8b8569bba61ed2c339cd9b28409751b0b9e96a0"]
         (is (= result sig))))
-
-
-
 
     (testing "Sign/Verify string"
       (let [sig (mac/hash "foo" {:key secretkey :alg :hmac+sha384})]
