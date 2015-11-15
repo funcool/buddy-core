@@ -72,19 +72,21 @@
 
 (defn private-key
   "Private key constructor from file path."
-  [^String path & [^String passphrase]]
-  (let [keypair (read-pem->keypair path passphrase)]
-    (.getPrivate keypair)))
+  ([path]
+   (private-key path nil))
+  ([path passphrase]
+   (let [keypair (read-pem->keypair path passphrase)]
+     (.getPrivate keypair))))
 
 (defn public-key
   "Public key constrcutor from file path."
-  [^String path]
+  [path]
   (read-pem->pubkey path))
 
 (defn str->public-key
   "Public key constructor from string."
-  [^String keydata]
-  (with-open [reader (StringReader. keydata)]
+  [keydata]
+  (with-open [reader (StringReader. ^String keydata)]
     (read-pem->pubkey reader)))
 
 (defn public-key?
