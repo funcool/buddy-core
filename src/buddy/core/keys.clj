@@ -46,10 +46,13 @@
           converter (doto (JcaPEMKeyConverter.)
                       (.setProvider "BC"))]
       (if (instance? PEMEncryptedKeyPair keypair)
-        (let [builder   (JcePEMDecryptorProviderBuilder.)
-              decryptor (.build builder (.toCharArray passphrase))]
-          (->> (.decryptKeyPair keypair decryptor)
-               (.getKeyPair converter)))
+        (do
+          (when (nil? passphrase)
+            (throw (ex-info "Phassphrase is mandatory with encrypted keys." {})))
+          (let [builder   (JcePEMDecryptorProviderBuilder.)
+                decryptor (.build builder (.toCharArray passphrase))]
+            (->> (.decryptKeyPair keypair decryptor)
+                 (.getKeyPair converter))))
         (.getKeyPair converter keypair)))))
 
 (defn- read-pem->pubkey
