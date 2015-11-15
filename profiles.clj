@@ -1,5 +1,5 @@
 {:dev
- {:aliases {"test-all" ["with-profile" "dev,1.8:dev,1.6:dev,1.5:dev:dev" "test"]}
+ {:aliases {"test-all" ["with-profile" "dev,1.8:dev,1.6:dev,1.5:dev" "test"]}
   :codeina {:sources ["src"]
             :reader :clojure
             :target "doc/dist/latest/api"
