@@ -24,6 +24,11 @@
     (let [pkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
 
+  (testing "Read rsa priv key without password"
+    (is (thrown? clojure.lang.ExceptionInfo (keys/private-key "test/_files/privkey.3des.rsa.pem")))
+    (let [pkey (keys/private-key "test/_files/privkey.rsa.pem")]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
+
   (testing "Read dsa priv key"
     (let [pkey (keys/private-key "test/_files/privkey.3des.dsa.pem" "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPrivateKey))))
@@ -58,7 +63,8 @@
     (let [keystr (slurp "test/_files/pubkey.ecdsa.pem")
           pkey (keys/str->public-key keystr)]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey))
-      (is (keys/public-key? pkey)))))
+      (is (keys/public-key? pkey))))
+  )
 
 (deftest key-wrapping-algorithms
   (let [secret16 (nonce/random-bytes 16)
