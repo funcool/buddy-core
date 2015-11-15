@@ -2,7 +2,7 @@
 
 == Version 0.8.1
 
-Date: unreleased
+Date: 2015-11-15
 
 - Add more clear exception when no passwor is provided for encrypted
   private key.
