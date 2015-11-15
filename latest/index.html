@@ -80,18 +80,15 @@
 <h1>buddy-core - Cryptographic Api</h1>
 <div class="details">
 <span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.nz&gt;</span><br>
-<span id="revdate">0.7.0</span>
+<span id="revdate">0.8.1</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#project-maturity">Project Maturity</a></li>
-<li><a href="#install">Install</a>
+<li><a href="#introduction">Introduction</a>
 <ul class="sectlevel2">
-<li><a href="#requirements">Requirements</a></li>
-<li><a href="#leiningen">Leiningen</a></li>
-<li><a href="#gradle">Gradle</a></li>
+<li><a href="#project-maturity">Project Maturity</a></li>
+<li><a href="#install">Install</a></li>
 </ul>
 </li>
 <li><a href="#hash-algorithms-digest">Hash algorithms (digest)</a>
@@ -103,8 +100,8 @@
 <li><a href="#mac-algorithms">Mac algorithms</a>
 <ul class="sectlevel2">
 <li><a href="#hmac">HMac</a></li>
-<li><a href="#shmac-salted">SHMac (Salted)</a></li>
 <li><a href="#poly1305">Poly1305</a></li>
+<li><a href="#advanced-usage-2">Advanced Usage</a></li>
 </ul>
 </li>
 <li><a href="#public-private-keypairs">Public/Private keypairs</a>
@@ -113,22 +110,8 @@
 <li><a href="#ecdsa-keypair">ECDSA Keypair</a></li>
 </ul>
 </li>
-<li><a href="#digital-signatures">Digital Signatures</a>
-<ul class="sectlevel2">
-<li><a href="#rsassa-pss">RSASSA PSS</a></li>
-<li><a href="#rsassa-pkcs1-v1-5">RSASSA PKCS1 v1.5</a></li>
-<li><a href="#eliptic-curve-dsa">Eliptic Curve DSA</a></li>
-</ul>
-</li>
-<li><a href="#key-derivation-functions">Key Derivation Functions</a>
-<ul class="sectlevel2">
-<li><a href="#hkdf">HKDF</a></li>
-<li><a href="#kdf1-2">KDF1/2</a></li>
-<li><a href="#counter-mode-kdf">Counter Mode KDF</a></li>
-<li><a href="#feedback-mode-kdf">Feedback Mode KDF</a></li>
-<li><a href="#double-pipeline-iteration-mode-kdf">Double-Pipeline Iteration Mode KDF</a></li>
-</ul>
-</li>
+<li><a href="#digital-signatures">Digital Signatures</a></li>
+<li><a href="#key-derivation-functions-kdf">Key Derivation Functions (KDF)</a></li>
 <li><a href="#ciphers">Ciphers</a>
 <ul class="sectlevel2">
 <li><a href="#block-ciphers">Block Ciphers</a></li>
@@ -190,59 +173,25 @@
 </li>
 </ul>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="project-maturity"><a class="link" href="#project-maturity">Project Maturity</a></h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="project-maturity"><a class="link" href="#project-maturity">Project Maturity</a></h3>
 <div class="paragraph">
 <p>Since <em>buddy-core</em> is a young project there can be some API breakage.</p>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="install"><a class="link" href="#install">Install</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>This section covers the <em>buddy-core</em> library installing process and its requirements.</p>
-</div>
 <div class="sect2">
-<h3 id="requirements"><a class="link" href="#requirements">Requirements</a></h3>
+<h3 id="install"><a class="link" href="#install">Install</a></h3>
 <div class="paragraph">
-<p><em>buddy-core</em> is tested with these platforms:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>JDK7</p>
-</li>
-<li>
-<p>JDK8</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="leiningen"><a class="link" href="#leiningen">Leiningen</a></h3>
-<div class="paragraph">
-<p>The simplest way to use <em>buddy-core</em> in a clojure project, is by including it in the dependency
-vector on your <strong><em>project.clj</em></strong> file:</p>
+<p>The simplest way to use <em>buddy-core</em> in a clojure project, is by including it in the
+dependency vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">buddy/buddy-core</span> <span class="tok-s">&quot;0.7.0&quot;</span><span class="tok-p">]</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">funcool/buddy-core</span> <span class="tok-s">&quot;0.8.1&quot;</span><span class="tok-p">]</span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="gradle"><a class="link" href="#gradle">Gradle</a></h3>
 <div class="paragraph">
-<p>If you are using gradle, this is a dependency line for gradle dsl:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="groovy"><span class="tok-n">compile</span> <span class="tok-s2">&quot;buddy:buddy-core:0.7.0&quot;</span></code></pre>
-</div>
+<p>And is tested under JDK7 and JDK8.</p>
 </div>
 </div>
 </div>
@@ -285,6 +234,14 @@ vector on your <strong><em>project.clj</em></strong> file:</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tiger</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">192</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Blake2b</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">512</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skein</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">256, 512, 1024, arbitrary size</p></td>
 </tr>
 </tbody>
 </table>
@@ -329,12 +286,12 @@ for file-like objects (<strong>File</strong>, <strong>URL</strong>, URI* and <st
 </div>
 <div class="paragraph">
 <p>You can extend it for your own types using the
-<strong>buddy.core.hash/Digest</strong> protocol:</p>
+<strong>buddy.core.hash/IDigest</strong> protocol:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-kd">defprotocol </span><span class="tok-nv">Digest</span>
-  <span class="tok-p">(</span><span class="tok-nf">digest*</span> <span class="tok-p">[</span><span class="tok-nv">data</span> <span class="tok-nv">algorithm</span><span class="tok-p">]))</span></code></pre>
+  <span class="tok-p">(</span><span class="tok-nf">-digest</span> <span class="tok-p">[</span><span class="tok-nv">data</span> <span class="tok-nv">engine</span><span class="tok-p">]))</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -359,158 +316,136 @@ function <strong>digest</strong>.</p>
 <h2 id="mac-algorithms"><a class="link" href="#mac-algorithms">Mac algorithms</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Buddy comes with three mac implementations: <strong>HMac</strong>, <strong>SHMac</strong> and <strong>Poly1305</strong>.</p>
+<p>Buddy comes with three mac implementations: <strong>hmac</strong>, <strong>shmac</strong> and <strong>poly1305</strong>; and
+all them are located under <code>buddy.core.mac</code> namespace.</p>
 </div>
 <div class="sect2">
 <h3 id="hmac"><a class="link" href="#hmac">HMac</a></h3>
 <div class="paragraph">
-<p>This is a hash based mac algorithm and it is available in <strong>buddy.core.mac.hmac</strong>
-namespace.</p>
+<p>Is a specific construction for calculating a message authentication code (MAC)
+involving a cryptographic hash function in combination with a secret cryptographic
+key.</p>
 </div>
-<div class="sect3">
-<h4 id="basic-usage-2"><a class="link" href="#basic-usage-2">Basic usage</a></h4>
+<div class="paragraph">
+<p>Any cryptographic hash function, such as MD5 or SHA-1, may be used in the
+calculation of an HMAC; the resulting MAC algorithm is termed HMAC-MD5 or
+HMAC-SHA1 accordingly. The cryptographic strength of the HMAC depends upon
+the cryptographic strength of the underlying hash function, the size of its
+hash output, and on the size and quality of the key.</p>
+</div>
 <div class="listingblock">
-<div class="title">Generate a hmac from string input</div>
+<div class="title">Example generate a hmac from plain string using sha256 digest</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Import required namespaces</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac.hmac</span> <span class="tok-ss">:as</span> <span class="tok-nv">hmac</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac</span> <span class="tok-ss">:as</span> <span class="tok-nv">mac</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; Generate sha256 hmac over string</span>
-<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">hmac/hash</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)</span>
+<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac-sha256</span><span class="tok-p">})</span>
     <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;61849448bdbb67b39d609471eead667e65b0d1b9e01b1c3bf7aa56b83e9c8083&quot;</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
-<div class="title">Verify one hmac</div>
+<div class="title">Example verifying a hmac</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">hmac/verify</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">(</span><span class="tok-nf">codecs/hex-&gt;bytes</span> <span class="tok-s">&quot;61849448bdbb67b...&quot;</span><span class="tok-p">)</span>
-             <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">mac/verify</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">(</span><span class="tok-nf">codecs/hex-&gt;bytes</span> <span class="tok-s">&quot;61849448bdbb67b...&quot;</span><span class="tok-p">)</span>
+            <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac-sha256</span><span class="tok-p">})</span>
 <span class="tok-c1">;; =&gt; true</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>The key parameter can be any type that implements the <strong>ByteArray</strong> protocol
-defined in the <code>buddy.core.codecs</code> namespace. It comes with default implementations for
-<code>byte[]</code> and <code>java.lang.String</code>.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="hmac-for-file-like-objects"><a class="link" href="#hmac-for-file-like-objects">HMac for file like objects</a></h4>
-<div class="paragraph">
-<p>Like hash functions, hmac is implemented using Clojure
-protocols and comes with default implementations for: String, byte[],
-<strong>File</strong>, <strong>URL</strong>, <strong>URI</strong> and <strong>InputStream</strong>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">clojure.java.io</span> <span class="tok-ss">:as</span> <span class="tok-nv">io</span><span class="tok-p">])</span>
-
-<span class="tok-c1">;; Generate hmac for file</span>
-<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">io/input-stream</span> <span class="tok-s">&quot;/tmp/somefile&quot;</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">hmac/hash</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; &quot;4cb793e600848da2053238003fce4c010233c49df3e6a04119b4287eb464c27e&quot;</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="advanced-usage-2"><a class="link" href="#advanced-usage-2">Advanced usage</a></h4>
-<div class="paragraph">
-<p>You can extend it for your own types using <code>buddy.core.mac.hmac/IHMac</code> protocol, that looks
-like that one:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-kd">defprotocol </span><span class="tok-nv">IHMac</span>
-  <span class="tok-p">(</span><span class="tok-nf">hash*</span> <span class="tok-p">[</span><span class="tok-nv">data</span> <span class="tok-nb">key </span><span class="tok-nv">algorithm</span><span class="tok-p">])</span>
-  <span class="tok-p">(</span><span class="tok-nf">verify*</span> <span class="tok-p">[</span><span class="tok-nv">data</span> <span class="tok-nv">signature</span> <span class="tok-nb">key </span><span class="tok-nv">alg</span><span class="tok-p">]))</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Behind the scenes of the high level api, a low level api is already defined with protocols and
-you can use it for your purposes:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac.proto</span> <span class="tok-ss">:as</span> <span class="tok-nv">impl</span><span class="tok-p">])</span>
-
-<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">hmac/hmac-engine</span> <span class="tok-s">&quot;secret&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)]</span>
-  <span class="tok-p">(</span><span class="tok-nf">impl/update!</span> <span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;My first data&quot;</span><span class="tok-p">))</span>
-  <span class="tok-p">(</span><span class="tok-nf">impl/update!</span> <span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;My second data&quot;</span><span class="tok-p">))</span>
-  <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span> <span class="tok-p">(</span><span class="tok-nf">impl/end!</span> <span class="tok-nv">engine</span><span class="tok-p">)))</span>
-<span class="tok-c1">;; &quot;924c4b82a56c0115eb9...&quot;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This also applies to the rest of mac implementations found in <strong>buddy-core</strong> library.</p>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="shmac-salted"><a class="link" href="#shmac-salted">SHMac (Salted)</a></h3>
-<div class="paragraph">
-<p>This is a salted variant of hmac algorithm and is available in <strong>buddy.core.mac.shmac</strong>
-namespace.</p>
-</div>
-<div class="sect3">
-<h4 id="usage-example"><a class="link" href="#usage-example">Usage example</a></h4>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Import required namespaces</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac.hmac</span> <span class="tok-ss">:as</span> <span class="tok-nv">shmac</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
-
-<span class="tok-c1">;; Generate sha256 shmac over string</span>
-<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">shmac/hash</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-s">&quot;salt&quot;</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:sha256</span><span class="tok-p">)</span>
-    <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; &quot;bd5f7a0040430a73f4845bac8f980c6398b4baae8a22efcc22038be0f4dd9678&quot;</span></code></pre>
-</div>
-</div>
+defined in the <code>buddy.core.codecs</code> namespace. It comes with default implementations
+for <code>byte[]</code> and <code>java.lang.String</code> and <code>nil</code>.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="poly1305"><a class="link" href="#poly1305">Poly1305</a></h3>
 <div class="paragraph">
-<p>Poly1305 is a cryptographic message authentication code
-(MAC) written by Daniel J. Bernstein. It can be used to verify the
-data integrity and the authenticity of a message.</p>
+<p>Poly1305 is a cryptographic message authentication code (MAC) written by Daniel
+J. Bernstein. It can be used to verify the data integrity and the authenticity of
+a message.</p>
 </div>
 <div class="paragraph">
-<p>The security of Poly1305 is very close to the block cipher algorithm.
-As a result, the only way for an attacker to break Poly1305 is to break
-the cipher.</p>
+<p>The security of Poly1305 is very close to the block cipher algorithm. As a result,
+the only way for an attacker to break Poly1305 is to break the cipher.</p>
 </div>
 <div class="paragraph">
-<p>Poly1305 offers cipher replaceability. If anything goes wrong with
-one, it can be substituted by another with identical security
-guarantees.</p>
+<p>Poly1305 offers cipher replaceability. If anything goes wrong with one, it can
+be substituted by another with identical security guarantees.</p>
 </div>
 <div class="paragraph">
-<p>Unlike <strong>HMac</strong>, it requires an initialization vector (IV). An IV is
-like a salt. It should be generated using a strong random number
-generator for security guarantees. Also, the IV should be of the same
-length as the chosen cipher block size.</p>
-</div>
-<div class="sect3">
-<h4 id="basic-usage-3"><a class="link" href="#basic-usage-3">Basic usage</a></h4>
-<div class="paragraph">
-<p>The default specification talks about AES as default block cipher,
-but buddy comes with support for three block ciphers: AES, Serpent
-and Twofish.</p>
+<p>Unlike <strong>hmac</strong>, it requires an initialization vector (IV). An IV is like a salt.
+It should be generated using a strong random number generator for security
+guarantees. Also, the IV should be of the same length as the chosen cipher block
+size.</p>
 </div>
 <div class="listingblock">
-<div class="title">Make mac using Serpent block cipher with random IV</div>
+<div class="title">Example using poly1305 mac algorithm for generate mac from string</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac.poly1305</span> <span class="tok-ss">:as</span> <span class="tok-nv">poly</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac</span> <span class="tok-ss">:as</span> <span class="tok-nv">mac</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
 
-<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">sig</span> <span class="tok-p">(</span><span class="tok-nf">poly/hash</span> <span class="tok-s">&quot;some-data&quot;</span> <span class="tok-s">&quot;mysecret&quot;</span> <span class="tok-ss">:serpent</span><span class="tok-p">)]</span>
-  <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span> <span class="tok-nv">sig</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nb">key </span><span class="tok-p">(</span><span class="tok-nf">nonce/random-bytes</span> <span class="tok-mi">32</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">iv</span> <span class="tok-p">(</span><span class="tok-nf">nonce/random-bytes</span> <span class="tok-mi">32</span><span class="tok-p">))</span>
+
+<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-s">&quot;some-data&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-nb">key </span><span class="tok-ss">:iv</span> <span class="tok-nv">iv</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:poly1305+aes</span><span class="tok-p">})</span>
+    <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;1976b1c490c306e7304a59dfacee4207&quot;</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The default specification talks about AES as default block cipher but the algorith
+in fact can work other block ciphers without any problem. So you can use <code>serpent</code>
+and twofish among the default aes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-s">&quot;some-data&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-nb">key </span><span class="tok-ss">:iv</span> <span class="tok-nv">iv</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:poly1305+twofish</span><span class="tok-p">})</span>
+    <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;6e7304a59dfacee42071976b1c490c30&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="advanced-usage-2"><a class="link" href="#advanced-usage-2">Advanced Usage</a></h3>
+<div class="sect3">
+<h4 id="generate-mac-for-file-like-objects"><a class="link" href="#generate-mac-for-file-like-objects">Generate mac for file like objects</a></h4>
+<div class="paragraph">
+<p>Like with hash functions, you can use String, byte[], <strong>File</strong>, <strong>URL</strong>, <strong>URI</strong> and
+<strong>InputStream</strong> as input value for mac functions:</p>
+</div>
+<div class="listingblock">
+<div class="title">Example generating hmac from input stream</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">clojure.java.io</span> <span class="tok-ss">:as</span> <span class="tok-nv">io</span><span class="tok-p">])</span>
+
+<span class="tok-c1">;; Generate hmac for file</span>
+<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">io/input-stream</span> <span class="tok-s">&quot;/tmp/somefile&quot;</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac-sha256</span><span class="tok-p">})</span>
+    <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
+<span class="tok-c1">;; =&gt; &quot;4cb793e600848da205323800...&quot;</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="low-level-api"><a class="link" href="#low-level-api">Low-Level Api</a></h4>
+<div class="paragraph">
+<p>Behind the scenes of the high level api, a low level api is already defined
+with protocols and you can use it for your purposes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">mac/-engine</span> <span class="tok-p">{</span><span class="tok-ss">:alg</span> <span class="tok-ss">:hnac+sha256</span><span class="tok-p">})]</span>
+  <span class="tok-p">(</span><span class="tok-nf">mac/-update</span> <span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;hello&quot;</span><span class="tok-p">)</span> <span class="tok-mi">0</span> <span class="tok-mi">5</span><span class="tok-p">)</span>
+  <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span> <span class="tok-p">(</span><span class="tok-nf">mac/-end</span> <span class="tok-nv">engine</span><span class="tok-p">)))</span>
+<span class="tok-c1">;; &quot;924c4b82a56c0115eb9...&quot;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This also applies to the rest of mac implementations found in <strong>buddy-core</strong> library.</p>
 </div>
 </div>
 </div>
@@ -600,119 +535,89 @@ openssl ec -in ecprivkey.pem -pubout -out ecpubkey.pem</code></pre>
 <h2 id="digital-signatures"><a class="link" href="#digital-signatures">Digital Signatures</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Digital Signatures differ from Mac as Mac values are both generated
-and verified using the same secret key. Digital Signatures require a
-public/private keypair. It signs using a private key and verifies a
-signature using a public key.</p>
-</div>
-<div class="sect2">
-<h3 id="rsassa-pss"><a class="link" href="#rsassa-pss">RSASSA PSS</a></h3>
-<div class="paragraph">
-<p>RSASSA-PSS is an improved probabilistic signature scheme with
-appendix. What that means is that you can use a private RSA key
-to sign data in combination with some random input.</p>
+<p>Digital Signature algorithms has similar purposes that MAC but comes
+with some tradeoffs such as them provides additional security feature
+(Non-repudiation) with cost in the performance. You can read a great
+explanation about the differences with MAC
+<a href="http://crypto.stackexchange.com/a/5647">here</a>.</p>
 </div>
 <div class="paragraph">
-<p>RFC: <a href="http://www.ietf.org/rfc/rfc3447.txt" class="bare">http://www.ietf.org/rfc/rfc3447.txt</a></p>
+<p><strong>buddy-core</strong> comes with support for:
+<a href="https://en.wikipedia.org/wiki/PKCS_1">rsassa-pss</a>,
+<a href="https://en.wikipedia.org/wiki/PKCS_1">rsassa-pkcs</a> and
+<a href="https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm">ecdsa</a>.</p>
 </div>
 <div class="listingblock">
-<div class="title">Sign sample string using rsassa-pss.</div>
+<div class="title">Example signing string using rsassa-pss+sha256</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.sign.rsapss</span> <span class="tok-ss">:as</span> <span class="tok-nv">rsapss</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.dsa</span> <span class="tok-ss">:as</span> <span class="tok-nv">dsa</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; Read private key</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">rsaprivkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/privkey.3des.rsa.pem&quot;</span> <span class="tok-s">&quot;secret&quot;</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">privkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/privkey.3des.rsa.pem&quot;</span> <span class="tok-s">&quot;secret&quot;</span><span class="tok-p">))</span>
 
 <span class="tok-c1">;; Make signature</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">signature</span> <span class="tok-p">(</span><span class="tok-nf">rsapss/sign</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-nv">rsaprivkey</span> <span class="tok-ss">:sha256</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">signature</span> <span class="tok-p">(</span><span class="tok-nf">dsa/sign</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-nv">privkey</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:rsassa-pss+sha256</span><span class="tok-p">}))</span>
 
 <span class="tok-c1">;; Now signature contains a byte[] with signature of &quot;foo&quot; string</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
-<div class="title">Verify signature using rsassa-pss.</div>
+<div class="title">Example verifying signature</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Read private key</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">rsapubkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/pubkey.3des.rsa.pem&quot;</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">pubkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/pubkey.3des.rsa.pem&quot;</span><span class="tok-p">))</span>
 
 <span class="tok-c1">;; Make verification</span>
-<span class="tok-p">(</span><span class="tok-nf">rsapss/verify</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-nv">signature</span> <span class="tok-nv">rsapubkey</span> <span class="tok-ss">:sha256</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-nf">dsa/verify</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-nv">signature</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-nv">pubkey</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:rsassa-pss+sha256</span><span class="tok-p">})</span>
 <span class="tok-c1">;; =&gt; true</span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="rsassa-pkcs1-v1-5"><a class="link" href="#rsassa-pkcs1-v1-5">RSASSA PKCS1 v1.5</a></h3>
 <div class="paragraph">
-<p>RSASSA-PSS is an probabilistic signature scheme with appendix.
-What that means is that you can use a private RSA key to sign data.</p>
+<p>Here is a table with complete list of supported algorithms and its variants:</p>
 </div>
-<div class="paragraph">
-<p>RFC: <a href="http://www.ietf.org/rfc/rfc3447.txt" class="bare">http://www.ietf.org/rfc/rfc3447.txt</a></p>
-</div>
-<div class="listingblock">
-<div class="title">Sign sample string using rsassa-pkcs.</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.sign.rsapkcs</span> <span class="tok-ss">:as</span> <span class="tok-nv">rsapkcs</span><span class="tok-p">])</span>
-
-<span class="tok-c1">;; Read private key</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">rsaprivkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/privkey.3des.rsa.pem&quot;</span> <span class="tok-s">&quot;secret&quot;</span><span class="tok-p">))</span>
-
-<span class="tok-c1">;; Make signature</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">signature</span> <span class="tok-p">(</span><span class="tok-nf">rsapkcs/sign</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-nv">rsaprivkey</span> <span class="tok-ss">:sha256</span><span class="tok-p">))</span>
-
-<span class="tok-c1">;; Now signature contains a byte[] with signature of &quot;foo&quot; string</span></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">Verify signature using rsassa-pkcs.</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Read private key</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">rsapubkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/pubkey.3des.rsa.pem&quot;</span><span class="tok-p">))</span>
-
-<span class="tok-c1">;; Make verification</span>
-<span class="tok-p">(</span><span class="tok-nf">rsapkcs/verify</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-nv">signature</span> <span class="tok-nv">rsapubkey</span> <span class="tok-ss">:sha256</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; true</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="eliptic-curve-dsa"><a class="link" href="#eliptic-curve-dsa">Eliptic Curve DSA</a></h3>
-<div class="paragraph">
-<p>Elliptic Curve Digital Signature Algorithm (ECDSA) is a variant of the
-Digital Signature Algorithm (DSA) which uses elliptic curve cryptography.</p>
-</div>
-<div class="listingblock">
-<div class="title">Sign sample string using ecdsa.</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.sign.ecdsa</span> <span class="tok-ss">:as</span> <span class="tok-nv">ecdsa</span><span class="tok-p">])</span>
-
-<span class="tok-c1">;; Read private key</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">ecdsaprivkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/privkey.ecdsa.pem&quot;</span> <span class="tok-s">&quot;secret&quot;</span><span class="tok-p">))</span>
-
-<span class="tok-c1">;; Make signature</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">signature</span> <span class="tok-p">(</span><span class="tok-nf">ecdsa/sign</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-nv">ecdsaprivkey</span> <span class="tok-ss">:sha256</span><span class="tok-p">))</span></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">Verify signature using ecdsa.</div>
-<div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Read private key</span>
-<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">ecdsapubkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;test/_files/pubkey.ecdsa.pem&quot;</span><span class="tok-p">))</span>
-
-<span class="tok-c1">;; Make verification</span>
-<span class="tok-p">(</span><span class="tok-nf">ecdsa/verify</span> <span class="tok-s">&quot;foo&quot;</span> <span class="tok-nv">signature</span> <span class="tok-nv">ecdsapubkey</span> <span class="tok-ss">:sha256</span><span class="tok-p">))</span>
-<span class="tok-c1">;; =&gt; true</span></code></pre>
-</div>
-</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Algorithm name</th>
+<th class="tableblock halign-left valign-top"><code>:alg</code> keyword value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RSASSA-PSS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:rsassa-pss+sha256</code>, <code>:rsassa-pss+sha384</code>, <code>:rsassa-pss+sha512</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RSASSA-PKCS 1.5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:rsassa-pkcs15+sha256</code>, <code>:rsassa-pkcs15+sha384</code>, <code>:rsassa-pkcs15+sha512</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ECDSA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:ecdsa+sha256</code>, <code>:ecdsa+sha384</code>, <code>:ecdsa+sha512</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<strong>ECDSA</strong> algorithm requires EC type of asymentric key pair.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="key-derivation-functions"><a class="link" href="#key-derivation-functions">Key Derivation Functions</a></h2>
+<h2 id="key-derivation-functions-kdf"><a class="link" href="#key-derivation-functions-kdf">Key Derivation Functions (KDF)</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Key derivation functions are often used in conjunction with non-secret parameters
@@ -724,73 +629,52 @@ to derive one or more keys from a common secret value.</p>
 <table class="tableblock frame-all grid-all spread">
 <caption class="title">Table 2. Supported key derivation functions.</caption>
 <colgroup>
-<col style="width: 33%;">
-<col style="width: 33%;">
+<col style="width: 16%;">
+<col style="width: 50%;">
 <col style="width: 33%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Algorithm name</th>
-<th class="tableblock halign-left valign-top">Constructor</th>
-<th class="tableblock halign-left valign-top">Notes</th>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top"><code>:alg</code> value</th>
+<th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HKDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>buddy.core.kdf/hkdf</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HMAC based KDF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:hkdf+sha256</code>, <code>:hkdf+sha384</code>, <code>:hkdf+sha512</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HMAC-based Extract-and-Expand Key Derivation Function</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">KDF1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>buddy.core.kdf/kdf1</code></p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:kdf1+sha256</code>, <code>:kdf1+sha384</code>, <code>:kdf1+sha512</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">KDF v1</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">KDF2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>buddy.core.kdf/kdf2</code></p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:kdf2+sha256</code>, <code>:kdf2+sha384</code>, <code>:kdf2+sha512</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">KDF v2</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CMKDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>buddy.core.kdf/cmkdf</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Counter Mode KDF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:cmkdf+sha256</code>, <code>:cmkdf+sha384</code>, <code>:cmkdf+sha512</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Counter-Mode key derivation function (as defined in NIST SP800-108)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">FMKDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>buddy.core.kdf/fmkdf</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Feedback Mode KDF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:fmkdf+sha256</code>, <code>:fmkdf+sha384</code>, <code>:fmkdf+sha512</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Feedback-Mode key derivation function (as defined in NIST SP800-108)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">DPIMKDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>buddy.core.kdf/dpimkdf</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Double-Pipeline Iteration Mode KDF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:dpimkdf+sha256</code>, <code>:dpimkdf+sha384</code>, <code>:dpimkdf+sha512</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Double-Pipeline Iteration Mode key derivation function (as defined in NIST SP800-108)</p></td>
 </tr>
 </tbody>
 </table>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>All key derivation functions work with byte arrays. For the
-following examples, the functions in <code>buddy.core.codecs</code> convert
-strings to byte arrays.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="sect2">
-<h3 id="hkdf"><a class="link" href="#hkdf">HKDF</a></h3>
-<div class="paragraph">
-<p>HMAC-based Extract-and-Expand Key Derivation Function (HKDF) is implemented according to IETF RFC 5869</p>
-</div>
 <div class="listingblock">
-<div class="title">Example using hkdf</div>
+<div class="title">Example using KDF with HKDF key derivation function</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.kdf</span> <span class="tok-ss">:as</span> <span class="tok-nv">kdf</span><span class="tok-p">])</span>
@@ -799,59 +683,26 @@ strings to byte arrays.</p>
 <span class="tok-c1">;; key, salt and optionally info field that can</span>
 <span class="tok-c1">;; contain any random data.</span>
 
-<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">kfn</span> <span class="tok-p">(</span><span class="tok-nf">kdf/hkdf</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;mysecretkey&quot;</span><span class="tok-p">)</span>
-                    <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;mypublicsalt&quot;</span><span class="tok-p">)</span>
-                    <span class="tok-nv">nil</span> <span class="tok-c1">;; info parameter can be nil</span>
-                    <span class="tok-ss">:sha256</span><span class="tok-p">)]</span>
-  <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">kdf/generate-byte-array!</span> <span class="tok-nv">kfn</span> <span class="tok-mi">8</span><span class="tok-p">)</span>
-      <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">)))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">kdf/engine</span> <span class="tok-p">{</span><span class="tok-ss">:alg</span> <span class="tok-ss">:hkdf+sha256</span>
+                         <span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecret&quot;</span>
+                         <span class="tok-ss">:salt</span> <span class="tok-s">&quot;mysalt&quot;</span><span class="tok-p">}))</span>
 
+<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">kdf/get-bytes</span> <span class="tok-nv">engine</span> <span class="tok-mi">8</span>
+    <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">)))</span>
 <span class="tok-c1">;; =&gt; &quot;0faba553152fce4f&quot;</span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="kdf1-2"><a class="link" href="#kdf1-2">KDF1/2</a></h3>
 <div class="paragraph">
-<p>KDF1/2 hash-based key derivation functions for derived keys and ivs as defined by IEEE P1363a/ISO 18033.</p>
+<p>If you do not happy with the current variants, you can use any other hash algorithm
+already supported in buddy under <code>buddy.core.hash</code> namespace or directly passing
+a digest engine instance:</p>
 </div>
 <div class="listingblock">
-<div class="title">Example using kdf1 or kdf2</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
-<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.kdf</span> <span class="tok-ss">:as</span> <span class="tok-nv">kdf</span><span class="tok-p">])</span>
-
-<span class="tok-c1">;; kdf1 and kdf2 are very similar and have the same</span>
-<span class="tok-c1">;; constructor signature. Requires: key data, salt</span>
-<span class="tok-c1">;; and hash algorithm keyword.</span>
-
-<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">kfn</span> <span class="tok-p">(</span><span class="tok-nf">kdf/kdf2</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;mysecretkey&quot;</span><span class="tok-p">)</span>
-                    <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;mypublicsalt&quot;</span><span class="tok-p">)</span>
-                    <span class="tok-ss">:sha256</span><span class="tok-p">)]</span>
-  <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">kdf/generate-byte-array!</span> <span class="tok-nv">kfn</span> <span class="tok-mi">8</span><span class="tok-p">)</span>
-      <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">)))</span>
-
-<span class="tok-c1">;; =&gt; &quot;0faba553152fce4f&quot;</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="counter-mode-kdf"><a class="link" href="#counter-mode-kdf">Counter Mode KDF</a></h3>
-<div class="paragraph">
-<p>Hash-based KDF with counter mode defined by the publicly available NIST SP 800-108 specification.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="feedback-mode-kdf"><a class="link" href="#feedback-mode-kdf">Feedback Mode KDF</a></h3>
-<div class="paragraph">
-<p>Hash-based KDF with feedback mode defined by the publicly available NIST SP 800-108 specification.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="double-pipeline-iteration-mode-kdf"><a class="link" href="#double-pipeline-iteration-mode-kdf">Double-Pipeline Iteration Mode KDF</a></h3>
-<div class="paragraph">
-<p>Hash-based KDF with Double-Pipeline Iteration Mode defined by the publicly available
-NIST SP 800-108 specification.</p>
+<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">kdf/engine</span> <span class="tok-p">{</span><span class="tok-ss">:alg</span> <span class="tok-ss">:hkdf</span>
+                         <span class="tok-ss">:digest</span> <span class="tok-ss">:blake2-512</span>
+                         <span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecret&quot;</span>
+                         <span class="tok-ss">:salt</span> <span class="tok-s">&quot;mysalt&quot;</span><span class="tok-p">}))</span></code></pre>
 </div>
 </div>
 </div>
@@ -1381,7 +1232,7 @@ restrictions for contributions. Just open an issue or pull request.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash">lein <span class="tok-nb">test</span></code></pre>
+<pre class="pygments highlight"><code data-lang="bash">lein <span class="tok-nb">test</span>-all</code></pre>
 </div>
 </div>
 </div>
@@ -1397,7 +1248,7 @@ of the license on the root of the repository on <code>LICENSE</code> file.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-09-19 11:53:45 EEST
+Last updated 2015-11-15 10:59:18 EET
 </div>
 </div>
 </body>
