@@ -64,7 +64,19 @@
           pkey (keys/str->public-key keystr)]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey))
       (is (keys/public-key? pkey))))
-  )
+
+  (testing "Read ecdsa priv key from string."
+    (let [keystr (slurp "test/_files/privkey.ecdsa.pem")
+          pkey (keys/str->private-key keystr)]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey))
+      (is (keys/private-key? pkey))))
+
+    (testing "Read rsa priv key from string."
+    (let [keystr (slurp "test/_files/privkey.rsa.pem")
+          pkey (keys/str->private-key keystr)]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))
+      (is (keys/private-key? pkey))))
+)
 
 (deftest key-wrapping-algorithms
   (let [secret16 (nonce/random-bytes 16)
