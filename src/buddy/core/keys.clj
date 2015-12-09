@@ -91,10 +91,12 @@
 
 (defn str->private-key
   "Private key constructor from string."
-  [keydata]
+  ([keydata]
+   (str->private-key keydata nil))
+  ([keydata passphrase]
   (with-open [reader (StringReader. ^String keydata)]
-   (let [keypair (read-pem->keypair reader nil)]
-     (.getPrivate keypair))))
+   (let [keypair (read-pem->keypair reader passphrase)]
+     (.getPrivate keypair)))))
 
 (defn public-key?
   "Return true if key `k` is a public key."
