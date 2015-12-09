@@ -72,7 +72,7 @@
       (is (keys/private-key? pkey))))
 
   (testing "Read rsa priv key from string"
-    (let [keystr (slurp "test/_files/privkey.rsa.pem")
+    (let [keystr (slurp "test/_files/privkey.3des.rsa.pem")
           pkey (keys/str->private-key keystr "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))
       (is (keys/private-key? pkey))))
