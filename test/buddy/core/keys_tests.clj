@@ -64,7 +64,34 @@
           pkey (keys/str->public-key keystr)]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey))
       (is (keys/public-key? pkey))))
-  )
+
+  (testing "Read ecdsa priv key from string."
+    (let [keystr (slurp "test/_files/privkey.ecdsa.pem")
+          pkey (keys/str->private-key keystr)]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey))
+      (is (keys/private-key? pkey))))
+
+  (testing "Read rsa priv key from string"
+    (let [keystr (slurp "test/_files/privkey.3des.rsa.pem")
+          pkey (keys/str->private-key keystr "secret")]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))
+      (is (keys/private-key? pkey))))
+
+  (testing "Read rsa priv key from string without password."
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (let [keystr (slurp "test/_files/privkey.3des.rsa.pem")
+                       pkey (keys/str->private-key keystr)])))
+    (let [keystr (slurp "test/_files/privkey.rsa.pem")
+          pkey (keys/str->private-key keystr)]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))
+      (is (keys/private-key? pkey))))
+
+  (testing "Read rsa priv key from string with bad password"
+    (is (thrown? org.bouncycastle.openssl.EncryptionException
+                 (let [keystr (slurp "test/_files/privkey.3des.rsa.pem")
+                       pkey (keys/str->private-key keystr "secret2")]
+                   (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))))
+)
 
 (deftest key-wrapping-algorithms
   (let [secret16 (nonce/random-bytes 16)
