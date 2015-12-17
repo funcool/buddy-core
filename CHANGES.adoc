@@ -1,5 +1,12 @@
 = Changelog
 
+== Version 0.8.2
+
+Date: 2015-12-17
+
+- Add the ability to build provate key from string (thanks to @dannc).
+
+
 == Version 0.8.1
 
 Date: 2015-11-15
