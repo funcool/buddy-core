@@ -351,9 +351,8 @@
     (try
       (calculate-authtag! cipher output offset)
       (catch InvalidCipherTextException e
-        (let [message (str "Couldn't generate gcm authentication tag: "
-                           (.getMessage e))]
-          (throw (ex-info message {:type :encryption :cause :authtag})))))
+        (as-> (str "Couldn't generate gcm authentication tag: " (.getMessage e)) $
+          (throw (ex-info $ {:type :encryption :cause :authtag})))))
     output))
 
 (defn decrypt-gcm
@@ -372,9 +371,8 @@
     (try
       (calculate-authtag! cipher output offset)
       (catch InvalidCipherTextException e
-        (let [message (str "Couldn't validate gcm authentication tag: "
-                           (.getMessage e))]
-          (throw (ex-info message {:type :validation :cause :authtag})))))
+        (as-> (str "Couldn't validate gcm authentication tag: " (.getMessage e)) $
+          (throw (ex-info $ {:type :validation :cause :authtag})))))
     output))
 
 (defn- aad->bytes
