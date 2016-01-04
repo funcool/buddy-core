@@ -1,4 +1,4 @@
-(defproject buddy/buddy-core "0.8.2"
+(defproject buddy/buddy-core "0.9.0"
   :description "Cryptographic Api for Clojure."
   :url "https://github.com/funcool/buddy-core"
   :license {:name "Apache 2.0"
