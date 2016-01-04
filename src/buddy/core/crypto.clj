@@ -291,7 +291,12 @@
 (def ^:private keylength? #(= (count %1) %2))
 (def ^:private ivlength? #(= (count %1) %2))
 
-(defn- encrypt-cbc
+(defn encrypt-cbc
+  "Encrypt arbitrary length input using the provided
+  engine, key and iv using cbc encryption mode and
+  the pkcs7 padding acording to the aead-aes-cbc-hmac
+  encryption scheme."
+  {:internal true :no-doc true}
   [cipher input key iv]
   (let [blocksize (get-block-size cipher)
         blocks (split-by-blocksize input blocksize true)
@@ -311,7 +316,12 @@
                    (padding/pad! block remaining :pkcs7)
                    (conj processed (process-block! cipher block)))))))))
 
-(defn- decrypt-cbc
+(defn decrypt-cbc
+  "Dencrypt arbitrary length input using the provided
+  engine, key and iv using cbc encryption mode and
+  the pkcs7 padding acording to the aead-aes-cbc-hmac
+  encryption scheme."
+  {:internal true :no-doc true}
   [cipher input key iv]
   (let [blocksize (get-block-size cipher)
         blocks (split-by-blocksize input blocksize false)]
@@ -327,7 +337,12 @@
                  (let [result (padding/unpad block :pkcs7)]
                    (conj processed result))))))))
 
-(defn- encrypt-gcm
+(defn encrypt-gcm
+  "Encrypt arbitrary length input using the provided
+  engine, key and iv using cbc encryption mode and
+  the pkcs7 padding acording to the aead-aes-gcm
+  encryption scheme."
+  {:internal true :no-doc true}
   [cipher input key iv aad]
   (initialize! cipher {:iv iv :key key :tagsize 128 :op :encrypt :aad aad})
   (let [outputlength (get-output-size cipher (count input))
@@ -341,7 +356,12 @@
           (throw (ex-info message {:type :encryption :cause :authtag})))))
     output))
 
-(defn- decrypt-gcm
+(defn decrypt-gcm
+  "Dencrypt arbitrary length input using the provided
+  engine, key and iv using cbc encryption mode and
+  the pkcs7 padding acording to the aead-aes-gcm
+  encryption scheme."
+  {:internal true :no-doc true}
   [cipher ciphertext key iv aad]
   (initialize! cipher {:iv iv :key key :tagsize 128 :op :decrypt :aad aad})
   (let [input (bytes/copy ciphertext)
