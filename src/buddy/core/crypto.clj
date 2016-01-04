@@ -261,17 +261,19 @@
      (loop [cursormin 0
             cursormax blocksize
             remain inputsize
-            result []]
+            result (transient [])]
        (cond
          (= remain 0)
-         (if additional
-           (conj result (byte-array blocksize))
-           result)
+         (persistent!
+          (if additional
+            (conj! result (byte-array blocksize))
+            result))
 
          (< remain blocksize)
          (let [buffer (byte-array blocksize)]
            (System/arraycopy input cursormin buffer 0 remain)
-           (conj result buffer))
+           (persistent!
+            (conj! result buffer)))
 
          (>= remain blocksize)
          (let [buffer (byte-array blocksize)]
@@ -279,7 +281,7 @@
            (recur cursormax
                   (+ cursormax blocksize)
                   (- inputsize cursormax)
-                  (conj result buffer))))))))
+                  (conj! result buffer))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; High-Level Api
@@ -304,17 +306,18 @@
     (initialize! cipher {:op :encrypt :iv iv :key key})
     (apply bytes/concat
            (loop [blocks blocks
-                  processed []
+                  processed (transient [])
                   pos 0]
              (let [block (first blocks)
                    last? (empty? (rest blocks))]
                (if-not last?
                  (recur (rest blocks)
-                        (conj processed (process-block! cipher block))
+                        (conj! processed (process-block! cipher block))
                         (+ pos (count block)))
                  (let [remaining (- inputsize pos)]
                    (padding/pad! block remaining :pkcs7)
-                   (conj processed (process-block! cipher block)))))))))
+                   (persistent!
+                    (conj! processed (process-block! cipher block))))))))))
 
 (defn decrypt-cbc
   "Dencrypt arbitrary length input using the provided
@@ -328,14 +331,15 @@
     (initialize! cipher {:op :decrypt :iv iv :key key})
     (apply bytes/concat
            (loop [blocks blocks
-                  processed []]
+                  processed (transient [])]
              (let [block (process-block! cipher (first blocks))
                    last? (empty? (rest blocks))]
                (if-not last?
                  (recur (rest blocks)
-                        (conj processed block))
+                        (conj! processed block))
                  (let [result (padding/unpad block :pkcs7)]
-                   (conj processed result))))))))
+                   (persistent!
+                    (conj! processed result)))))))))
 
 (defn encrypt-gcm
   "Encrypt arbitrary length input using the provided
