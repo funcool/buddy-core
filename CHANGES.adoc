@@ -1,5 +1,15 @@
 = Changelog
 
+== Version 0.9.0
+
+Date: Unreleased
+
+- Make encrypt-cbc, decrypt-cbc, encrypt-gcm and decrypt-gcm public.
+- Improve perfmance of `encrypt-*` and `split-by-blocksize` functions.
+- Make available blake2b-128 and blake2b-256.
+- Update bouncycastle to 1.54.
+
+
 == Version 0.8.2
 
 Date: 2015-12-17
