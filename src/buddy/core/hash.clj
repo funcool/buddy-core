@@ -40,8 +40,8 @@
    :sha3-256 #(SHA3Digest. 256)
    :sha3-384 #(SHA3Digest. 384)
    :sha3-512 #(SHA3Digest. 512)
-   ;; :blake2b-128 #(Blake2bDigest. nil 16 nil nil)
-   ;; :blake2b-256 #(Blake2bDigest. nil 32 nil nil)
+   :blake2b-128 #(Blake2bDigest. nil 16 nil nil)
+   :blake2b-256 #(Blake2bDigest. nil 32 nil nil)
    :blake2b-512 #(Blake2bDigest. nil 64 nil nil)
    :skein-256 #(SkeinDigest. 256 256)
    :skein-512 #(SkeinDigest. 512 512)
@@ -171,19 +171,19 @@
   "BLAKE2 cryptographic hash function with fixed output
   digest size to 128 bits."
   [input]
-  (blake2b input 16))
+  (digest input :blake2b-128))
 
-;; (defn blake2b-256
-;;   "BLAKE2 cryptographic hash function with fixed output
-;;   digest size to 256 bits."
-;;   [input]
-;;   (blake2b input 32))
+(defn blake2b-256
+  "BLAKE2 cryptographic hash function with fixed output
+  digest size to 256 bits."
+  [input]
+  (digest input :blake2b-256))
 
 (defn blake2b-512
   "BLAKE2 cryptographic hash function with fixed output
   digest size to 512 bits."
   [input]
-  (blake2b input 64))
+  (digest input :blake2b-512))
 
 (defn skein
   "Skein is a cryptographic hash function based on

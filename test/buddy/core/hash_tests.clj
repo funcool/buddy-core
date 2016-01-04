@@ -104,14 +104,6 @@
                   "1fca7903d06564fea7a2d3730dbdb80c"
                   "1f85562dfcc070334ea4d1d9e72cba7a")))))
 
-  ;; (testing "blake2 256"
-  ;;   (let [hashed1 (hash/blake2b-256 "abc")
-  ;;         hashed2 (hash/digest "abc" :blake2b-256)]
-  ;;     (is (bytes/equals? hashed1 hashed2))
-  ;;     (is (= (str/upper-case (bytes->hex hashed1))
-  ;;            (str "508C5E8C327C14E2E1A72BA34EEB452F"
-  ;;                 "37458B209ED63A294D999B4C86675e982")))))
-
   (testing "sha1"
     (let [hashed (hash/sha1 "")]
       (is (= (bytes->hex hashed)
