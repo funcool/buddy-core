@@ -5,8 +5,8 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
                  [commons-codec/commons-codec "1.10"]
-                 [org.bouncycastle/bcprov-jdk15on "1.53"]
-                 [org.bouncycastle/bcpkix-jdk15on "1.53"]]
+                 [org.bouncycastle/bcprov-jdk15on "1.54"]
+                 [org.bouncycastle/bcpkix-jdk15on "1.54"]]
   :source-paths ["src"]
   :test-paths ["test"]
   :jar-exclusions [#"\.cljx|\.swp|\.swo|user.clj"]
