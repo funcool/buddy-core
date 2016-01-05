@@ -49,7 +49,7 @@
   (-update [_ input offset length] "Update the engine state.")
   (-end [_] "Generates the mac"))
 
-(defmulti ^:no-doc -engine
+(defmulti ^:no-doc engine
   "A engine constructor."
   :alg)
 
@@ -112,46 +112,46 @@
             params (ParametersWithIV. params iv)]
         (.init it params)))))
 
-(defmethod -engine :hmac
+(defmethod engine :hmac
   [options]
   (let [digest (hash/resolve-digest-engine
                 (:digest options :sha256))]
     (assert digest "Invalid digest engine.")
     (HMac. digest)))
 
-(defmethod -engine :hmac+sha256
+(defmethod engine :hmac+sha256
   [options]
   (let [digest (hash/resolve-digest-engine :sha256)]
     (HMac. digest)))
 
-(defmethod -engine :hmac+sha384
+(defmethod engine :hmac+sha384
   [options]
   (let [digest (hash/resolve-digest-engine :sha384)]
     (HMac. digest)))
 
-(defmethod -engine :hmac+sha512
+(defmethod engine :hmac+sha512
   [options]
   (let [digest (hash/resolve-digest-engine :sha512)]
     (HMac. digest)))
 
-(defmethod -engine :poly1305
+(defmethod engine :poly1305
   [options]
   (let [cipher (resolve-cipher-engine
                 (:cipher options :aes))]
     (assert cipher "Invalid cipher engine.")
     (Poly1305. cipher)))
 
-(defmethod -engine :poly1305+aes
+(defmethod engine :poly1305+aes
   [options]
   (let [cipher (resolve-cipher-engine :aes)]
     (Poly1305. cipher)))
 
-(defmethod -engine :poly1305+twofish
+(defmethod engine :poly1305+twofish
   [options]
   (let [cipher (resolve-cipher-engine :twofish)]
     (Poly1305. cipher)))
 
-(defmethod -engine :poly1305+serpent
+(defmethod engine :poly1305+serpent
   [options]
   (let [cipher (resolve-cipher-engine :serpent)]
     (Poly1305. cipher)))
@@ -233,7 +233,7 @@
   [input engine-or-options]
   (if (satisfies? IEngine engine-or-options)
     (-hash input engine-or-options)
-    (let [engine (-engine engine-or-options)]
+    (let [engine (engine engine-or-options)]
       (-init engine engine-or-options)
       (-hash input engine))))
 
@@ -243,6 +243,6 @@
   (let [signature (->byte-array signature)]
     (if (satisfies? IEngine engine-or-options)
       (-verify input signature engine-or-options)
-      (let [engine (-engine engine-or-options)]
+      (let [engine (engine engine-or-options)]
         (-init engine engine-or-options)
         (-verify input signature engine)))))

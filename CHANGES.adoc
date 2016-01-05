@@ -7,6 +7,7 @@ Date: Unreleased
 - Make encrypt-cbc, decrypt-cbc, encrypt-gcm and decrypt-gcm public.
 - Improve perfmance of `encrypt-*` and `split-by-blocksize` functions.
 - Make available blake2b-128 and blake2b-256.
+- Make some private api of mac ns as public.
 - Update bouncycastle to 1.54.
 
 
