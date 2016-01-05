@@ -91,7 +91,7 @@
           keyparam (KeyParameter. (->byte-array key))]
       (.init it keyparam)))
 
- IEngine
+  IEngine
   (-reset [it]
     (.reset it))
   (-update [it input offset length]
