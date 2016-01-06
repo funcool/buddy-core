@@ -2,7 +2,7 @@
 
 == Version 0.9.0
 
-Date: Unreleased
+Date: 2016-01-06
 
 - Make encrypt-cbc, decrypt-cbc, encrypt-gcm and decrypt-gcm public.
 - Improve perfmance of `encrypt-*` and `split-by-blocksize` functions.
