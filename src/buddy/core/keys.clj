@@ -48,7 +48,7 @@
       (if (instance? PEMEncryptedKeyPair keypair)
         (do
           (when (nil? passphrase)
-            (throw (ex-info "Phassphrase is mandatory with encrypted keys." {})))
+            (throw (ex-info "Passphrase is mandatory with encrypted keys." {})))
           (let [builder   (JcePEMDecryptorProviderBuilder.)
                 decryptor (.build builder (.toCharArray passphrase))]
             (->> (.decryptKeyPair keypair decryptor)
