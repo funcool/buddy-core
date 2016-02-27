@@ -39,7 +39,7 @@ dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
-[funcool/buddy-core "0.9.0"]
+[buddy/buddy-core "0.9.0"]
 ----
 
 And is tested under JDK7 and JDK8.
