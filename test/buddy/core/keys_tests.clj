@@ -91,6 +91,11 @@
                  (let [keystr (slurp "test/_files/privkey.3des.rsa.pem")
                        pkey (keys/str->private-key keystr "secret2")]
                    (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))))
+
+  (testing "Read PKCS#8 priv key from string without password"
+    (let [keystr (slurp "test/_files/privkey.pkcs8.pem")
+          pkey (keys/str->private-key keystr)]
+      (is (keys/private-key? pkey))))
 )
 
 (deftest key-wrapping-algorithms
