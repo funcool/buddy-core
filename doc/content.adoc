@@ -143,7 +143,7 @@ hash output, and on the size and quality of the key.
 (require '[buddy.core.codecs :as codecs])
 
 ;; Generate sha256 hmac over string
-(-> (mac/hash "foo bar" {:key "mysecretkey" :alg :hmac-sha256})
+(-> (mac/hash "foo bar" {:key "mysecretkey" :alg :hmac+sha256})
     (codecs/bytes->hex))
 ;; => "61849448bdbb67b39d609471eead667e65b0d1b9e01b1c3bf7aa56b83e9c8083"
 ----
@@ -152,7 +152,7 @@ hash output, and on the size and quality of the key.
 [source, clojure]
 ----
 (mac/verify "foo bar" (codecs/hex->bytes "61849448bdbb67b...")
-            {:key "mysecretkey" :alg :hmac-sha256})
+            {:key "mysecretkey" :alg :hmac+sha256})
 ;; => true
 ----
 
