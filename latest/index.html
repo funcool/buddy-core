@@ -341,7 +341,7 @@ hash output, and on the size and quality of the key.</p>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; Generate sha256 hmac over string</span>
-<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac-sha256</span><span class="tok-p">})</span>
+<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac+sha256</span><span class="tok-p">})</span>
     <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;61849448bdbb67b39d609471eead667e65b0d1b9e01b1c3bf7aa56b83e9c8083&quot;</span></code></pre>
 </div>
@@ -350,7 +350,7 @@ hash output, and on the size and quality of the key.</p>
 <div class="title">Example verifying a hmac</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">mac/verify</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">(</span><span class="tok-nf">codecs/hex-&gt;bytes</span> <span class="tok-s">&quot;61849448bdbb67b...&quot;</span><span class="tok-p">)</span>
-            <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac-sha256</span><span class="tok-p">})</span>
+            <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac+sha256</span><span class="tok-p">})</span>
 <span class="tok-c1">;; =&gt; true</span></code></pre>
 </div>
 </div>
@@ -1248,7 +1248,7 @@ of the license on the root of the repository on <code>LICENSE</code> file.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-02-27 10:55:49 EET
+Last updated 2016-03-19 10:47:14 EET
 </div>
 </div>
 </body>
