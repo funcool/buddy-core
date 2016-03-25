@@ -20,9 +20,12 @@
            org.bouncycastle.openssl.PEMKeyPair
            org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
            org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
+           org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder
            org.bouncycastle.crypto.engines.AESWrapEngine
            org.bouncycastle.crypto.params.KeyParameter
            org.bouncycastle.crypto.Wrapper
+           org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+           org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo
            java.security.PublicKey
            java.security.PrivateKey
            java.security.Security
@@ -38,22 +41,34 @@
 (when (nil? (Security/getProvider "BC"))
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
-(defn- read-pem->keypair
+(defn- decryptor
+  [builder passphrase]
+  (when (nil? passphrase)
+    (throw (ex-info "Passphrase is mandatory with encrypted keys." {})))
+  (.build builder (.toCharArray passphrase)))
+
+(defn- read-pem->privkey
   [^String path ^String passphrase]
   (with-open [reader (io/reader path)]
     (let [parser    (PEMParser. reader)
-          keypair   (.readObject parser)
+          obj       (.readObject parser)
           converter (doto (JcaPEMKeyConverter.)
                       (.setProvider "BC"))]
-      (if (instance? PEMEncryptedKeyPair keypair)
-        (do
-          (when (nil? passphrase)
-            (throw (ex-info "Passphrase is mandatory with encrypted keys." {})))
-          (let [builder   (JcePEMDecryptorProviderBuilder.)
-                decryptor (.build builder (.toCharArray passphrase))]
-            (->> (.decryptKeyPair keypair decryptor)
-                 (.getKeyPair converter))))
-        (.getKeyPair converter keypair)))))
+      (cond
+        (instance? PEMEncryptedKeyPair obj)
+        (->> (.decryptKeyPair obj (decryptor (JcePEMDecryptorProviderBuilder.) passphrase))
+             (.getKeyPair converter)
+             (.getPrivate))
+        (instance? PEMKeyPair obj)
+        (->> (.getKeyPair converter obj)
+             (.getPrivate))
+        (instance? PKCS8EncryptedPrivateKeyInfo obj)
+        (->> (.decryptPrivateKeyInfo obj (decryptor (JceOpenSSLPKCS8DecryptorProviderBuilder.) passphrase))
+             (.getPrivateKey converter))
+        (instance? PrivateKeyInfo obj)
+        (.getPrivateKey converter obj)
+        :else
+        (throw (ex-info "Unknown PEM object type" {:kind (class obj)}))))))
 
 (defn- read-pem->pubkey
   [path-or-reader]
@@ -75,8 +90,7 @@
   ([path]
    (private-key path nil))
   ([path passphrase]
-   (let [keypair (read-pem->keypair path passphrase)]
-     (.getPrivate keypair))))
+   (read-pem->privkey path passphrase)))
 
 (defn public-key
   "Public key constrcutor from file path."
@@ -94,9 +108,8 @@
   ([keydata]
    (str->private-key keydata nil))
   ([keydata passphrase]
-  (with-open [reader (StringReader. ^String keydata)]
-   (let [keypair (read-pem->keypair reader passphrase)]
-     (.getPrivate keypair)))))
+   (with-open [reader (StringReader. ^String keydata)]
+     (read-pem->privkey reader passphrase))))
 
 (defn public-key?
   "Return true if key `k` is a public key."

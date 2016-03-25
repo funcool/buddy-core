@@ -29,6 +29,15 @@
     (let [pkey (keys/private-key "test/_files/privkey.rsa.pem")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
 
+  (testing "Read rsa PKCS#8 priv key"
+    (let [pkey (keys/private-key "test/_files/privkey.pkcs8.3des.rsa.pem" "secret")]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
+
+  (testing "Read rsa PKCS#8 priv key without password"
+    (is (thrown? clojure.lang.ExceptionInfo (keys/private-key "test/_files/privkey.pkcs8.3des.rsa.pem")))
+    (let [pkey (keys/private-key "test/_files/privkey.pkcs8.rsa.pem")]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
+
   (testing "Read dsa priv key"
     (let [pkey (keys/private-key "test/_files/privkey.3des.dsa.pem" "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPrivateKey))))
