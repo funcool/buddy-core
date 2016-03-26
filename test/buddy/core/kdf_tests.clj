@@ -19,6 +19,7 @@
             [buddy.core.keys :as k]
             [buddy.core.nonce :as n]
             [buddy.core.kdf :as kdf]
+            [buddy.core.hash :as hash]
             [clojure.java.io :as io]))
 
 (deftest hkdf-sha256-test
@@ -53,3 +54,65 @@
     ;; (println (c/bytes->hex result))
     ;; (println (c/bytes->hex expected))
     (is (b/equals? result expected))))
+
+; Test vectors taken from RFC6070
+
+(deftest pbkdf2-sha1-test-1
+  (let [key (c/str->bytes "password")
+        salt (c/str->bytes "salt")
+        expected (c/hex->bytes "0C60C80F961F0E71F3A9B524AF6012062FE037A6")
+        engine (kdf/engine {:key key :salt salt :alg :pbkdf2 :digest :sha1
+                            :iterations 1})
+        result (kdf/get-bytes engine 20)]
+    (is (b/equals? result expected))))
+
+(deftest pbkdf2-sha1-test-2
+  (let [key (c/str->bytes "password")
+        salt (c/str->bytes "salt")
+        expected (c/hex->bytes "EA6C014DC72D6F8CCD1ED92ACE1D41F0D8DE8957")
+        engine (kdf/engine {:key key :salt salt :alg :pbkdf2 :digest :sha1
+                            :iterations 2})
+        result (kdf/get-bytes engine 20)]
+    (is (b/equals? result expected))))
+
+(deftest pbkdf2-sha1-test-4096
+  (let [key (c/str->bytes "password")
+        salt (c/str->bytes "salt")
+        expected (c/hex->bytes "4B007901B765489ABEAD49D926F721D065A429C1")
+        engine (kdf/engine {:key key :salt salt :alg :pbkdf2 :digest :sha1
+                            :iterations 4096})
+        result (kdf/get-bytes engine 20)]
+    (is (b/equals? result expected))))
+
+(deftest pbkdf2-sha1-test-16777216
+  (let [key (c/str->bytes "password")
+        salt (c/str->bytes "salt")
+        expected (c/hex->bytes "EEFE3D61CD4DA4E4E9945B3D6BA2158C2634E984")
+        engine (kdf/engine {:key key :salt salt :alg :pbkdf2 :digest :sha1
+                            :iterations 16777216})
+        result (kdf/get-bytes engine 20)]
+    (is (b/equals? result expected))))
+
+(deftest pbkdf2-sha1-test-long-pass
+  (let [key (c/str->bytes "passwordPASSWORDpassword")
+        salt (c/str->bytes "saltSALTsaltSALTsaltSALTsaltSALTsalt")
+        expected (c/hex->bytes (str "3D2EEC4FE41C849B80C8D83662C0E44A8B291A964C"
+                                    "F2F07038"))
+        engine (kdf/engine {:key key :salt salt :alg :pbkdf2 :digest :sha1
+                            :iterations 4096})
+        result (kdf/get-bytes engine 25)]
+    (is (b/equals? result expected))))
+
+(deftest pbkdf2-sha1-test-binary
+  (let [key (c/str->bytes "pass\000word")
+        salt (c/str->bytes "sa\000lt")
+        expected (c/hex->bytes "56FA6AA75548099DCC37D7F03425E0C3")
+        engine (kdf/engine {:key key :salt salt :alg :pbkdf2 :digest :sha1
+                            :iterations 4096})
+        result (kdf/get-bytes engine 16)]
+    (is (b/equals? result expected))))
+
+(deftest pbkdf2-test-def-iterations
+  (let [e1 (kdf/engine {:key "" :salt "" :alg :pbkdf2+sha256 :iterations 1000})
+        e2 (kdf/engine {:key "" :salt "" :alg :pbkdf2+sha256})]
+    (is (b/equals? (kdf/get-bytes e1 16) (kdf/get-bytes e2 16)))))

@@ -380,6 +380,7 @@ to derive one or more keys from a common secret value.
 | CMKDF          | `:cmkdf+sha256`, `:cmkdf+sha384`, `:cmkdf+sha512` | Counter-Mode key derivation function (as defined in NIST SP800-108)
 | FMKDF          | `:fmkdf+sha256`, `:fmkdf+sha384`, `:fmkdf+sha512` | Feedback-Mode key derivation function (as defined in NIST SP800-108)
 | DPIMKDF        | `:dpimkdf+sha256`, `:dpimkdf+sha384`, `:dpimkdf+sha512` | Double-Pipeline Iteration Mode key derivation function (as defined in NIST SP800-108)
+| PBKDF2         | `:pbkdf2+sha256`, `:pbkdf2+sha384`, `:pbkdf2+sha512` | Password-Based Key Derivation Function 2 (a.k.a. `RSA PKCS #5 v2.0`, also published in RFC 2898)
 |==============================================================================
 
 

@@ -27,11 +27,18 @@
            org.bouncycastle.crypto.params.KDFCounterParameters
            org.bouncycastle.crypto.params.KDFFeedbackParameters
            org.bouncycastle.crypto.params.KDFDoublePipelineIterationParameters
+           org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
            org.bouncycastle.crypto.macs.HMac
            org.bouncycastle.crypto.DerivationFunction
            org.bouncycastle.crypto.Mac
            java.nio.ByteBuffer
            clojure.lang.Keyword))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Constants
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def ^:const +pbkdf2-iterations+ 1000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol
@@ -66,6 +73,11 @@
     (let [buffer (byte-array length)]
       (.generateBytes it buffer 0 length)
       buffer)))
+
+(extend-protocol IKDF
+  PKCS5S2ParametersGenerator
+  (-get-bytes [it length]
+    (.getKey (.generateDerivedParameters it (* 8 length)))))
 
 (defmethod engine :hkdf
   [{:keys [key salt info digest]}]
@@ -231,3 +243,23 @@
   [options]
   (engine (assoc options :alg :dpimkdf :digest :blake2b-512)))
 
+(defmethod engine :pbkdf2
+  [{:keys [key salt digest iterations]}]
+  (let [key (codecs/->byte-array key)
+        salt (codecs/->byte-array salt)
+        digest (hash/resolve-digest-engine digest)
+        engine (PKCS5S2ParametersGenerator. digest)]
+    (.init engine key salt (or iterations +pbkdf2-iterations+))
+    engine))
+
+(defmethod engine :pbkdf2+sha256
+  [options]
+  (engine (assoc options :alg :pbkdf2 :digest :sha256)))
+
+(defmethod engine :pbkdf2+sha384
+  [options]
+  (engine (assoc options :alg :pbkdf2 :digest :sha384)))
+
+(defmethod engine :pbkdf2+sha512
+  [options]
+  (engine (assoc options :alg :pbkdf2 :digest :sha512)))
