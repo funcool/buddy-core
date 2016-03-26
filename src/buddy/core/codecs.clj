@@ -75,47 +75,30 @@
   [^String s]
   (String. (base64->bytes s) "UTF8"))
 
-(defn str->safebase64
-  "Given a string, convert it to completely
-  urlsafe base64 version."
-  [^String s]
-  (-> (str->base64 s)
-      (str/replace #"\s" "")
-      (str/replace "=" "")
-      (str/replace "+" "-")
-      (str/replace "/" "_")))
-
 (defn bytes->safebase64
   "Given a string, convert it to completely
   urlsafe base64 version."
   [^bytes s]
-  (-> (bytes->base64 s)
-      (str/replace #"\s" "")
-      (str/replace "=" "")
-      (str/replace "+" "-")
-      (str/replace "/" "_")))
+  (Base64/encodeBase64URLSafeString s))
+
+(defn str->safebase64
+  "Given a string, convert it to completely
+  urlsafe base64 version."
+  [^String s]
+  (-> (str->bytes s)
+      (bytes->safebase64)))
 
 (defn safebase64->str
   "Given urlsafe base64 string decode it to string."
+  {:deprecated true}
   [^String s]
-  (-> (case (mod (count s) 4)
-        2 (str s "==")
-        3 (str s "=")
-        s)
-      (str/replace "-" "+")
-      (str/replace "_" "/")
-      (base64->str)))
+  (base64->str s))
 
 (defn safebase64->bytes
   "Given urlsafe base64 string decode it to bytes array."
+  {:deprecated true}
   [^String s]
-  (-> (case (mod (count s) 4)
-        2 (str s "==")
-        3 (str s "=")
-        s)
-      (str/replace "-" "+")
-      (str/replace "_" "/")
-      (base64->bytes)))
+  (base64->bytes s))
 
 (defn long->bytes
   [^Long input]
