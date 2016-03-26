@@ -402,7 +402,7 @@ to derive one or more keys from a common secret value.
 ;; => "0faba553152fce4f"
 ----
 
-If you do not happy with the current variants, you can use any other hash algorithm
+If you are not happy with the current variants, you can use any other hash algorithm
 already supported in buddy under `buddy.core.hash` namespace or directly passing
 a digest engine instance:
 
