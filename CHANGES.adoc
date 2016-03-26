@@ -1,5 +1,13 @@
 = Changelog
 
+== Version 0.10.0
+
+Date: 2016-03-26
+
+- Add support for pkcs8 keys (thanks to @dottedmag).
+- Minor fixes on codecs ns.
+
+
 == Version 0.9.0
 
 Date: 2016-01-06
