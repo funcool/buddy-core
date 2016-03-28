@@ -394,26 +394,79 @@ to derive one or more keys from a common secret value.
 ;; key, salt and optionally info field that can
 ;; contain any random data.
 
-(def engine (kdf/engine {:alg :hkdf+sha256
-                         :key "mysecret"
-                         :salt "mysalt"}))
+(def hkdf (kdf/engine {:alg :hkdf+sha256
+                       :key "mysecret"
+                       :salt "mysalt"}))
 
-(-> (kdf/get-bytes engine 8
-    (codecs/bytes->hex)))
+(-> (kdf/get-bytes hkdf 8)
+    (codecs/bytes->hex))
 ;; => "0faba553152fce4f"
+
+
+;; Or using different digest algorithm:
+
+(def hkdf (kdf/engine {:alg :hkdf
+                       :digest :blake2b-512
+                       :key "test"
+                       :salt "test"}))
+
+(-> (kdf/get-bytes hkdf 8)
+    (codecs/bytes->hex))
+;; => "9d22728d54e549a6"
 ----
 
-If you are not happy with the current variants, you can use any other hash algorithm
-already supported in buddy under `buddy.core.hash` namespace or directly passing
-a digest engine instance:
+.Example using PBKDF2 with sha256
+[source, clojure]
+----
+(def pbkdf2 (kdf/engine {:key "my password"
+                         :salt (nonce/random-bytes 8)
+                         :alg :pbkdf2
+                         :digest :sha256
+                         :iterations 1}))
+
+(-> (kdf/get-bytes pbkdf2 8)
+    (codecs/bytes->hex))
+;; => "26606ebf3a4bb4b3"
+
+----
+
+[WARNING]
+====
+PBKDF2 works slightly different to the rest of KDF implementations. You should pass
+the number of iterations explicltly and `get-bytes` always returns the same value in
+contrast to the others where `get-bytes` works as consumer of infinite stream.
 
 [source, clojure]
 ----
-(def engine (kdf/engine {:alg :hkdf
-                         :digest :blake2-512
-                         :key "mysecret"
-                         :salt "mysalt"}))
+;; Note the same output for multiple requests:
+
+(-> (kdf/get-bytes pbkdf2 8)
+    (codecs/bytes->hex))
+;; => "26606ebf3a4bb4b3"
+
+(-> (kdf/get-bytes pbkdf2 8)
+    (codecs/bytes->hex))
+;; => "26606ebf3a4bb4b3"
+
+;; Note that each request returns the next
+;; bytes of the stream:
+
+(-> (kdf/get-bytes hkdf 8)
+    (codecs/bytes->hex))
+;; => "d42edcfc40c860ce"
+
+(-> (kdf/get-bytes hkdf 8)
+    (codecs/bytes->hex))
+;; => "353ce2240159c094"
 ----
+====
+
+
+[WARNING]
+====
+This is a *low-level* kdf primitive and if you want a password hasher, please use
+`buddy-hashers` module instead of this.
+====
 
 
 == Ciphers
