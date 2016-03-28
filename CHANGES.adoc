@@ -1,8 +1,8 @@
 = Changelog
 
-== Version 0.11.0-SNAPSHOT
+== Version 0.11.0
 
-Date: ---
+Date: 2016-03-27
 
 - Add pbkdf2 kdf (thanks to @dottedmag).
 
