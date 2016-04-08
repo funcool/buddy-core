@@ -241,11 +241,9 @@
   (digest input :sha3-512))
 
 (defn sha1
-  {:deprecated true}
   [input]
   (digest input :sha1))
 
 (defn md5
-  {:deprecated true}
   [input]
   (digest input :md5))
