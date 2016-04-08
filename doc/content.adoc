@@ -1,6 +1,6 @@
 = buddy-core - Cryptographic Api
 Andrey Antukh, <niwi@niwi.nz>
-0.11.0
+0.12.0
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -39,7 +39,7 @@ dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
-[buddy/buddy-core "0.11.0"]
+[buddy/buddy-core "0.12.0"]
 ----
 
 And is tested under JDK7 and JDK8.
@@ -476,8 +476,9 @@ Ciphers support in buddy is available on `buddy.core.crypto` namespace.
 
 === Block Ciphers
 
-In cryptography, a block cipher is a deterministic algorithm operating on fixed-length groups of bits,
-called blocks, with an unvarying transformation that is specified by a symmetric key.
+In cryptography, a block cipher is a deterministic algorithm operating on 
+fixed-length groups of bits, called blocks, with an unvarying transformation 
+that is specified by a symmetric key.
 
 .This is a list of currently supported block ciphers in buddy
 [options="header"]
@@ -488,8 +489,8 @@ called blocks, with an unvarying transformation that is specified by a symmetric
 | Blowfish          | `:blowfish`
 |========================================
 
-Additionally, for good security, is mandatory to combine a block cipher with some cipher
-mode of operation.
+Additionally, for good security, is mandatory to combine a block cipher with 
+some cipher mode of operation.
 
 .This is a list of currently supported of cipher mode of operation
 [options="header"]
@@ -501,8 +502,8 @@ mode of operation.
 | GCM               | `:gcm`
 |========================================
 
-NOTE: currently buddy comes with limited number of ciphers and modes, but in near future
-more many more options should be added.
+NOTE: currently buddy comes with limited number of ciphers and modes, but in
+near future more many more options should be added.
 
 .Example encrypt
 [source, clojure]
@@ -515,20 +516,20 @@ more many more options should be added.
       iv16  (nonce/random-nonce 16)
       key32 (nonce/random-nonce 32)
       data  (codecs/hex->bytes "000000000000000000000000000000AA")]
-  (crypto/initialize! eng {:key key32 :iv iv16 :op :encrypt})
-  (crypto/process-bytes! eng data))
+  (crypto/init! eng {:key key32 :iv iv16 :op :encrypt})
+  (crypto/process-block! eng data))
 
 ;; => #<byte[] [B@efadff9>
 ----
 
-AEAD mode of operations also exposes additional function for caluclate the total size of the
-output including the authentication tag: `get-output-size`.
+AEAD mode of operations also exposes additional function for caluclate the total
+size of the output including the authentication tag: `output-size`.
 
 
 === Stream Ciphers
 
-Stream ciphers differ from block ciphers, in that they works with arbitrary length input
-and do not require any additional mode of operation.
+Stream ciphers differ from block ciphers, in that they works with arbitrary
+length input and do not require any additional mode of operation.
 
 .This is a list of currently supported of stream ciphers in buddy
 [options="header"]
@@ -549,7 +550,7 @@ and do not require any additional mode of operation.
       iv8   (nonce/random-nonce 8)
       key32 (nonce/random-nonce 32)
       data  (codecs/hex->bytes "0011")]
-  (crypto/initialize! eng {:key key32 :iv iv8 :op :encrypt})
+  (crypto/init! eng {:key key32 :iv iv8 :op :encrypt})
   (crypto/process-bytes! eng data))
 
 ;; => #<byte[] [B@efadff9>
@@ -560,7 +561,8 @@ engine requires 8 bytes iv.
 
 NOTE: for decrypt, only change `:op` value to `:decrypt`
 
-You can call `crypto/initialize!` any times as you want, it simply reinitializes the engine.
+You can call `crypto/initialize!` any times as you want, it simply reinitializes 
+the engine.
 
 
 === High level encryption schemes
@@ -579,7 +581,7 @@ length text and decrypt it:
 (require '[buddy.core.hash :as hash])
 
 (def original-text
-  (codecs/str->bytes "Hello World."))
+  (codecs/to-bytes "Hello World."))
 
 (def iv (nonce/random-bytes 16))   ;; 16 bytes random iv
 (def key (hash/sha256 "mysecret")) ;; 32 bytes key
@@ -708,10 +710,6 @@ This is a brief list of available functions:
 | `buddy.core.codecs/bytes->str`        | Converts byte array to string using UTF8 encoding
 | `buddy.core.codecs/bytes->hex`        | Converts byte array to hexadecimal string
 | `buddy.core.codecs/hex->bytes`        | Converts hexadecimal strings into byte array
-| `buddy.core.codecs/bytes->base64`     | Converts byte array to base64 string
-| `buddy.core.codecs/base64->bytes`     | Converts base64 string into byte array
-| `buddy.core.codecs/bytes->safebase64` | Converts byte array into safe url base64 string
-| `buddy.core.codecs/safebase64->bytes` | Converts safe url base64 string into byte array
 | `buddy.core.codecs/long->bytes`       | Get byte array representation of long
 | `buddy.core.codecs/bytes->long`       | Get long from byte array
 | `buddy.core.bytes/bytes?`             | Predicate for test byte arrays
