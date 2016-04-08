@@ -21,84 +21,28 @@
            java.nio.ByteBuffer))
 
 (defn str->bytes
-  "Convert string to java bytes array"
+  "Convert string to byte array."
   ([^String s]
    (str->bytes s "UTF-8"))
   ([^String s, ^String encoding]
    (.getBytes s encoding)))
 
 (defn bytes->str
-  "Convert octets to String."
+  "Convert byte array to String."
   ([^bytes data]
    (bytes->str data "UTF-8"))
   ([^bytes data, ^String encoding]
    (String. data encoding)))
 
 (defn bytes->hex
-  "Convert a byte array to hex
-  encoded string."
+  "Convert a byte array to hex encoded string."
   [^bytes data]
   (Hex/encodeHexString data))
 
 (defn hex->bytes
-  "Convert hexadecimal encoded string
-  to bytes array."
+  "Convert hexadecimal encoded string to bytes array."
   [^String data]
   (Hex/decodeHex (.toCharArray data)))
-
-(defn bytes->base64
-  "Encode a bytes array to base64
-  and return utf8 string."
-  [^bytes data]
-  (Base64/encodeBase64String data))
-
-(defn bytes->bbase64
-  "Encode a bytes array to base64 and
-  return bytearray."
-  [^bytes data]
-  (Base64/encodeBase64 data))
-
-(defn base64->bytes
-  "Decode from base64 to bytes."
-  [^String s]
-  (Base64/decodeBase64 s))
-
-(defn str->base64
-  "Encode to urlsafe base64."
-  [^String s]
-  (-> (str->bytes s)
-      (Base64/encodeBase64String)
-      (str/trim)))
-
-(defn base64->str
-  "Decode from base64 to string."
-  [^String s]
-  (String. (base64->bytes s) "UTF8"))
-
-(defn bytes->safebase64
-  "Given a string, convert it to completely
-  urlsafe base64 version."
-  [^bytes s]
-  (Base64/encodeBase64URLSafeString s))
-
-(defn str->safebase64
-  "Given a string, convert it to completely
-  urlsafe base64 version."
-  [^String s]
-  (-> (str->bytes s)
-      (bytes->safebase64)))
-
-(defn safebase64->str
-  "Given urlsafe base64 string decode it to string."
-  {:deprecated true}
-  [^String s]
-  (base64->str s))
-
-(defn safebase64->bytes
-  "Given urlsafe base64 string decode it to bytes array."
-  {:deprecated true}
-  [^String s]
-  (base64->bytes s))
 
 (defn long->bytes
   [^Long input]
@@ -113,19 +57,24 @@
     (.flip buffer)
     (.getLong buffer)))
 
-(defprotocol ByteArray
+(defprotocol IByteArray
   "Facility for convert input parameters
   to bytes array with default implementation
   for string an bytes array itself."
-  (->byte-array [this] "Represent this as byte array."))
+  (-to-bytes [this] "Represent this as byte array."))
 
-(extend-protocol ByteArray
+(defn to-bytes
+  "Encode as bytes."
+  [v]
+  (-to-bytes v))
+
+(extend-protocol IByteArray
   (Class/forName "[B")
-  (->byte-array [it] it)
+  (-to-bytes [it] it)
 
   nil
-  (->byte-array [_]
+  (-to-bytes [_]
     (byte-array 0))
 
   String
-  (->byte-array [data] (str->bytes data)))
+  (-to-bytes [data] (str->bytes data)))
