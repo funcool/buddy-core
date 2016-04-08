@@ -1,5 +1,22 @@
 = Changelog
 
+== Version 0.12.0
+
+Date: 2016-04-08
+
+- Overhaul codecs api (breaking changes).
+- Overhaul crypto api (breaking changes).
+- Add specific base64 namespace for better and more idiomatic api.
+
+Notes about breaking changes on crypto ns:
+
+- `process-bytes!` is no longer alias to `process-block!` and it only
+  works with aead or stream ciphers.
+- `calculate-authtag!` is removed and `end!` is added in its place.
+- In highlevel crypto api `:algorithm` option becomes `:alg` for consistency
+  with the rest of the library.
+
+
 == Version 0.11.0
 
 Date: 2016-03-27
