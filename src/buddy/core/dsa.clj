@@ -121,9 +121,9 @@
 
   java.lang.String
   (-sign [^String input, engine]
-    (make-signature-for-plain-data (->byte-array input) engine))
+    (make-signature-for-plain-data (to-bytes input) engine))
   (-verify [^String input, ^bytes signature, engine]
-    (verify-signature-for-plain-data (->byte-array input) signature engine))
+    (verify-signature-for-plain-data (to-bytes input) signature engine))
 
   java.io.InputStream
   (-sign [^java.io.InputStream input, engine]

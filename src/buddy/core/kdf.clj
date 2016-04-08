@@ -81,9 +81,9 @@
 
 (defmethod engine :hkdf
   [{:keys [key salt info digest]}]
-  (let [key (codecs/->byte-array key)
-        salt (codecs/->byte-array salt)
-        info (when info (codecs/->byte-array info))
+  (let [key (codecs/to-bytes key)
+        salt (codecs/to-bytes salt)
+        info (when info (codecs/to-bytes info))
         params (HKDFParameters. key salt info)
         digest (hash/resolve-digest-engine digest)
         engine (HKDFBytesGenerator. digest)]
@@ -108,8 +108,8 @@
 
 (defmethod engine :kdf1
   [{:keys [key salt digest]}]
-  (let [key (codecs/->byte-array key)
-        salt (codecs/->byte-array salt)
+  (let [key (codecs/to-bytes key)
+        salt (codecs/to-bytes salt)
         params (KDFParameters. key salt)
         digest (hash/resolve-digest-engine digest)
         engine (KDF1BytesGenerator. digest)]
@@ -134,8 +134,8 @@
 
 (defmethod engine :kdf2
   [{:keys [key salt digest]}]
-  (let [key (codecs/->byte-array key)
-        salt (codecs/->byte-array salt)
+  (let [key (codecs/to-bytes key)
+        salt (codecs/to-bytes salt)
         params (KDFParameters. key salt)
         digest (hash/resolve-digest-engine digest)
         engine (KDF2BytesGenerator. digest)]
@@ -160,8 +160,8 @@
 
 (defmethod engine :cmkdf
   [{:keys [key salt digest r] :or {r 32}}]
-  (let [key (codecs/->byte-array key)
-        salt (codecs/->byte-array salt)
+  (let [key (codecs/to-bytes key)
+        salt (codecs/to-bytes salt)
         params (KDFCounterParameters. key salt r)
         digest (hash/resolve-digest-engine digest)
         mac (HMac. digest)
@@ -187,8 +187,8 @@
 
 (defmethod engine :fmkdf
   [{:keys [key salt digest r counter] :or {r 32 counter true}}]
-  (let [key (codecs/->byte-array key)
-        salt (codecs/->byte-array salt)
+  (let [key (codecs/to-bytes key)
+        salt (codecs/to-bytes salt)
         params (if counter
                  (KDFFeedbackParameters/createWithCounter key salt nil r)
                  (KDFFeedbackParameters/createWithoutCounter key salt nil))
@@ -216,8 +216,8 @@
 
 (defmethod engine :dpimkdf
   [{:keys [key salt digest r counter] :or {r 32 counter true}}]
-  (let [key (codecs/->byte-array key)
-        salt (codecs/->byte-array salt)
+  (let [key (codecs/to-bytes key)
+        salt (codecs/to-bytes salt)
         params (if counter
                  (KDFDoublePipelineIterationParameters/createWithCounter key salt r)
                  (KDFDoublePipelineIterationParameters/createWithoutCounter key salt))
@@ -245,8 +245,8 @@
 
 (defmethod engine :pbkdf2
   [{:keys [key salt digest iterations]}]
-  (let [key (codecs/->byte-array key)
-        salt (codecs/->byte-array salt)
+  (let [key (codecs/to-bytes key)
+        salt (codecs/to-bytes salt)
         digest (hash/resolve-digest-engine digest)
         engine (PKCS5S2ParametersGenerator. digest)]
     (.init engine key salt (or iterations +pbkdf2-iterations+))

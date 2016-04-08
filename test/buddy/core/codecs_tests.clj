@@ -15,6 +15,7 @@
 (ns buddy.core.codecs-tests
   (:require [clojure.test :refer :all]
             [buddy.core.codecs :as codecs :refer :all]
+            [buddy.core.codecs.base64 :as b64]
             [buddy.core.bytes :as bytes]
             [buddy.core.keys :refer :all]
             [buddy.core.hash :as hash]
@@ -36,10 +37,10 @@
       (is (bytes/equals? decoded mybytes))))
 
   (testing "Safe base64 encode/decode"
-    (let [output1 (str->safebase64 "foo")
-          output2 (safebase64->str output1)]
-      (is (= output1 "Zm9v"))
-      (is (= output2 "foo"))))
+    (let [output1 (b64/encode "foo" true)
+          output2 (b64/decode output1)]
+      (is (= (bytes->str output1) "Zm9v"))
+      (is (= (bytes->str output2) "foo"))))
 
   (testing "Concat byte arrays"
     (let [array1 (into-array Byte/TYPE [1,2,3])

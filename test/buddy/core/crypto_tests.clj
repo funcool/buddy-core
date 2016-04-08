@@ -1,4 +1,4 @@
-;; Copyright 2014-2015 Andrey Antukh <niwi@niwi.nz>
+;; Copyright 2014-2016 Andrey Antukh <niwi@niwi.nz>
 ;;
 ;; Licensed under the Apache License, Version 2.0 (the "License")
 ;; you may not use this file except in compliance with the License.
@@ -73,14 +73,14 @@
             expected1 (into-array Byte/TYPE [14, 37, 45])
             expected2 (into-array Byte/TYPE [-5, 46, -80, -91, 19, -12])]
         (crypto/initialize! engine {:iv iv8 :key key :op :encrypt})
-        (let [result1 (crypto/process-block! engine block3)
-              result2 (crypto/process-block! engine block6)]
+        (let [result1 (crypto/process-bytes! engine block3)
+              result2 (crypto/process-bytes! engine block6)]
           (is (bytes/equals? result1 expected1))
           (is (bytes/equals? result2 expected2)))
 
         (crypto/initialize! engine {:iv iv8 :key key :op :decrypt})
-        (let [result1 (crypto/process-block! engine expected1)
-              result2 (crypto/process-block! engine expected2)]
+        (let [result1 (crypto/process-bytes! engine expected1)
+              result2 (crypto/process-bytes! engine expected2)]
           (is (bytes/equals? result1 block3))
           (is (bytes/equals? result2 block6)))))
 ))
@@ -95,14 +95,14 @@
       (is (= finalsize 272)))
     (let [output (byte-array 272)
           offset (crypto/process-block! cipher data 0 output 0)
-          offset' (crypto/calculate-authtag! cipher output offset)]
+          offset' (crypto/end! cipher output offset)]
       (crypto/initialize! cipher {:iv iv16 :key key :op :decrypt})
       (let [input output
             finalsize (crypto/get-output-size cipher (count input))]
         (is (= finalsize 256))
         (let [output (byte-array 256)
               offset (crypto/process-block! cipher input 0 output 0)
-              offset' (crypto/calculate-authtag! cipher output offset)]
+              offset' (crypto/end! cipher output offset)]
           (is (bytes/equals? output data)))))))
 
 (deftest high-level-api-tests
@@ -113,6 +113,7 @@
         key16 (nonce/random-bytes 16)
         iv12 (nonce/random-bytes 12)
         iv16 (nonce/random-bytes 16)]
+
     ;; (testing "Experiment"
     ;;   (let [data (into-array Byte/TYPE [35 -117 48 0])
     ;;         encrypted (crypto/encrypt data key32 iv16)

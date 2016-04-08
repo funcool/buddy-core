@@ -88,7 +88,7 @@
   IEngineInit
   (-init [it options]
     (let [key (:key options)
-          keyparam (KeyParameter. (->byte-array key))]
+          keyparam (KeyParameter. (to-bytes key))]
       (.init it keyparam)))
 
   IEngine
@@ -104,8 +104,8 @@
 (extend-type Poly1305
   IEngineInit
   (-init [it options]
-    (let [key (->byte-array (:key options))
-          iv (->byte-array (:iv options))]
+    (let [key (to-bytes (:key options))
+          iv (to-bytes (:iv options))]
       (assert (= (count iv) 16) "Wrong iv length (should be 16 bytes)")
       (assert (= (count key) 32) "Wrong key length (should be 32 bytes)")
       (let [params (KeyParameter. (key->polykey key))
@@ -196,9 +196,9 @@
 
   java.lang.String
   (-hash [^String input engine]
-    (hash-plain-data (->byte-array input) engine))
+    (hash-plain-data (to-bytes input) engine))
   (-verify [^String input ^bytes signature engine]
-    (verify-plain-data (->byte-array input) signature engine))
+    (verify-plain-data (to-bytes input) signature engine))
 
   java.io.InputStream
   (-hash [^java.io.InputStream input engine]
@@ -240,7 +240,7 @@
 (defn verify
   "Verify hmac for artbitrary input and signature."
   [input signature engine-or-options]
-  (let [signature (->byte-array signature)]
+  (let [signature (to-bytes signature)]
     (if (satisfies? IEngine engine-or-options)
       (-verify input signature engine-or-options)
       (let [engine (engine engine-or-options)]
