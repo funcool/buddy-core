@@ -1,5 +1,12 @@
 = Changelog
 
+== Version 0.12.1
+
+Date: 2016-04-08
+
+- Unmark deprecation metadata for `sha1` and `md5` hashes (thanks @dottedmag).
+
+
 == Version 0.12.0
 
 Date: 2016-04-08
