@@ -39,21 +39,19 @@
            clojure.lang.IFn
            clojure.lang.Keyword))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Protocols
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; --- Constants
 
-(def ^:no-doc ^:static
+(def ^:no-doc
   +block-cipher-engines+
   {:aes     #(AESFastEngine.)
    :serpent #(SerpentEngine.)
    :twofish #(TwofishEngine.)})
 
-(def ^:no-doc ^:static
+(def ^:no-doc
   +stream-cipher-engines+
   {:chacha #(ChaChaEngine.)})
 
-(def ^:no-doc ^:static
+(def ^:no-doc
   +cipher-modes+
   {:ecb #(identity %)
    :cbc #(CBCBlockCipher. %)
@@ -62,190 +60,176 @@
    :sic #(SICBlockCipher. %)
    :ofb #(OFBBlockCipher. % (* 8 (.getBlockSize %)))})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cipher protocol declaration.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; --- Implementation details.
 
-(defprotocol IBlockCipher
-  "Common protocol to block ciphers."
-  (-block-size [_] "Get block size in bytes."))
+(defn- init-block-cipher
+  "A generic implementation for block
+  ciphers initialization process."
+  [engine {:keys [iv key op] :or {op :encrypt}}]
+  (assert (instance? BlockCipher engine) "Should be block cipher.")
+  (let [params (if (nil? iv)
+                 (KeyParameter. key)
+                 (ParametersWithIV. (KeyParameter. key) iv))
+        encrypt? (case op
+                  :encrypt true
+                  :decrypt false)]
+    (.init ^BlockCipher engine encrypt? params)
+    engine))
 
-(defprotocol IStreamCipher
-  "Common protocol to stream ciphers.")
+(defn- init-stream-cipher
+  "A generic implementation for stream
+  ciphers initialization process."
+  [engine {:keys [iv key op] :or {op :encrypt}}]
+  (assert (instance? StreamCipher engine) "Should be stream cipher.")
+  (let [params (if (nil? iv)
+                 (KeyParameter. key)
+                 (ParametersWithIV. (KeyParameter. key) iv))
+        encrypt? (case op
+                  :encrypt true
+                  :decrypt false)]
+    (.init ^StreamCipher engine encrypt? params)
+    engine))
 
-(defprotocol ICipher
-  "Common protocol to both, stream and block ciphers."
-  (-init [_ params] "Initialize cipher")
-  (-process-bytes [_ input] [_ input inoffset output outoffset]
-    "Encrypt/Decrypt a block of bytes."))
-
-(defprotocol IAEADBlockCipher
-  "Common protocol to Authenticated Cipher."
-  (-auth-tag [_ output outoffset] "Calculate the authentication tag.")
-  (-output-size [_ data] "Get the output size."))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Implementation details.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(extend-type StreamCipher
-  IStreamCipher
-  ICipher
-  (-init [engine params]
-    (let [iv (:iv params)
-          key (:key params)
-          params' (if (nil? iv)
-                    (KeyParameter. key)
-                    (ParametersWithIV. (KeyParameter. key) iv))
-          encrypt (condp = (:op params)
-                    :encrypt true
-                    :decrypt false)]
-      (.init engine encrypt params')
+(defn- init-aead-cipher
+  "A generic implementation for block cipher
+  initialization process."
+  [engine {:keys [iv key op aad tagsize] :or {op :encrypt tagsize 128}}]
+  (assert (instance? AEADBlockCipher engine) "Should be aead block cipher.")
+  (let [params (-> (KeyParameter. key)
+                   (AEADParameters. tagsize iv aad))
+        encrypt? (case op
+                   :encrypt true
+                   :decrypt false)]
+      (.init ^AEADBlockCipher engine encrypt? params)
       engine))
 
-  (-process-bytes
-    ([engine input]
-     (let [len    (count input)
-           buffer (byte-array len)]
-       (.processBytes engine input 0 len buffer 0)
-       buffer))
-    ([engine input inoffset output outoffset]
-     (.processBytes engine input inoffset output outoffset))))
+(defn- end-aead-cipher
+  [engine out offset]
+  (.doFinal ^AEADBlockCipher engine ^bytes out (int offset)))
 
-(extend-type BlockCipher
-  IBlockCipher
-  (-block-size [engine]
-    (.getBlockSize engine))
+;; --- Public Api
 
-  ICipher
-  (-init [engine params]
-    (let [iv (:iv params)
-          key (:key params)
-          params' (if (nil? iv)
-                    (KeyParameter. key)
-                    (ParametersWithIV. (KeyParameter. key) iv))
-          encrypt (condp = (:op params)
-                    :encrypt true
-                    :decrypt false)]
-      (.init engine encrypt params')
-      engine))
+(defn output-size
+  "Get the output size of the aead block cipher."
+  [^AEADBlockCipher engine length]
+  (.getOutputSize engine (int length)))
 
-  (-process-bytes
-    ([engine input]
-     (let [buffer (byte-array (-block-size engine))]
-       (.processBlock engine input 0 buffer 0)
-       buffer))
-    ([engine input inoffset output outoffset]
-     (.processBlock engine input inoffset output outoffset))))
+(def get-output-size
+  "A backward compatibility alias for `output-size` function."
+  output-size)
 
-(extend-type AEADBlockCipher
-  IAEADBlockCipher
-  (-output-size [engine length]
-    (.getOutputSize engine length))
+(defn block-size
+  "Return the block size of the block cipher."
+  [^BlockCipher engine]
+  (.getBlockSize engine))
 
-  (-auth-tag [engine output outoffset]
-    (.doFinal engine output outoffset))
+(def get-block-size
+  "A backward compatibility alias for `output-size` function."
+  block-size)
 
-  IBlockCipher
-  (-block-size [engine]
-    (-block-size (.getUnderlyingCipher engine)))
+(defprotocol ICipherInit
+  (-init [engine params] "Initialize cipher engine.")
+  (-end [engine out offset] "Finalize cipher engine."))
 
-  ICipher
-  (-init [engine params]
-    (let [iv (:iv params)
-          key (:key params)
-          aad (:aad params)
-          tagsize (:authtag-size params 128)
-          keyparam (KeyParameter. key)
-          params' (AEADParameters. keyparam tagsize iv aad)
-          encrypt (condp = (:op params :encrypt)
-                    :encrypt true
-                    :decrypt false)]
-      (.init engine encrypt params')
-      engine))
+(extend BlockCipher
+  ICipherInit
+  {:-init init-block-cipher
+   :-end (constantly 0)})
 
-  (-process-bytes
-    ([engine input]
-     (let [buffer (byte-array (-block-size engine))]
-       (.processBytes engine input 0 buffer 0)
-       buffer))
+(extend StreamCipher
+  ICipherInit
+  {:-init init-stream-cipher
+   :-end (constantly 0)})
 
-    ([engine input inoffset output outoffset]
-     (let [length (count input)]
-       (.processBytes engine input inoffset length output outoffset)))))
+(extend AEADBlockCipher
+  ICipherInit
+  {:-init init-aead-cipher
+   :-end end-aead-cipher})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Low level api.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn init!
+  "Initialize the cipher engine."
+  [engine params]
+  (-init engine params))
 
-(defn- algorithm-supported?
-  [^Keyword type ^Keyword cipher]
-  (condp = type
-    :block (contains? +block-cipher-engines+ cipher)
-    :stream (contains? +stream-cipher-engines+ cipher)))
+(def initialize!
+  "A backward compatibility alias for `init!`"
+  init!)
 
-(defn- mode-supported?
-  [mode]
-  (contains? +cipher-modes+ mode))
+(defprotocol IBlockCipherLike
+  (^:private -process-block [_ in inoff out outoff]))
 
-(defn get-block-size
-  "Given a block cipher, return the block size
-  in bytes."
-  [engine]
-  (-block-size engine))
+(defprotocol IStreamCipherLike
+  (^:private -process-bytes [_ in inoff inlen out outoff]))
 
-(defn get-output-size
-  "Given a aead cipher, return the buffer size required for
-  a `process-bytes!` plus a `calculate-authtag!` with an input of
-  `len` bytes."
-  [engine len]
-  (-output-size engine len))
+(extend-protocol IBlockCipherLike
+  BlockCipher
+  (-process-block [e in inoff out outoff]
+    (.processBlock ^BlockCipher e in inoff out outoff))
+
+  AEADBlockCipher
+  (-process-block [e in inoff out outoff]
+    (.processBytes ^AEADBlockCipher e in (int inoff) (alength in) out (int outoff)))
+
+  StreamCipher
+  (-process-block [e in inoff out outoff]
+    (.processBytes ^StreamCipher e in (int inoff) (alength in) out (int outoff))))
+
+(extend-protocol IStreamCipherLike
+  AEADBlockCipher
+  (-process-bytes [e in inoff inlen out outoff]
+    (.processBytes ^AEADBlockCipher e in (int inoff) (int inlen) out (int outoff)))
+
+  StreamCipher
+  (-process-bytes [e in inoff inlen out outoff]
+    (.processBytes ^StreamCipher e in (int inoff) (int inlen) out (int outoff))))
+
+(defn process-block!
+  "Encrypt or decrypt a bytes using the specified engine.
+  The length of the block to encrypt or decrypt depends on the used
+  crypto engine."
+  ([engine in]
+   (let [out (byte-array (block-size engine))]
+     (-process-block engine in 0 out 0)
+     out))
+  ([engine in inoff out outoff]
+   (-process-block engine in inoff out outoff)))
+
+(defn process-bytes!
+  "Encrypt or decrypt a bytes using the specified engine.
+  Is a specialized version of `process-block!` for stream ciphers
+  and aead ciphers."
+  ([engine in]
+   (let [length (alength in)
+         out (byte-array length)]
+     (-process-bytes engine in 0 length out 0)
+     out))
+  ([engine in inoff out outoff]
+   (-process-bytes engine in inoff (alength in) out outoff))
+  ([engine in inoff inlen out outoff]
+   (-process-bytes engine in inoff inlen out outoff)))
+
+(defn end!
+  "End the encryption process.
+  This is only usefull for aead block ciphers, for the
+  rest it always return `0` and does nothing."
+  [engine output offset]
+  (-end engine output offset))
 
 (defn block-cipher
   "Block cipher engine constructor."
   [alg mode]
-  {:pre [(algorithm-supported? :block alg)
-         (mode-supported? mode)]}
-  (let [modefactory (get +cipher-modes+ mode)
-        enginefactory (get +block-cipher-engines+ alg)]
-    (modefactory (enginefactory))))
+  (if-let [modefactory (get +cipher-modes+ mode)]
+    (if-let [enginefactory (get +block-cipher-engines+ alg)]
+      (modefactory (enginefactory))
+      (throw (ex-info "Cipher algorighm not supported." {:alg alg})))
+    (throw (ex-info "Cipher mode not supported." {:mode mode}))))
 
 (defn stream-cipher
   "Stream cipher engine constructor."
-  [^Keyword alg]
-  {:pre [(algorithm-supported? :stream alg)]}
-  (let [enginefactory (get +stream-cipher-engines+ alg)]
-    (enginefactory)))
-
-(defn initialize!
-  "Initialize the cipher engine."
-  [engine {:keys [iv key op] :as params}]
-  (-init engine params))
-
-(defn process-bytes!
-  "Encrypt or decrypt a block of bytes using the specified engine.
-  The length of the block to encrypt or decrypt depends on the used
-  crypto engine. A great example are stream cipher engine
-  that allows blocks of 1 byte lenght."
-  ([engine input]
-   (-process-bytes engine input))
-  ([engine input inoffset output outoffset]
-   (-process-bytes engine input inoffset output outoffset)))
-
-(defn process-block!
-  "Encrypt or decrypt a block of bytes using the specified engine.
-  The length of the block to encrypt or decrypt depends on the used
-  crypto engine. A great example are stream cipher engine
-  that allows blocks of 1 byte lenght.
-  This is an alias to `process-bytes! function."
-  ([engine input]
-   (-process-bytes engine input))
-  ([engine input inoffset output outoffset]
-   (-process-bytes engine input inoffset output outoffset)))
-
-(defn calculate-authtag!
-  [engine output offset]
-  (-auth-tag engine output offset))
+  [alg]
+  (if-let [enginefactory (get +stream-cipher-engines+ alg)]
+    (enginefactory)
+    (throw (ex-info "Cipher algorighm not supported." {:alg alg}))))
 
 (defn split-by-blocksize
   "Split a byte array in blocksize blocks.
@@ -348,12 +332,12 @@
   encryption scheme."
   {:internal true :no-doc true}
   [cipher input key iv aad]
-  (initialize! cipher {:iv iv :key key :tagsize 128 :op :encrypt :aad aad})
+  (-init cipher {:iv iv :key key :tagsize 128 :op :encrypt :aad aad})
   (let [outputlength (get-output-size cipher (count input))
         output (byte-array outputlength)
-        offset (process-block! cipher input 0 output 0)]
+        offset (process-bytes! cipher input 0 output 0)]
     (try
-      (calculate-authtag! cipher output offset)
+      (-end cipher output offset)
       (catch InvalidCipherTextException e
         (as-> (str "Couldn't generate gcm authentication tag: " (.getMessage e)) $
           (throw (ex-info $ {:type :encryption :cause :authtag})))))
@@ -366,14 +350,13 @@
   encryption scheme."
   {:internal true :no-doc true}
   [cipher ciphertext key iv aad]
-  (initialize! cipher {:iv iv :key key :tagsize 128 :op :decrypt :aad aad})
+  (-init cipher {:iv iv :key key :tagsize 128 :op :decrypt :aad aad})
   (let [input (bytes/copy ciphertext)
-        inputlength (count ciphertext)
-        outputlength (get-output-size cipher inputlength)
+        outputlength (get-output-size cipher (count input))
         output (byte-array outputlength)
-        offset (process-block! cipher input 0 output 0)]
+        offset (process-bytes! cipher input 0 output 0)]
     (try
-      (calculate-authtag! cipher output offset)
+      (-end cipher output offset)
       (catch InvalidCipherTextException e
         (as-> (str "Couldn't validate gcm authentication tag: " (.getMessage e)) $
           (throw (ex-info $ {:type :validation :cause :authtag})))))
@@ -387,28 +370,28 @@
     (.array buffer)))
 
 (defn- extract-encryption-key
-  [key algorithm]
+  [key alg]
   {:pre [(bytes/bytes? key)]}
-  (case algorithm
+  (case alg
     :aes128-cbc-hmac-sha256 (bytes/slice key 16 32)
     :aes192-cbc-hmac-sha384 (bytes/slice key 24 48)
     :aes256-cbc-hmac-sha512 (bytes/slice key 32 64)))
 
 (defn- extract-authentication-key
-  [key algorithm]
+  [key alg]
   {:pre [(bytes/bytes? key)]}
-  (case algorithm
+  (case alg
     :aes128-cbc-hmac-sha256 (bytes/slice key 0 16)
     :aes192-cbc-hmac-sha384 (bytes/slice key 0 24)
     :aes256-cbc-hmac-sha512 (bytes/slice key 0 32)))
 
 (defn- generate-authtag
-  [{:keys [algorithm input authkey iv aad] :as params}]
+  [{:keys [alg input authkey iv aad] :as params}]
   (let [al (if aad
              (aad->bytes aad)
              (byte-array 0))
         data (bytes/concat aad iv input al)
-        fulltag (mac/hash data {:key authkey :alg :hmac :digest algorithm})
+        fulltag (mac/hash data {:key authkey :alg :hmac :digest alg})
         truncatesize (quot (count fulltag) 2)]
     (bytes/slice fulltag 0 truncatesize)))
 
@@ -417,128 +400,128 @@
   (let [tag' (generate-authtag params)]
     (bytes/equals? tag tag')))
 
-(defmulti encrypt* :algorithm)
-(defmulti decrypt* :algorithm)
+(defmulti -encrypt :alg)
+(defmulti -decrypt :alg)
 
-(defmethod encrypt* :aes128-cbc-hmac-sha256
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -encrypt :aes128-cbc-hmac-sha256
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 32) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
-        encryptionkey (extract-encryption-key key algorithm)
-        authkey (extract-authentication-key key algorithm)
+        encryptionkey (extract-encryption-key key alg)
+        authkey (extract-authentication-key key alg)
         ciphertext (encrypt-cbc cipher input encryptionkey iv)
-        tag (generate-authtag {:algorithm :sha256
+        tag (generate-authtag {:alg :sha256
                                :input ciphertext
                                :authkey authkey
                                :aad aad
                                :iv iv})]
     (bytes/concat ciphertext tag)))
 
-(defmethod decrypt* :aes128-cbc-hmac-sha256
-  [{:keys [algorithm input key iv] :as params}]
+(defmethod -decrypt :aes128-cbc-hmac-sha256
+  [{:keys [alg input key iv] :as params}]
   {:pre [(keylength? key 32) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
-        encryptionkey (extract-encryption-key key algorithm)
-        authkey (extract-authentication-key key algorithm)
+        encryptionkey (extract-encryption-key key alg)
+        authkey (extract-authentication-key key alg)
         [ciphertext authtag] (let [inputlen (count input)
                                    taglen (quot 32 2) ciphertext (bytes/slice input 0 (- inputlen taglen))
                                    tag (bytes/slice input (- inputlen taglen) inputlen)]
                                [ciphertext tag])]
-    (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha256 :input ciphertext))
+    (when-not (verify-authtag authtag (assoc params :authkey authkey :alg :sha256 :input ciphertext))
       (throw (ex-info "Message seems corrupt or manipulated."
                       {:type :validation :cause :authtag})))
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
-(defmethod encrypt* :aes192-cbc-hmac-sha384
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -encrypt :aes192-cbc-hmac-sha384
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 48) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
-        encryptionkey (extract-encryption-key key algorithm)
-        authkey (extract-authentication-key key algorithm)
+        encryptionkey (extract-encryption-key key alg)
+        authkey (extract-authentication-key key alg)
         ciphertext (encrypt-cbc cipher input encryptionkey iv)
-        tag (generate-authtag {:algorithm :sha384
+        tag (generate-authtag {:alg :sha384
                                :input ciphertext
                                :authkey authkey
                                :iv iv
                                :aad aad})]
     (bytes/concat ciphertext tag)))
 
-(defmethod decrypt* :aes192-cbc-hmac-sha384
-  [{:keys [algorithm input key iv] :as params}]
+(defmethod -decrypt :aes192-cbc-hmac-sha384
+  [{:keys [alg input key iv] :as params}]
   {:pre [(keylength? key 48) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
-        encryptionkey (extract-encryption-key key algorithm)
-        authkey (extract-authentication-key key algorithm)
+        encryptionkey (extract-encryption-key key alg)
+        authkey (extract-authentication-key key alg)
         [ciphertext authtag] (let [inputlen (count input)
                                    taglen (quot 48 2) ciphertext (bytes/slice input 0 (- inputlen taglen))
                                    tag (bytes/slice input (- inputlen taglen) inputlen)]
                                [ciphertext tag])]
-    (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha384 :input ciphertext))
+    (when-not (verify-authtag authtag (assoc params :authkey authkey :alg :sha384 :input ciphertext))
       (throw (ex-info "Message seems corrupt or manipulated."
                       {:type :validation :cause :authtag})))
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
-(defmethod encrypt* :aes256-cbc-hmac-sha512
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -encrypt :aes256-cbc-hmac-sha512
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 64) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
-        encryptionkey (extract-encryption-key key algorithm)
-        authkey (extract-authentication-key key algorithm)
+        encryptionkey (extract-encryption-key key alg)
+        authkey (extract-authentication-key key alg)
         ciphertext (encrypt-cbc cipher input encryptionkey iv)
-        tag (generate-authtag {:algorithm :sha512
+        tag (generate-authtag {:alg :sha512
                                :input ciphertext
                                :authkey authkey
                                :iv iv
                                :aad aad})]
     (bytes/concat ciphertext tag)))
 
-(defmethod decrypt* :aes256-cbc-hmac-sha512
-  [{:keys [algorithm input key iv] :as params}]
+(defmethod -decrypt :aes256-cbc-hmac-sha512
+  [{:keys [alg input key iv] :as params}]
   {:pre [(keylength? key 64) (ivlength? iv 16)]}
   (let [cipher (block-cipher :aes :cbc)
-        encryptionkey (extract-encryption-key key algorithm)
-        authkey (extract-authentication-key key algorithm)
+        encryptionkey (extract-encryption-key key alg)
+        authkey (extract-authentication-key key alg)
         [ciphertext authtag] (let [inputlen (count input)
                                    taglen (quot 64 2) ciphertext (bytes/slice input 0 (- inputlen taglen))
                                    tag (bytes/slice input (- inputlen taglen) inputlen)]
                                [ciphertext tag])]
-    (when-not (verify-authtag authtag (assoc params :authkey authkey :algorithm :sha512 :input ciphertext))
+    (when-not (verify-authtag authtag (assoc params :authkey authkey :alg :sha512 :input ciphertext))
       (throw (ex-info "Message seems corrupt or manipulated."
                       {:type :validation :cause :authtag})))
     (decrypt-cbc cipher ciphertext encryptionkey iv)))
 
-(defmethod encrypt* :aes128-gcm
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -encrypt :aes128-gcm
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 16) (ivlength? iv 12)]}
   (let [cipher (block-cipher :aes :gcm)]
     (encrypt-gcm cipher input key iv aad)))
 
-(defmethod decrypt* :aes128-gcm
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -decrypt :aes128-gcm
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 16) (ivlength? iv 12)]}
   (let [cipher (block-cipher :aes :gcm)]
     (decrypt-gcm cipher input key iv aad)))
 
-(defmethod encrypt* :aes192-gcm
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -encrypt :aes192-gcm
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 24) (ivlength? iv 12)]}
   (let [cipher (block-cipher :aes :gcm)]
     (encrypt-gcm cipher input key iv aad)))
 
-(defmethod decrypt* :aes192-gcm
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -decrypt :aes192-gcm
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 24) (ivlength? iv 12)]}
   (let [cipher (block-cipher :aes :gcm)]
     (decrypt-gcm cipher input key iv aad)))
 
-(defmethod encrypt* :aes256-gcm
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -encrypt :aes256-gcm
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 32) (ivlength? iv 12)]}
   (let [cipher (block-cipher :aes :gcm)]
     (encrypt-gcm cipher input key iv aad)))
 
-(defmethod decrypt* :aes256-gcm
-  [{:keys [algorithm input key iv aad] :as params}]
+(defmethod -decrypt :aes256-gcm
+  [{:keys [alg input key iv aad] :as params}]
   {:pre [(keylength? key 32) (ivlength? iv 12)]}
   (let [cipher (block-cipher :aes :gcm)]
     (decrypt-gcm cipher input key iv aad)))
@@ -552,7 +535,7 @@
   You can specify an other encryption scheme passing an additional
   parameter.
 
-  Example: `(encrypt \"hello world\" mykey myiv {:algorithm :aes128-cbc-hmac-sha512})`
+  Example: `(encrypt \"hello world\" mykey myiv {:alg :aes128-cbc-hmac-sha512})`
 
   See the documentation for know the complete list of supported
   encryption schemes.
@@ -560,11 +543,18 @@
   The input, key and iv parameters should be of any type
   that can be coerced to byte array."
   ([input key iv]
-   (encrypt input key iv {}))
-  ([input key iv {:keys [algorithm] :or {algorithm :aes128-cbc-hmac-sha256} :as options}]
-   (let [key (codecs/->byte-array key)
-         iv  (codecs/->byte-array iv)]
-     (encrypt* {:algorithm algorithm :input input :key key :iv iv}))))
+   (encrypt input key iv nil))
+  ([input key iv {:keys [algorithm alg]
+                  :or {alg :aes128-cbc-hmac-sha256}
+                  :as options}]
+   (let [key (codecs/to-bytes key)
+         iv  (codecs/to-bytes iv)
+         alg (or algorithm alg)]
+     (-encrypt (assoc options
+                      :alg alg
+                      :input input
+                      :key key
+                      :iv iv)))))
 
 (defn decrypt
   "Decrypt data encrypted using the `encrypt` function.
@@ -573,10 +563,14 @@
   that can be coerced to byte array."
   ([input key iv]
    (decrypt input key iv {}))
-  ([input key iv {:keys [algorithm] :or {algorithm :aes128-cbc-hmac-sha256}}]
-   (let [key (codecs/->byte-array key)
-         iv  (codecs/->byte-array iv)]
-     (decrypt* {:algorithm algorithm
-                :input input
-                :key key
-                :iv iv}))))
+  ([input key iv {:keys [algorithm alg]
+                  :or {alg :aes128-cbc-hmac-sha256}
+                  :as options}]
+   (let [key (codecs/to-bytes key)
+         iv  (codecs/to-bytes iv)
+         alg (or algorithm alg)]
+     (-decrypt (assoc options
+                      :alg alg
+                      :input input
+                      :key key
+                      :iv iv)))))
