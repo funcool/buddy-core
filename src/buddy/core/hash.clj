@@ -22,12 +22,14 @@
            org.bouncycastle.crypto.digests.SHA1Digest
            org.bouncycastle.crypto.digests.TigerDigest
            org.bouncycastle.crypto.digests.MD5Digest
+           org.bouncycastle.crypto.digests.RIPEMD160Digest
            org.bouncycastle.crypto.digests.SHA3Digest
            org.bouncycastle.crypto.digests.SHA256Digest
            org.bouncycastle.crypto.digests.SHA384Digest
            org.bouncycastle.crypto.digests.SHA512Digest
            org.bouncycastle.crypto.digests.Blake2bDigest
-           org.bouncycastle.crypto.digests.SkeinDigest))
+           org.bouncycastle.crypto.digests.SkeinDigest
+           org.bouncycastle.crypto.digests.WhirlpoolDigest))
 
 (def ^:no-doc ^:static
   +digest-engines+
@@ -35,6 +37,7 @@
    :sha384   #(SHA384Digest.)
    :sha512   #(SHA512Digest.)
    :sha1     #(SHA1Digest.)
+   :ripemd160 #(RIPEMD160Digest.)
    :tiger    #(TigerDigest.)
    :md5      #(MD5Digest.)
    :sha3-256 #(SHA3Digest. 256)
@@ -45,7 +48,8 @@
    :blake2b-512 #(Blake2bDigest. nil 64 nil nil)
    :skein-256 #(SkeinDigest. 256 256)
    :skein-512 #(SkeinDigest. 512 512)
-   :skein-1024 #(SkeinDigest. 1024 1024)})
+   :skein-1024 #(SkeinDigest. 1024 1024)
+   :whirlpool #(WhirlpoolDigest.)})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol definitions (abstractions)
@@ -247,3 +251,11 @@
 (defn md5
   [input]
   (digest input :md5))
+
+(defn whirlpool
+  [input]
+  (digest input :whirlpool))
+
+(defn ripemd160
+  [input]
+  (digest input :ripemd160))
