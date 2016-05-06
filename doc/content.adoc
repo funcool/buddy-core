@@ -60,6 +60,8 @@ All hash algorithms are located in the `buddy.core.hash` namespace.
 | Tiger                | 192
 | Blake2b              | 512
 | Skein                | 256, 512, 1024, arbitrary size
+| Whirlpool            | 512
+| RIPEMD160            | 160
 |===============================================
 
 
@@ -317,9 +319,9 @@ with some tradeoffs such as them provides additional security feature
 explanation about the differences with MAC
 link:http://crypto.stackexchange.com/a/5647[here].
 
-*buddy-core* comes with support for: 
+*buddy-core* comes with support for:
 link:https://en.wikipedia.org/wiki/PKCS_1[rsassa-pss],
-link:https://en.wikipedia.org/wiki/PKCS_1[rsassa-pkcs] and 
+link:https://en.wikipedia.org/wiki/PKCS_1[rsassa-pkcs] and
 link:https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm[ecdsa].
 
 .Example signing string using rsassa-pss+sha256
@@ -476,8 +478,8 @@ Ciphers support in buddy is available on `buddy.core.crypto` namespace.
 
 === Block Ciphers
 
-In cryptography, a block cipher is a deterministic algorithm operating on 
-fixed-length groups of bits, called blocks, with an unvarying transformation 
+In cryptography, a block cipher is a deterministic algorithm operating on
+fixed-length groups of bits, called blocks, with an unvarying transformation
 that is specified by a symmetric key.
 
 .This is a list of currently supported block ciphers in buddy
@@ -489,7 +491,7 @@ that is specified by a symmetric key.
 | Blowfish          | `:blowfish`
 |========================================
 
-Additionally, for good security, is mandatory to combine a block cipher with 
+Additionally, for good security, is mandatory to combine a block cipher with
 some cipher mode of operation.
 
 .This is a list of currently supported of cipher mode of operation
@@ -561,7 +563,7 @@ engine requires 8 bytes iv.
 
 NOTE: for decrypt, only change `:op` value to `:decrypt`
 
-You can call `crypto/initialize!` any times as you want, it simply reinitializes 
+You can call `crypto/initialize!` any times as you want, it simply reinitializes
 the engine.
 
 
