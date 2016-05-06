@@ -109,6 +109,16 @@
       (is (= (bytes->hex hashed)
              "da39a3ee5e6b4b0d3255bfef95601890afd80709"))))
 
+  (testing "whirlpool"
+    (let [hashed (hash/whirlpool "")]
+      (is (= (bytes->hex hashed)
+             "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288febcf88e3e03c4f0757ea8964e59b63d93708b138cc42a66eb3"))))
+  
+  (testing "ripemd160"
+    (let [hashed (hash/ripemd160 "")]
+      (is (= (bytes->hex hashed)
+             "9c1185a5c5e9fc54612808977ee8f548b2258d31"))))
+
   (testing "File hashing"
     (let [path "test/_files/pubkey.ecdsa.pem"
           stream (io/input-stream path)]
