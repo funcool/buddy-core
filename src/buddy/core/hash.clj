@@ -22,7 +22,10 @@
            org.bouncycastle.crypto.digests.SHA1Digest
            org.bouncycastle.crypto.digests.TigerDigest
            org.bouncycastle.crypto.digests.MD5Digest
+           org.bouncycastle.crypto.digests.RIPEMD128Digest
            org.bouncycastle.crypto.digests.RIPEMD160Digest
+           org.bouncycastle.crypto.digests.RIPEMD256Digest
+           org.bouncycastle.crypto.digests.RIPEMD320Digest
            org.bouncycastle.crypto.digests.SHA3Digest
            org.bouncycastle.crypto.digests.SHA256Digest
            org.bouncycastle.crypto.digests.SHA384Digest
@@ -37,7 +40,10 @@
    :sha384   #(SHA384Digest.)
    :sha512   #(SHA512Digest.)
    :sha1     #(SHA1Digest.)
+   :ripemd128 #(RIPEMD128Digest.)
    :ripemd160 #(RIPEMD160Digest.)
+   :ripemd256 #(RIPEMD256Digest.)
+   :ripemd320 #(RIPEMD320Digest.)
    :tiger    #(TigerDigest.)
    :md5      #(MD5Digest.)
    :sha3-256 #(SHA3Digest. 256)
@@ -256,6 +262,18 @@
   [input]
   (digest input :whirlpool))
 
+(defn ripemd128
+  [input]
+  (digest input :ripemd128))
+
 (defn ripemd160
   [input]
   (digest input :ripemd160))
+
+(defn ripemd256
+  [input]
+  (digest input :ripemd256))
+
+(defn ripemd320
+  [input]
+  (digest input :ripemd320))

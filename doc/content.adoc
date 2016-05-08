@@ -61,7 +61,10 @@ All hash algorithms are located in the `buddy.core.hash` namespace.
 | Blake2b              | 512
 | Skein                | 256, 512, 1024, arbitrary size
 | Whirlpool            | 512
+| RIPEMD128            | 128
 | RIPEMD160            | 160
+| RIPEMD256            | 256
+| RIPEMD320            | 320 
 |===============================================
 
 

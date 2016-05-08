@@ -113,11 +113,26 @@
     (let [hashed (hash/whirlpool "")]
       (is (= (bytes->hex hashed)
              "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a73e83be698b288febcf88e3e03c4f0757ea8964e59b63d93708b138cc42a66eb3"))))
-  
+
+  (testing "ripemd128"
+    (let [hashed (hash/ripemd128 "")]
+      (is (= (bytes->hex hashed)
+             "cdf26213a150dc3ecb610f18f6b38b46"))))
+
   (testing "ripemd160"
     (let [hashed (hash/ripemd160 "")]
       (is (= (bytes->hex hashed)
              "9c1185a5c5e9fc54612808977ee8f548b2258d31"))))
+
+  (testing "ripemd256"
+    (let [hashed (hash/ripemd256 "")]
+      (is (= (bytes->hex hashed)
+             "02ba4c4e5f8ecd1877fc52d64d30e37a2d9774fb1e5d026380ae0168e3c5522d"))))
+
+  (testing "ripemd320"
+    (let [hashed (hash/ripemd320 "")]
+      (is (= (bytes->hex hashed)
+             "22d65d5661536cdc75c1fdf5c6de7b41b9f27325ebc61e8557177d705a0ec880151c3a32a00899b8"))))
 
   (testing "File hashing"
     (let [path "test/_files/pubkey.ecdsa.pem"
