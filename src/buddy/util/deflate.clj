@@ -28,29 +28,25 @@
   "Given a plain byte array, compress it and
   return an other byte array."
   [^bytes input]
-  (let [out (ByteArrayOutputStream.)
-        def (Deflater. Deflater/DEFLATED true)
-        dout (DeflaterOutputStream. out def)]
-    (.write dout input)
-    (.close dout)
-    (.toByteArray out)))
+  (let [os (ByteArrayOutputStream.)
+        opts (Deflater. Deflater/DEFLATED true)]
+    (with-open [dos (DeflaterOutputStream. os opts)]
+      (.write dos input))
+    (.toByteArray os)))
 
 (defn uncompress
   "Given a compressed data as byte-array,
   uncompress it and return as an other
   byte array."
   [^bytes input]
-  (let [input (ByteArrayInputStream. bytes)
-        inflater (Inflater. true)
-        infout (InflaterInputStream. input inflater)
-        output (ByteArrayOutputStream.)
-        buffer (byte-array 1024)]
-    (loop []
-      (let [readed (.read infout buffer)]
-        (when (pos? readed)
-          (.write output buffer 0 readed)
-          (recur))))
-    (.close infout)
-    (.close output)
-    (.toByteArray output)))
-
+  (let [buf (byte-array 1024)
+        os (ByteArrayOutputStream.)
+        opts (Inflater. true)]
+    (with-open [is (ByteArrayInputStream. input)
+                iis (InflaterInputStream. is opts)]
+      (loop []
+        (let [readed (.read iis buf)]
+          (when (pos? readed)
+            (.write os buf 0 readed)
+            (recur)))))
+    (.toByteArray os)))
