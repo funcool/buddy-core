@@ -1,5 +1,18 @@
 = Changelog
 
+== Version 0.13.0
+
+Date: 2016-06-09
+
+- Fix unexpected exception on `buddy.core.bytes/equals?` predicate when
+  two zero-length arrays are compared.
+- Reimplement *deflate* helpers under `buddy.util.deflate` namespace
+  in order to fix unexpected exception when `uncompress` function is used
+  with any input and start use safer idioms for treat internal streams.
+- Add ripemd-128, ripemd-160, ripemd-256 and ripemd-320 hash functions.
+- Add whirlpool hash function.
+
+
 == Version 0.12.1
 
 Date: 2016-04-08
