@@ -26,6 +26,7 @@
            org.bouncycastle.crypto.Wrapper
            org.bouncycastle.asn1.pkcs.PrivateKeyInfo
            org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo
+           org.bouncycastle.cert.X509CertificateHolder
            java.security.PublicKey
            java.security.PrivateKey
            java.security.Security
@@ -77,7 +78,9 @@
           keyinfo   (.readObject parser)
           converter (doto (JcaPEMKeyConverter.)
                       (.setProvider "BC"))]
-      (.getPublicKey converter keyinfo))))
+      (if (instance? X509CertificateHolder keyinfo)
+        (.getPublicKey converter (.getSubjectPublicKeyInfo keyinfo))
+        (.getPublicKey converter keyinfo)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Api
