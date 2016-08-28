@@ -33,16 +33,16 @@
   of the specified array of bytes."
   ([^bytes input val]
    (Arrays/fill input (byte val)))
-  ([^bytes input val & {:keys [limit offset]}]
-   (let [offset (or offset 0)
-         limit (or limit (count input))]
-     (Arrays/fill input offset limit (byte val)))))
+  ([^bytes input val & {:keys [limit offset start end]}]
+   (let [start (or offset start 0)
+         end (or limit start (count input))]
+     (Arrays/fill input start end (byte val)))))
 
 (defn slice
-  "Given a byte array, get a copy of it. If offset
-  and limit is provided, a slice will be returned."
-  [^bytes input ^long offset ^long limit]
-  (Arrays/copyOfRange input offset limit))
+  "Returns a new copy of the byte array but
+  offset and crop by start and end indices."
+  [^bytes input ^long start ^long end]
+  (Arrays/copyOfRange input start end))
 
 (defn copy
   "Is a specialized version of slice that
