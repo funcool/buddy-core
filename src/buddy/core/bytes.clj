@@ -15,7 +15,7 @@
 (ns buddy.core.bytes
   "A collection of functions for work with byte arrays
   and bytes."
-  (:refer-clojure :exclude [bytes? concat])
+  (:refer-clojure :exclude [concat bytes?])
   (:import java.nio.ByteBuffer
            java.util.Arrays))
 
