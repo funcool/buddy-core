@@ -19,14 +19,16 @@
   (:import java.nio.ByteBuffer
            java.util.Arrays))
 
+(def ^:private +bytes-class+
+  (Class/forName "[B"))
+
 (defn bytes?
   "Test if a first parameter is a byte
   array or not."
   [x]
   (if (nil? x)
     false
-    (= (Class/forName "[B")
-       (.getClass x))))
+    (= +bytes-class+ (.getClass x))))
 
 (defn fill!
   "Assigns the specified byte value to each element
