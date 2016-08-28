@@ -1,5 +1,13 @@
 = Changelog
 
+== Version 0.14.0
+
+Date: 2015-08-28
+
+- Fix wrong parameters names on `buddy.core.bytes/fill!` function (that can lead
+  to unnecesary confusions). Backward compatibility is preserved.
+- Fix warnings with clojure 1.9.x.
+
 == Version 0.13.0
 
 Date: 2016-06-09
