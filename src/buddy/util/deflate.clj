@@ -38,15 +38,22 @@
   "Given a compressed data as byte-array,
   uncompress it and return as an other
   byte array."
-  [^bytes input]
-  (let [buf (byte-array 1024)
-        os (ByteArrayOutputStream.)
-        opts (Inflater. true)]
-    (with-open [is (ByteArrayInputStream. input)
-                iis (InflaterInputStream. is opts)]
-      (loop []
-        (let [readed (.read iis buf)]
-          (when (pos? readed)
-            (.write os buf 0 readed)
-            (recur)))))
-    (.toByteArray os)))
+  ([^bytes input]
+    (uncompress input true))
+  ([^bytes input ^Boolean nowrap]
+   (let [buf  (byte-array 1024)
+         os   (ByteArrayOutputStream.)
+         opts (Inflater. nowrap)]
+     (try
+       (with-open [is  (ByteArrayInputStream. input)
+                   iis (InflaterInputStream. is opts)]
+         (loop []
+           (let [readed (.read iis buf)]
+             (when (pos? readed)
+               (.write os buf 0 readed)
+               (recur)))))
+       (.toByteArray os)
+       (catch java.util.zip.ZipException e
+         (if nowrap
+           (uncompress input false)
+           (throw e)))))))
