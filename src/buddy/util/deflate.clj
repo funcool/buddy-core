@@ -22,7 +22,8 @@
            java.util.zip.Deflater
            java.util.zip.DeflaterOutputStream
            java.util.zip.InflaterInputStream
-           java.util.zip.Inflater))
+           java.util.zip.Inflater
+           java.util.zip.ZipException))
 
 (defn compress
   "Given a plain byte array, compress it and
@@ -31,8 +32,8 @@
    (compress input nil))
   ([^bytes input {:keys [nowrap] :or {nowrap true}}]
    (let [os (ByteArrayOutputStream.)
-         opts (Deflater. Deflater/DEFLATED nowrap)]
-     (with-open [dos (DeflaterOutputStream. os opts)]
+         defl (Deflater. Deflater/DEFLATED nowrap)]
+     (with-open [dos (DeflaterOutputStream. os defl)]
        (.write dos input))
      (.toByteArray os))))
 
@@ -47,17 +48,17 @@
                   :as opts}]
    (let [buf  (byte-array (int buffer-size))
          os   (ByteArrayOutputStream.)
-         opts (Inflater. ^Boolean nowrap)]
+         inf  (Inflater. ^Boolean nowrap)]
      (try
        (with-open [is  (ByteArrayInputStream. input)
-                   iis (InflaterInputStream. is opts)]
+                   iis (InflaterInputStream. is inf)]
          (loop []
            (let [readed (.read iis buf)]
              (when (pos? readed)
                (.write os buf 0 readed)
                (recur)))))
        (.toByteArray os)
-       (catch java.util.zip.ZipException e
+       (catch ZipException e
          (if nowrap
            (uncompress input (assoc opts :nowrap false))
            (throw e)))))))

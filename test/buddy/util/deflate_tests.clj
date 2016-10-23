@@ -26,3 +26,17 @@
    (let [result1 (df/compress data)
          result2 (df/uncompress result1)]
      (t/is (bytes/equals? data result2)))))
+
+(defspec deflate-compress-uncompress-zlib-spec 1000
+         (props/for-all
+           [data gen/bytes]
+           (let [result1 (df/compress data {:nowrap false})
+                 result2 (df/uncompress result1 {:nowrap false})]
+             (t/is (bytes/equals? data result2)))))
+
+(defspec deflate-compress-uncompress-zlib-fallback-spec 1000
+         (props/for-all
+           [data gen/bytes]
+           (let [result1 (df/compress data {:nowrap false})
+                 result2 (df/uncompress result1)]
+             (t/is (bytes/equals? data result2)))))
