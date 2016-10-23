@@ -27,23 +27,27 @@
 (defn compress
   "Given a plain byte array, compress it and
   return an other byte array."
-  [^bytes input]
-  (let [os (ByteArrayOutputStream.)
-        opts (Deflater. Deflater/DEFLATED true)]
-    (with-open [dos (DeflaterOutputStream. os opts)]
-      (.write dos input))
-    (.toByteArray os)))
+  ([^bytes input]
+   (compress input nil))
+  ([^bytes input {:keys [nowrap] :or {nowrap true}}]
+   (let [os (ByteArrayOutputStream.)
+         opts (Deflater. Deflater/DEFLATED nowrap)]
+     (with-open [dos (DeflaterOutputStream. os opts)]
+       (.write dos input))
+     (.toByteArray os))))
 
 (defn uncompress
   "Given a compressed data as byte-array,
   uncompress it and return as an other
   byte array."
   ([^bytes input]
-    (uncompress input true))
-  ([^bytes input ^Boolean nowrap]
-   (let [buf  (byte-array 1024)
+    (uncompress input nil))
+  ([^bytes input {:keys [nowrap buffer-size]
+                  :or {nowrap true buffer-size 2048}
+                  :as opts}]
+   (let [buf  (byte-array (int buffer-size))
          os   (ByteArrayOutputStream.)
-         opts (Inflater. nowrap)]
+         opts (Inflater. ^Boolean nowrap)]
      (try
        (with-open [is  (ByteArrayInputStream. input)
                    iis (InflaterInputStream. is opts)]
@@ -55,5 +59,5 @@
        (.toByteArray os)
        (catch java.util.zip.ZipException e
          (if nowrap
-           (uncompress input false)
+           (uncompress input (assoc opts :nowrap false))
            (throw e)))))))
