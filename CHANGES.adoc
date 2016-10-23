@@ -1,8 +1,15 @@
 = Changelog
 
+== Version 1.1.0
+
+Date: 2016-10-23
+
+- Add support for zlib bytes of stream to deflate ns.
+- Add support for specify the buffer size for `uncompress` function.
+
 == Version 1.0.0
 
-Date: 2015-08-28
+Date: 2016-08-28
 
 - Fix wrong parameters names on `buddy.core.bytes/fill!` function (that can lead
   to unnecesary confusions). Backward compatibility is preserved.
