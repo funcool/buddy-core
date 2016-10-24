@@ -1,5 +1,12 @@
 = Changelog
 
+== Version 1.1.1
+
+Date: 2016-10-24
+
+- Fix regression introduced in previous version.
+
+
 == Version 1.1.0
 
 Date: 2016-10-23
