@@ -27,7 +27,7 @@
 (defn random-bytes
   "Generate a byte array of scpecified length with random
   bytes taken from secure random number generator.
-  This method should be used for generate a random
+  This method should be used to generate a random
   iv/salt or arbitrary length."
   ([^long numbytes]
    (random-bytes numbytes (SecureRandom.)))
