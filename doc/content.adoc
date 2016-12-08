@@ -345,8 +345,8 @@ link:https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm[ec
 .Example verifying signature
 [source, clojure]
 ----
-;; Read private key
-(def pubkey (keys/private-key "test/_files/pubkey.3des.rsa.pem"))
+;; Read public key
+(def pubkey (keys/public-key "test/_files/pubkey.3des.rsa.pem"))
 
 ;; Make verification
 (dsa/verify "foo" signature {:key pubkey :alg :rsassa-pss+sha256})
