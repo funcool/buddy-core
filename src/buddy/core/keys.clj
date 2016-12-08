@@ -96,7 +96,7 @@
    (read-pem->privkey path passphrase)))
 
 (defn public-key
-  "Public key constrcutor from file path."
+  "Public key constructor from file path."
   [path]
   (read-pem->pubkey path))
 
