@@ -9,7 +9,8 @@
 (when (nil? (Security/getProvider "BC"))
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
-(defn- verifier [pub-key]
+(defn- public-key-verifier
+  [pub-key]
   (.build
    (doto (JcaContentVerifierProviderBuilder.)
      (.setProvider "BC"))
@@ -23,17 +24,38 @@
           keyinfo (.readObject parser)]
       keyinfo)))
 
-(defn str->public-key
+(defn not-after
+  "Returns the last date this signature is valid."
+  [cert]
+  (.getNotAfter cert))
+
+(defn not-before
+  "Returns the first date this certificate is valid."
+  [cert]
+  (.getNotAfter cert))
+
+(defn valid-on-date
+  "Returns true if certificate is valid date. Defaults to today"
+  ([certificate date]
+   (.isValidOn certificate date))
+  ([certificate]
+   (valid-on-date certificate (java.util.Date.))))
+
+(defn subject
+  "Returns the subject of the certificate"
+  [cert]
+  (.toString (.getSubject cert)))
+
+(defn str->certificate
   "Certificate constructor from string"
   [certdata]
   (with-open [reader (StringReader. ^String certdata)]
     (certificate reader)))
 
-(defn verify
-  "Verifies that the certificate is signed by the private key associated
-   with the signer-public-key."
-  [cert signer-public-key]
-  (.isSignatureValid cert (verifier signer-public-key)))
+(defn verify-signature
+  "Verifies that the certificate is signed with the provided public key."
+  [cert public-key]
+  (.isSignatureValid cert (public-key-verifier public-key)))
 
 (defn certificate?
   "Returns true if object is a certificate"
