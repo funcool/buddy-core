@@ -34,12 +34,12 @@
   [cert]
   (.getNotAfter cert))
 
-(defn valid-on-date
+(defn valid-on-date?
   "Returns true if certificate is valid date. Defaults to today"
   ([certificate date]
    (.isValidOn certificate date))
   ([certificate]
-   (valid-on-date certificate (java.util.Date.))))
+   (valid-on-date? certificate (java.util.Date.))))
 
 (defn subject
   "Returns the subject of the certificate"

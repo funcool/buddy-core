@@ -50,11 +50,11 @@
     (let [expired (certificates/certificate "test/_files/expired-rsa.crt")]
       (is (= #inst "2016-12-02T16:18:40.000-00:00" (certificates/not-before expired)))
       (is (= #inst "2016-12-02T16:18:40.000-00:00" (certificates/not-after expired)))
-      (is (not (certificates/valid-on-date expired)))
-      (is (certificates/valid-on-date expired #inst "2016-12-02T16:18:40.000-00:00"))
-      (is (certificates/valid-on-date expired #inst "2016-12-02T16:17:40.000-00:00"))
-      (is (not (certificates/valid-on-date expired #inst "2016-12-01T16:17:40.000-00:00")))
-      (is (not (certificates/valid-on-date expired #inst "2016-12-03T16:17:40.000-00:00"))) ))
+      (is (not (certificates/valid-on-date? expired)))
+      (is (certificates/valid-on-date? expired #inst "2016-12-02T16:18:40.000-00:00"))
+      (is (certificates/valid-on-date? expired #inst "2016-12-02T16:17:40.000-00:00"))
+      (is (not (certificates/valid-on-date? expired #inst "2016-12-01T16:17:40.000-00:00")))
+      (is (not (certificates/valid-on-date? expired #inst "2016-12-03T16:17:40.000-00:00"))) ))
 
 
 (deftest subject
