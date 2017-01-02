@@ -25,6 +25,7 @@ Including:
 - stream ciphers
 - padding schemes
 - nonces and salts
+- X.509 certificates
 
 
 === Project Maturity
@@ -724,6 +725,27 @@ This is a brief list of available functions:
 | `buddy.core.bytes/equals?`            | Constant time equals predicate for byte arrays
 | `buddy.core.bytes/concat`             | Concat two or more byte arrays
 |=========================================================================
+
+== X.509 Certificates
+
+Support for basic certificate handling is available in the buddy.core.certificates namespace.
+
+You can load certificates, check date validity, and check to see if a certificate is signed
+by a known public key.
+
+[source, clojure]
+----
+(require '[buddy.core.certificates :as certs])
+
+(def cert (certs/certificate "path/to/certificate.crt"))
+;; => #object[org.bouncycastle.cert.X509CertificateHolder 0x2919034b "org.bouncycastle.cert.X509CertificateHolder@1612eab1"]
+(certs/valid-on-date? cert)
+;; => true if today is between not-before and not-after
+
+(certs/verify-signature cert (certs/certificate "path/to/ca.crt"))
+;; => true if cert is signed by public key in ca.crt
+
+----
 
 
 == FAQ
