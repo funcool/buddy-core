@@ -49,7 +49,7 @@
   (.build builder (.toCharArray passphrase)))
 
 (defn- read-pem->privkey
-  [^String path ^String passphrase]
+  [path ^String passphrase]
   (with-open [reader (io/reader path)]
     (let [parser    (PEMParser. reader)
           obj       (.readObject parser)
