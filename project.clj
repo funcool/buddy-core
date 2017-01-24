@@ -3,11 +3,11 @@
   :url "https://github.com/funcool/buddy-core"
   :license {:name "Apache 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
                  [org.clojure/test.check "0.9.0" :scope "test"]
                  [commons-codec/commons-codec "1.10"]
-                 [org.bouncycastle/bcprov-jdk15on "1.55"]
-                 [org.bouncycastle/bcpkix-jdk15on "1.55"]]
+                 [org.bouncycastle/bcprov-jdk15on "1.56"]
+                 [org.bouncycastle/bcpkix-jdk15on "1.56"]]
   :source-paths ["src"]
   :test-paths ["test"]
   :jar-exclusions [#"\.cljx|\.swp|\.swo|user.clj"]
