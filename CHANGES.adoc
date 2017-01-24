@@ -1,5 +1,13 @@
 = Changelog
 
+== Version 1.2.0
+
+Date: 2017-01-24
+
+- Update bouncy castle to 1.56
+- Add certificates handling (thanks @ryfow).
+
+
 == Version 1.1.1
 
 Date: 2016-10-24
