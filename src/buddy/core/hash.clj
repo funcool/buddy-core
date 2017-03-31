@@ -149,7 +149,8 @@
 
   java.io.File
   (-digest [^java.io.File input engine]
-    (hash-stream-data (io/input-stream input) engine))
+    (with-open [is (io/input-stream input)]
+      (hash-stream-data is engine)))
 
   java.net.URL
   (-digest [^java.net.URL input engine]
