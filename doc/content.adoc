@@ -697,7 +697,7 @@ is the size of the current time in miliseconds.
 ;; => [84 -88 51 120 122 -30 78 -31 -96 -22 119 122 29 -54 -64 -73]
 ----
 
-Like *random-nonce* functiom, *random-bytes* returns a byte array but it not have
+Like *random-nonce* function, *random-bytes* returns a byte array but it not have
 the limitation of minimum 8 bytes of size.
 
 
