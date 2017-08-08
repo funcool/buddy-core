@@ -5,7 +5,7 @@
 Date: 2017-08-08
 
 - Update bouncy castle to 1.57
-
+- Autoclose files after digest.
 
 ## Version 1.2.0
 
