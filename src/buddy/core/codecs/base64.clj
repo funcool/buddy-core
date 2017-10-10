@@ -14,7 +14,7 @@
 
 (ns buddy.core.codecs.base64
   "Util functions for make conversion between string, bytes
-  and encode them to base64 ot hex format."
+  and encode them to base64 hex format."
   (:require [buddy.core.codecs :as codecs])
   (:import org.apache.commons.codec.binary.Base64))
 
