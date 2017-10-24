@@ -25,7 +25,7 @@
 
 
 (defn random-bytes
-  "Generate a byte array of scpecified length with random
+  "Generate a byte array of specified length with random
   bytes taken from secure random number generator.
   This method should be used to generate a random
   iv/salt or arbitrary length."
@@ -46,7 +46,7 @@
   ([^long numbytes ^SecureRandom sr]
    (let [buffer (java.nio.ByteBuffer/allocate numbytes)]
      (.putLong buffer (System/currentTimeMillis))
-     (.put buffer (random-bytes (.remaining buffer) sr))
+     (.put buffer ^bytes (random-bytes (.remaining buffer) sr))
      (.array buffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

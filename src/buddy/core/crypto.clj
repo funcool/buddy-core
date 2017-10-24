@@ -42,7 +42,7 @@
 ;; --- Constants
 
 (def ^:no-doc
-  +block-cipher-engines+
+  ^BlockCipher +block-cipher-engines+
   {:aes     #(AESFastEngine.)
    :serpent #(SerpentEngine.)
    :twofish #(TwofishEngine.)})
@@ -52,13 +52,13 @@
   {:chacha #(ChaChaEngine.)})
 
 (def ^:no-doc
-  +cipher-modes+
+  ^BlockCipher +cipher-modes+
   {:ecb #(identity %)
    :cbc #(CBCBlockCipher. %)
    :gcm #(GCMBlockCipher. %)
    :ctr #(SICBlockCipher. %)
    :sic #(SICBlockCipher. %)
-   :ofb #(OFBBlockCipher. % (* 8 (.getBlockSize %)))})
+   :ofb #(OFBBlockCipher. % (* 8 (.getBlockSize ^BlockCipher %)))})
 
 ;; --- Implementation details.
 
@@ -167,11 +167,11 @@
     (.processBlock ^BlockCipher e in inoff out outoff))
 
   AEADBlockCipher
-  (-process-block [e in inoff out outoff]
+  (-process-block [e ^bytes in inoff out outoff]
     (.processBytes ^AEADBlockCipher e in (int inoff) (alength in) out (int outoff)))
 
   StreamCipher
-  (-process-block [e in inoff out outoff]
+  (-process-block [e ^bytes in inoff out outoff]
     (.processBytes ^StreamCipher e in (int inoff) (alength in) out (int outoff))))
 
 (extend-protocol IStreamCipherLike
@@ -198,12 +198,12 @@
   "Encrypt or decrypt a bytes using the specified engine.
   Is a specialized version of `process-block!` for stream ciphers
   and aead ciphers."
-  ([engine in]
+  ([engine ^bytes in]
    (let [length (alength in)
          out (byte-array length)]
      (-process-bytes engine in 0 length out 0)
      out))
-  ([engine in inoff out outoff]
+  ([engine ^bytes in inoff out outoff]
    (-process-bytes engine in inoff (alength in) out outoff))
   ([engine in inoff inlen out outoff]
    (-process-bytes engine in inoff inlen out outoff)))

@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io])
   (:import java.io.StringReader
            java.security.Security
+           java.security.PublicKey
            org.bouncycastle.openssl.PEMParser
            org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder
            org.bouncycastle.cert.X509CertificateHolder))
@@ -10,7 +11,7 @@
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
 (defn- public-key-verifier
-  [pub-key]
+  [^X509CertificateHolder pub-key]
   (.build
    (doto (JcaContentVerifierProviderBuilder.)
      (.setProvider "BC"))
@@ -26,24 +27,24 @@
 
 (defn not-after
   "Returns the last date this signature is valid."
-  [cert]
+  [^X509CertificateHolder cert]
   (.getNotAfter cert))
 
 (defn not-before
   "Returns the first date this certificate is valid."
-  [cert]
+  [^X509CertificateHolder cert]
   (.getNotAfter cert))
 
 (defn valid-on-date?
   "Returns true if certificate is valid date. Defaults to today"
-  ([certificate date]
+  ([^X509CertificateHolder certificate date]
    (.isValidOn certificate date))
-  ([certificate]
+  ([^X509CertificateHolder certificate]
    (valid-on-date? certificate (java.util.Date.))))
 
 (defn subject
   "Returns the subject of the certificate"
-  [cert]
+  [^X509CertificateHolder cert]
   (.toString (.getSubject cert)))
 
 (defn str->certificate
@@ -54,7 +55,7 @@
 
 (defn verify-signature
   "Verifies that the certificate is signed with the provided public key."
-  [cert public-key]
+  [^X509CertificateHolder cert public-key]
   (.isSignatureValid cert (public-key-verifier public-key)))
 
 (defn certificate?

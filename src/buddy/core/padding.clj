@@ -16,7 +16,8 @@
   "Block padding algorithms."
   (:refer-clojure :exclude [count])
   (:require [buddy.core.bytes :as bytes])
-  (:import org.bouncycastle.crypto.paddings.ZeroBytePadding
+  (:import org.bouncycastle.crypto.paddings.BlockCipherPadding
+           org.bouncycastle.crypto.paddings.ZeroBytePadding
            org.bouncycastle.crypto.paddings.X923Padding
            org.bouncycastle.crypto.paddings.PKCS7Padding
            org.bouncycastle.crypto.paddings.TBCPadding
@@ -26,7 +27,7 @@
 
 (defn padding-engine
   "Create a padding enginde for given algorithm name."
-  [^Keyword alg]
+  ^BlockCipherPadding [^Keyword alg]
   (condp = alg
     :zerobyte (ZeroBytePadding.)
     :pkcs7 (PKCS7Padding.)
