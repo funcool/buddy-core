@@ -7,8 +7,7 @@
                  [org.clojure/test.check "0.9.0" :scope "test"]
                  [commons-codec/commons-codec "1.10"]
                  [org.bouncycastle/bcprov-jdk15on "1.58"]
-                 [org.bouncycastle/bcpkix-jdk15on "1.58"]
-                 [org.clojure/tools.namespace "0.2.11"]]
+                 [org.bouncycastle/bcpkix-jdk15on "1.58"]]
   :source-paths ["src"]
   :test-paths ["test"]
   :global-vars {*warn-on-reflection* true}

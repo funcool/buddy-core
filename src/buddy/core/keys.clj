@@ -43,10 +43,16 @@
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
 (defn- decryptor
-  [builder passphrase]
+  [builder ^String passphrase]
   (when (nil? passphrase)
     (throw (ex-info "Passphrase is mandatory with encrypted keys." {})))
-  (.build builder (.toCharArray passphrase)))
+  (cond
+    (instance? JcePEMDecryptorProviderBuilder builder)
+      (.build ^JcePEMDecryptorProviderBuilder builder (.toCharArray passphrase))
+    (instance? JceOpenSSLPKCS8DecryptorProviderBuilder builder)
+      (.build ^JceOpenSSLPKCS8DecryptorProviderBuilder builder (.toCharArray passphrase))
+    :else
+      (throw (ex-info "Unknown decryptor builder" {:kind (class builder)}))))
 
 (defn- read-pem->privkey
   [path ^String passphrase]
@@ -57,14 +63,14 @@
                       (.setProvider "BC"))]
       (cond
         (instance? PEMEncryptedKeyPair obj)
-        (->> (.decryptKeyPair obj (decryptor (JcePEMDecryptorProviderBuilder.) passphrase))
+        (->> (.decryptKeyPair ^PEMEncryptedKeyPair obj (decryptor (JcePEMDecryptorProviderBuilder.) passphrase))
              (.getKeyPair converter)
              (.getPrivate))
         (instance? PEMKeyPair obj)
         (->> (.getKeyPair converter obj)
              (.getPrivate))
         (instance? PKCS8EncryptedPrivateKeyInfo obj)
-        (->> (.decryptPrivateKeyInfo obj (decryptor (JceOpenSSLPKCS8DecryptorProviderBuilder.) passphrase))
+        (->> (.decryptPrivateKeyInfo ^PKCS8EncryptedPrivateKeyInfo obj (decryptor (JceOpenSSLPKCS8DecryptorProviderBuilder.) passphrase))
              (.getPrivateKey converter))
         (instance? PrivateKeyInfo obj)
         (.getPrivateKey converter obj)
@@ -79,7 +85,7 @@
           converter (doto (JcaPEMKeyConverter.)
                       (.setProvider "BC"))]
       (if (instance? X509CertificateHolder keyinfo)
-        (.getPublicKey converter (.getSubjectPublicKeyInfo keyinfo))
+        (.getPublicKey converter (.getSubjectPublicKeyInfo ^X509CertificateHolder keyinfo))
         (.getPublicKey converter keyinfo)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

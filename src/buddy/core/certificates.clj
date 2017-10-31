@@ -11,11 +11,16 @@
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
 (defn- public-key-verifier
-  [^X509CertificateHolder pub-key]
-  (.build
-   (doto (JcaContentVerifierProviderBuilder.)
-     (.setProvider "BC"))
-   pub-key))
+  [pub-key]
+  (let [builder (doto (JcaContentVerifierProviderBuilder.)
+                      (.setProvider "BC"))]
+    (cond
+      (instance? X509CertificateHolder pub-key)
+        (.build builder ^X509CertificateHolder pub-key)
+      (instance? PublicKey pub-key)
+        (.build builder ^PublicKey pub-key)
+      :else
+        (throw (Exception. "Unknown public key type" {:kind (class pub-key)})))))
 
 (defn certificate
   "Reads a certificate from a PEM encoded file or stream"

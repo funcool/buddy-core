@@ -28,7 +28,7 @@
   [x]
   (if (nil? x)
     false
-    (= +bytes-class+ (.getClass x))))
+    (= +bytes-class+ (.getClass ^Object x))))
 
 (defn fill!
   "Assigns the specified byte value to each element
@@ -38,7 +38,7 @@
   ([^bytes input val & {:keys [limit offset start end]}]
    (let [start (or offset start 0)
          end (or limit start (count input))]
-     (Arrays/fill input start end (byte val)))))
+     (Arrays/fill input ^int start ^int end (byte val)))))
 
 (defn slice
   "Returns a new copy of the byte array but

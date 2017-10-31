@@ -56,5 +56,5 @@
 (defmulti for-engine class)
 
 (defmethod for-engine ChaChaEngine [e] (random-nonce 8))
-(defmethod for-engine SICBlockCipher [e] (random-nonce (.getBlockSize e)))
-(defmethod for-engine BlockCipher [e] (random-bytes (.getBlockSize e)))
+(defmethod for-engine SICBlockCipher [^BlockCipher e] (random-nonce (.getBlockSize e)))
+(defmethod for-engine BlockCipher [^BlockCipher e] (random-bytes (.getBlockSize e)))
