@@ -42,7 +42,7 @@
 ;; --- Constants
 
 (def ^:no-doc
-  ^BlockCipher +block-cipher-engines+
+  +block-cipher-engines+
   {:aes     #(AESFastEngine.)
    :serpent #(SerpentEngine.)
    :twofish #(TwofishEngine.)})
@@ -52,7 +52,7 @@
   {:chacha #(ChaChaEngine.)})
 
 (def ^:no-doc
-  ^BlockCipher +cipher-modes+
+  +cipher-modes+
   {:ecb #(identity %)
    :cbc #(CBCBlockCipher. %)
    :gcm #(GCMBlockCipher. %)
