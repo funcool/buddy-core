@@ -65,7 +65,7 @@ All hash algorithms are located in the `buddy.core.hash` namespace.
 | RIPEMD128            | 128
 | RIPEMD160            | 160
 | RIPEMD256            | 256
-| RIPEMD320            | 320 
+| RIPEMD320            | 320
 |===============================================
 
 
