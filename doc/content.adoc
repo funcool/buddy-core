@@ -321,7 +321,7 @@ openssl ec -in ecprivkey.pem -pubout -out ecpubkey.pem
 A JSON Web Key (JWK) is a JavaScript Object Notation (JSON) data
 structure that represents a cryptographic key of different types.
 
-_buddy-sign_ provides functions for reading and saving JCA keys in JWK format
+_buddy-core_ provides functions for reading and saving JCA keys in JWK format
 
 Currently supported JWK key types are
 
