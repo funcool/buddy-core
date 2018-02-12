@@ -18,12 +18,8 @@
             [buddy.core.codecs :as codecs])
   (:import (org.bouncycastle.util BigIntegers)))
 
-;; it's actually pretty tricky to correctly calculate byte length
-;; while converting BigInteger -> byte arrays, because BigInteger strips
-;; leading zero bytes in constructor. This function works in my tests
-;; but it can break with many leading zero bytes in keys
-;; OTOH many leading zeros are sign of bad key so i think it's not critical
-(defn calc-byte-length [^BigInteger bi]
+(defn calc-byte-length
+  [^BigInteger bi]
   (int (Math/ceil (/ (.bitLength bi) 8.0))))
 
 (defn b64str->bigint [string]

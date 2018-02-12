@@ -64,20 +64,6 @@
            (codecs/bytes->str (b64/encode signature true))))
     (is (dsa/verify payload signature {:alg :eddsa :key public}))))
 
-;; (deftest ed25519-jws-sign-unsign
-;;   (let [jwk (keys/parse-string ed25519-key)
-;;         [public private] (load-pair jwk)
-;;         ;; Example from RFC
-;;         payload "Example of Ed25519 signing"
-;;         token (jws/sign payload private {:alg :eddsa
-;;                                          :key private})]
-
-;;     (is (= "eyJhbGciOiJFZERTQSJ9.RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc.hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg"
-;;            token))
-;;     (is (= "Example of Ed25519 signing"
-;;            (codecs/bytes->str (jws/unsign token public {:alg :eddsa}))))))
-
-
 (deftest bi-encoding
   (testing "simple case"
     (let [ba ^bytes (b64/decode "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A")
@@ -92,27 +78,7 @@
           bi (BigIntegers/fromUnsignedByteArray by)
           l (proto/calc-byte-length (BigIntegers/fromUnsignedByteArray bx))]
       (is (= 66 l))
-      (is (= (seq by) (seq (BigIntegers/asUnsignedByteArray l bi))))))
-
-  (testing "random numbers encoding/decoding (fixed length)"
-    (let [rnd (Random.)]
-      (dotimes [n 512]
-        (let [ba (byte-array 200)
-              _ (.nextBytes rnd ba)
-              bi (BigIntegers/fromUnsignedByteArray ba)]
-          (is (= (proto/bytes->b64str ba)
-                 (proto/bigint->b64str 200 bi)))))))
-
-  (testing "many leading zero bytes"
-    (let [ba (byte-array [0 0 0 0 0 0 0
-                          -99 97 -79 -99 -17 -3 90 96
-                          -70 -124 74 -12 -110 -20 44
-                          -60 68 73 -59 105 123 50 105])
-          bi (proto/b64str->bigint ba)]
-      ;; This actually fails, but i don't know how to fix it
-      #_(is (= (proto/bytes->b64str ba)
-               (proto/bigint->b64str (proto/calc-byte-length bi) bi))))))
-
+      (is (= (seq by) (seq (BigIntegers/asUnsignedByteArray l bi)))))))
 
 ;; RSA
 ;; https://tools.ietf.org/html/rfc7515#appendix-A.2
@@ -140,19 +106,6 @@
     (is (= "cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-0Qc_lF5YKt_O8W2Fp5jujGbds9uJdbF9CUAr7t1dnZcAcQjbKBYNX4BAynRFdiuB--f_nZLgrnbyTyWzO75vRK5h6xBArLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
            (codecs/bytes->str (b64/encode signature true))))
     (is (dsa/verify payload signature {:alg :rsassa-pkcs15+sha256 :key public}))))
-
-;; (deftest rsa-jws-sign-unsign
-;;   (let [[public private] (load-pair rsa2048-jwk-key)
-;;         ;; Example from RFC
-;;         payload "{\"iss\":\"joe\",\r\n \"exp\":1300819380,\r\n \"http://example.com/is_root\":true}"
-;;         token (jws/sign payload private {:alg :rs256
-;;                                          :key private})]
-
-;;     (is (= "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.cC4hiUPoj9Eetdgtv3hF80EGrhuB__dzERat0XF9g2VtQgr9PJbu3XOiZj5RZmh7AAuHIm4Bh-0Qc_lF5YKt_O8W2Fp5jujGbds9uJdbF9CUAr7t1dnZcAcQjbKBYNX4BAynRFdiuB--f_nZLgrnbyTyWzO75vRK5h6xBArLIARNPvkSjtQBMHlb1L07Qe7K0GarZRmB_eSN9383LcOLn6_dO--xi12jzDwusC-eOkHWEsqtFZESc6BfI7noOPqvhJ1phCnvWh6IeYI2w9QOYEUipUTI8np6LbgGY9Fs98rqVt5AXLIhWkWywlVmtVrBp0igcN_IoypGlUPQGe77Rw"
-;;            token))
-;;     (is (= payload
-;;            (codecs/bytes->str (jws/unsign token public {:alg :rs256}))))))
-
 
 ;; https://tools.ietf.org/html/rfc7638#section-3.1
 (def rsa-jwk-pubkey
@@ -200,23 +153,7 @@
     ;; but we can check validity of RFC-specified signature
     (is (dsa/verify payload rfcsig {:alg :ecdsa+sha256 :key public}))))
 
-;; (deftest ec256-jws-sign-unsign
-;;   (let [jwk (keys/parse-string ec256-key)
-;;         [public private] (load-pair jwk)
-;;         payload "{\"iss\":\"joe\",\r\n \"exp\":1300819380,\r\n \"http://example.com/is_root\":true}"
-;;         token (jws/sign payload private {:alg :es256
-;;                                          :key private})
-;;         rfctoken "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q"]
-
-;;     ;; unsign using our token
-;;     (is (= payload
-;;            (codecs/bytes->str (jws/unsign token public {:alg :es256}))))
-
-;;     ;; unsign using RFC reference token
-;;     (is (= payload
-;;            (codecs/bytes->str (jws/unsign rfctoken public {:alg :es256}))))))
-
-;;https://tools.ietf.org/html/rfc7515#appendix-A.3
+;; https://tools.ietf.org/html/rfc7515#appendix-A.3
 (def ec521-jwk-key
   {:kty "EC",
    :crv "P-521",
@@ -242,18 +179,3 @@
 
     (is (dsa/verify payload signature {:alg :ecdsa+sha512 :key public}))
     (is (dsa/verify payload rfcsig {:alg :ecdsa+sha512 :key public}))))
-
-;; (deftest ec521-jws-sign-unsign
-;;   (let [jwk (keys/parse-string ec521-key)
-;;         [public private] (load-pair jwk)
-;;         payload "Payload"
-;;         token (jws/sign payload private {:alg :es512
-;;                                          :key private})
-;;         rfctoken "eyJhbGciOiJFUzUxMiJ9.UGF5bG9hZA.AdwMgeerwtHoh-l192l60hp9wAHZFVJbLfD_UxMi70cwnZOYaRI1bKPWROc-mZZqwqT2SI-KGDKB34XO0aw_7XdtAG8GaSwFKdCAPZgoXD2YBJZCPEX3xKpRwcdOO8KpEHwJjyqOgzDO7iKvU8vcnwNrmxYbSW9ERBXukOXolLzeO_Jn"]
-
-;;     ;; unsign using our token
-;;     (is (= payload
-;;            (codecs/bytes->str (jws/unsign token public {:alg :es512}))))
-;;     ;; unsign using RFC reference token
-;;     (is (= payload
-;;            (codecs/bytes->str (jws/unsign rfctoken public {:alg :es512}))))))
