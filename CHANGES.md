@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 1.5.0
+
+Date: Unreleased
+
+- Update bouncy castle to 1.59
+- Add jwk reading and conversion to JCA (thanks to Denis Shilov).
+
 ## Version 1.4.0
 
 Date: 2017-08-29
