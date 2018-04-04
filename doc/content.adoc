@@ -462,7 +462,7 @@ NOTE: *ECDSA* algorithm requires EC type of asymentric key pair.
 Key derivation functions are often used in conjunction with non-secret parameters
 to derive one or more keys from a common secret value.
 
-*buddy* commes with several of them:
+*buddy* comes with several of them:
 
 .Supported key derivation functions.
 [options="header", cols="1,3,2"]
