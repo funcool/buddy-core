@@ -28,6 +28,7 @@
 
 ;; Ed25519
 ;; From RFC8037
+
 (def ed25519-jwk-key
   {:kty "OKP"
    :crv "Ed25519"
