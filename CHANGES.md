@@ -6,6 +6,7 @@ Date: 2018-06-02
 
 - Update bouncy castle to 1.59
 - Add jwk reading and conversion to JCA (thanks to Denis Shilov).
+- Add JWK loading and exporting support (thanks to Denis Shilov)
 
 
 ## Version 1.4.0
