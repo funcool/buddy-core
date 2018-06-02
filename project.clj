@@ -7,7 +7,7 @@
                  [org.clojure/test.check "0.9.0" :scope "test"]
                  [commons-codec/commons-codec "1.11"]
                  [cheshire "5.8.0"]
-                 [net.i2p.crypto/eddsa "0.2.0"]
+                 [net.i2p.crypto/eddsa "0.3.0"]
                  [org.bouncycastle/bcprov-jdk15on "1.59"]
                  [org.bouncycastle/bcpkix-jdk15on "1.59"]]
   :source-paths ["src"]
