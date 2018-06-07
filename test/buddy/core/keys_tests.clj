@@ -19,7 +19,30 @@
             [buddy.core.bytes :as bytes]
             [buddy.core.keys :as keys]))
 
-(deftest read-asynmetric-encryption-keys
+(def rsa-pubkey "-----BEGIN PUBLIC KEY-----
+  MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuyVwakzPsr6HfbOGEVXcXl9x06lRHhHl6O8mrnNEic7OaErlodCXWT9z2HMb3Dw1pPm/bW19fOA7UjpZDm2Dxqka+0FMCLGJYd7mKSNsEDGU/ZXBdirqWHgkxPyZyDp3sJPjky6XlQyeppIJE8zuY7bwM+c0fLrzl9HRZIzDbKfA5qhiDVjQifu2snCpaoWaiuEgE+SZQ/cw+cpOo6c2QORjovpjMVLt+2b8TSxJiheKph7LxYKM34SaLOv/wtUzS5wlJKwZs9wtgIcf99EPOh1xBk/Oq0xHL91f2pfEDWVIexkE2l1oPMjkTwcVub1SmcS3fmGa59mma4//Bi7ptwIDAQAB
+-----END PUBLIC KEY-----")
+
+(def rsa-pubkey2 "-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuyVwakzPsr6HfbOGEVXc
+Xl9x06lRHhHl6O8mrnNEic7OaErlodCXWT9z2HMb3Dw1pPm/bW19fOA7UjpZDm2D
+xqka+0FMCLGJYd7mKSNsEDGU/ZXBdirqWHgkxPyZyDp3sJPjky6XlQyeppIJE8zu
+Y7bwM+c0fLrzl9HRZIzDbKfA5qhiDVjQifu2snCpaoWaiuEgE+SZQ/cw+cpOo6c2
+QORjovpjMVLt+2b8TSxJiheKph7LxYKM34SaLOv/wtUzS5wlJKwZs9wtgIcf99EP
+Oh1xBk/Oq0xHL91f2pfEDWVIexkE2l1oPMjkTwcVub1SmcS3fmGa59mma4//Bi7p
+twIDAQAB
+  -----END PUBLIC KEY-----")
+
+(deftest my-test
+  (testing "Read rsa pub key as string"
+    (let [pkey (keys/str->public-key rsa-pubkey)]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey))))
+
+  (testing "Read rsa pub key2 as string"
+    (let [pkey (keys/str->public-key rsa-pubkey2)]
+      (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey)))))
+
+    (deftest read-asynmetric-encryption-keys
   (testing "Read rsa priv key"
     (let [pkey (keys/private-key "test/_files/privkey.3des.rsa.pem" "secret")]
       (is (= (type pkey) org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey))))
