@@ -25,6 +25,9 @@
 (when (nil? (Security/getProvider "BC"))
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
+(when (nil? (Security/getProvider "EdDSA"))
+  (Security/addProvider (net.i2p.crypto.eddsa.EdDSASecurityProvider.)))
+
 (def ^:no-doc
   +algorithms+
   {:rsassa-pss+sha256    #(Signature/getInstance "SHA256withRSAandMGF1" "BC")
@@ -35,7 +38,8 @@
    :rsassa-pkcs15+sha512 #(Signature/getInstance "SHA512withRSA" "BC")
    :ecdsa+sha256         #(Signature/getInstance "SHA256withECDSA" "BC")
    :ecdsa+sha384         #(Signature/getInstance "SHA384withECDSA" "BC")
-   :ecdsa+sha512         #(Signature/getInstance "SHA512withECDSA" "BC")})
+   :ecdsa+sha512         #(Signature/getInstance "SHA512withECDSA" "BC")
+   :eddsa                #(Signature/getInstance "NONEwithEdDSA" "EdDSA")})
 
 (def ^:no-doc ^:static
   +buffer-size+ 5120)

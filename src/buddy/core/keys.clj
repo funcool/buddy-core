@@ -1,4 +1,4 @@
-;; Copyright 2013-2016 Andrey Antukh <niwi@niwi.nz>
+;; Copyright (c) 2014-2018 Andrey Antukh <niwi@niwi.nz>
 ;;
 ;; Licensed under the Apache License, Version 2.0 (the "License")
 ;; you may not use this file except in compliance with the License.
@@ -13,84 +13,31 @@
 ;; limitations under the License.
 
 (ns buddy.core.keys
-  (:require [buddy.core.codecs :refer [str->bytes bytes->hex]]
-            [clojure.java.io :as io])
-  (:import org.bouncycastle.openssl.PEMParser
-           org.bouncycastle.openssl.PEMEncryptedKeyPair
-           org.bouncycastle.openssl.PEMKeyPair
-           org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
-           org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
-           org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder
-           org.bouncycastle.crypto.engines.AESWrapEngine
+  "PEM reader, JWK file reading writing and JCA conversions
+
+   NOTE: Supports only public/private key reading - no symmetric keys support available/
+
+   References:
+
+   * https://tools.ietf.org/html/rfc7515
+   * https://tools.ietf.org/html/rfc7517
+   * https://tools.ietf.org/html/rfc7638
+   * https://tools.ietf.org/html/rfc8037
+   * https://www.iana.org/assignments/jose/jose.xhtml"
+  (:require [buddy.core.keys.pem :as pem]
+            [buddy.core.keys.jwk.proto :as jwk]
+            [buddy.core.keys.jwk.okp]
+            [buddy.core.keys.jwk.ec]
+            [buddy.core.keys.jwk.rsa]
+            [buddy.core.keys.jwk.eddsa])
+  (:import org.bouncycastle.crypto.engines.AESWrapEngine
            org.bouncycastle.crypto.params.KeyParameter
            org.bouncycastle.crypto.Wrapper
-           org.bouncycastle.asn1.pkcs.PrivateKeyInfo
-           org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo
-           org.bouncycastle.cert.X509CertificateHolder
            java.security.PublicKey
            java.security.PrivateKey
-           java.security.Security
-           java.security.SecureRandom
-           java.security.KeyPair
-           java.io.StringReader
-           clojure.lang.Keyword))
+           java.io.StringReader))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(when (nil? (Security/getProvider "BC"))
-  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
-
-(defn- decryptor
-  [builder ^String passphrase]
-  (when (nil? passphrase)
-    (throw (ex-info "Passphrase is mandatory with encrypted keys." {})))
-  (cond
-    (instance? JcePEMDecryptorProviderBuilder builder)
-      (.build ^JcePEMDecryptorProviderBuilder builder (.toCharArray passphrase))
-    (instance? JceOpenSSLPKCS8DecryptorProviderBuilder builder)
-      (.build ^JceOpenSSLPKCS8DecryptorProviderBuilder builder (.toCharArray passphrase))
-    :else
-      (throw (ex-info "Unknown decryptor builder" {:kind (class builder)}))))
-
-(defn- read-pem->privkey
-  [path ^String passphrase]
-  (with-open [reader (io/reader path)]
-    (let [parser    (PEMParser. reader)
-          obj       (.readObject parser)
-          converter (doto (JcaPEMKeyConverter.)
-                      (.setProvider "BC"))]
-      (cond
-        (instance? PEMEncryptedKeyPair obj)
-        (->> (.decryptKeyPair ^PEMEncryptedKeyPair obj (decryptor (JcePEMDecryptorProviderBuilder.) passphrase))
-             (.getKeyPair converter)
-             (.getPrivate))
-        (instance? PEMKeyPair obj)
-        (->> (.getKeyPair converter obj)
-             (.getPrivate))
-        (instance? PKCS8EncryptedPrivateKeyInfo obj)
-        (->> (.decryptPrivateKeyInfo ^PKCS8EncryptedPrivateKeyInfo obj (decryptor (JceOpenSSLPKCS8DecryptorProviderBuilder.) passphrase))
-             (.getPrivateKey converter))
-        (instance? PrivateKeyInfo obj)
-        (.getPrivateKey converter obj)
-        :else
-        (throw (ex-info "Unknown PEM object type" {:kind (class obj)}))))))
-
-(defn- read-pem->pubkey
-  [path-or-reader]
-  (with-open [reader (io/reader path-or-reader)]
-    (let [parser    (PEMParser. reader)
-          keyinfo   (.readObject parser)
-          converter (doto (JcaPEMKeyConverter.)
-                      (.setProvider "BC"))]
-      (if (instance? X509CertificateHolder keyinfo)
-        (.getPublicKey converter (.getSubjectPublicKeyInfo ^X509CertificateHolder keyinfo))
-        (.getPublicKey converter keyinfo)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public Api
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; --- Public Api
 
 ;; Key reading functions
 
@@ -99,18 +46,18 @@
   ([path]
    (private-key path nil))
   ([path passphrase]
-   (read-pem->privkey path passphrase)))
+   (pem/read-privkey path passphrase)))
 
 (defn public-key
   "Public key constructor from file path."
   [path]
-  (read-pem->pubkey path))
+  (pem/read-pubkey path))
 
 (defn str->public-key
   "Public key constructor from string."
   [keydata]
   (with-open [reader (StringReader. ^String keydata)]
-    (read-pem->pubkey reader)))
+    (pem/read-pubkey reader)))
 
 (defn str->private-key
   "Private key constructor from string."
@@ -118,7 +65,32 @@
    (str->private-key keydata nil))
   ([keydata passphrase]
    (with-open [reader (StringReader. ^String keydata)]
-     (read-pem->privkey reader passphrase))))
+     (pem/read-privkey reader passphrase))))
+
+(defn jwk->private-key
+  "Converts clojure map representing JWK object to java.security.PrivateKey"
+  [jwk]
+  (jwk/jwk->private-key jwk))
+
+(defn jwk->public-key
+  "Converts clojure map representing JWK object to java.security.PublicKey"
+  [jwk]
+  (jwk/jwk->public-key jwk))
+
+(defn jwk
+  "Converts JCA private and public key to clojure map representing JWK object"
+  [private public]
+  (jwk/jwk private public))
+
+(defn public-key->jwk
+  "Converts JCA public key to clojure map representing JWK object"
+  [public]
+  (jwk/public-key->jwk public))
+
+(defn jwk-thumbprint
+  "Calculate the thumbprint of the jwk key according to the RFC7638."
+  [jwk]
+  (jwk/thumbprint jwk))
 
 (defn public-key?
   "Return true if key `k` is a public key."
