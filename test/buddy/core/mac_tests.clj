@@ -45,6 +45,13 @@
         (is (= result (bytes->hex (mac/hash data {:key key :alg :hmac :digest :sha256}))))
         (is (= result (bytes->hex (mac/hash data {:key key :alg :hmac :digest (SHA256Digest.)}))))))
 
+    (testing "Test simple hmac sha1"
+      (let [secretkey "b"
+            data "a"
+            sig (bytes->hex (mac/hash data {:key secretkey :alg :hmac+sha1}))
+            result "8abe0fd691e3da3035f7b7ac91be45d99e942b9e"]
+        (is (= result sig))))
+
     (testing "Test simple hmac sha256"
       (let [secretkey "b"
             data "a"
