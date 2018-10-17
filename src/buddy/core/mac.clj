@@ -120,6 +120,11 @@
     (assert digest "Invalid digest engine.")
     (HMac. digest)))
 
+(defmethod engine :hmac+sha1
+  [options]
+  (let [digest (hash/resolve-digest-engine :sha1)]
+    (HMac. digest)))
+
 (defmethod engine :hmac+sha256
   [options]
   (let [digest (hash/resolve-digest-engine :sha256)]
