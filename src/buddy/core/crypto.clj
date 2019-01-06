@@ -280,7 +280,7 @@
 (defn encrypt-cbc
   "Encrypt arbitrary length input using the provided
   engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-cbc-hmac
+  the pkcs7 padding according to the aead-aes-cbc-hmac
   encryption scheme."
   {:internal true :no-doc true}
   [cipher input key iv]
@@ -306,7 +306,7 @@
 (defn decrypt-cbc
   "Dencrypt arbitrary length input using the provided
   engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-cbc-hmac
+  the pkcs7 padding according to the aead-aes-cbc-hmac
   encryption scheme."
   {:internal true :no-doc true}
   [cipher input key iv]
@@ -327,8 +327,8 @@
 
 (defn encrypt-gcm
   "Encrypt arbitrary length input using the provided
-  engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-gcm
+  engine, key and iv using gcm encryption mode and
+  the pkcs7 padding according to the aead-aes-gcm
   encryption scheme."
   {:internal true :no-doc true}
   [cipher input key iv aad]
@@ -345,8 +345,8 @@
 
 (defn decrypt-gcm
   "Dencrypt arbitrary length input using the provided
-  engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-gcm
+  engine, key and iv using gcm encryption mode and
+  the pkcs7 padding according to the aead-aes-gcm
   encryption scheme."
   {:internal true :no-doc true}
   [cipher ciphertext key iv aad]
