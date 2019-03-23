@@ -68,7 +68,6 @@
   "Given dynamic type engine, try resolve it to
   valid engine instance. By default accepts keywords
   and functions."
-  {:doc false}
   [engine]
   (cond
     (keyword? engine)

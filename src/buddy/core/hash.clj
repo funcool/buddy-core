@@ -105,7 +105,6 @@
 (defn resolve-digest-engine
   "Helper function for make Digest instances
   from algorithm parameter."
-  {:doc false}
   [engine]
   (cond
    (keyword? engine)
