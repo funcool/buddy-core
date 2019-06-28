@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 1.6.0
+
+Date: 2019-06-28
+
+- Update bouncy castle to 1.62
+
+
 ## Version 1.5.0
 
 Date: 2018-06-02
