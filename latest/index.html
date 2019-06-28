@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.5">
+<meta name="generator" content="Asciidoctor 1.5.8">
 <meta name="author" content="Andrey Antukh, &lt;niwi@niwi.nz&gt;">
 <title>buddy-core - Cryptographic Api</title>
 <style>
@@ -86,7 +86,7 @@
 <h1>buddy-core - Cryptographic Api</h1>
 <div class="details">
 <span id="author" class="author">Andrey Antukh, &lt;niwi@niwi.nz&gt;</span><br>
-<span id="revdate">1.4.0</span>
+<span id="revdate">1.6.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -110,10 +110,10 @@
 <li><a href="#advanced-usage-2">Advanced Usage</a></li>
 </ul>
 </li>
-<li><a href="#public-private-keypairs">Public/Private keypairs</a>
+<li><a href="#keys">Keys</a>
 <ul class="sectlevel2">
-<li><a href="#rsa-keypair">RSA Keypair</a></li>
-<li><a href="#ecdsa-keypair">ECDSA Keypair</a></li>
+<li><a href="#reading-pem-formatted-keys">Reading PEM formatted keys</a></li>
+<li><a href="#jwk">Json Web Key (JWK)</a></li>
 </ul>
 </li>
 <li><a href="#digital-signatures">Digital Signatures</a></li>
@@ -203,11 +203,11 @@ dependency vector on your <strong><em>project.clj</em></strong> file:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">[</span><span class="tok-nv">buddy/buddy-core</span> <span class="tok-s">&quot;1.4.0&quot;</span><span class="tok-p">]</span></code></pre>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">[</span><span class="tok-nv">buddy/buddy-core</span> <span class="tok-s">&quot;1.6.0&quot;</span><span class="tok-p">]</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>And is tested under JDK7 and JDK8.</p>
+<p>And is tested under JDK8.</p>
 </div>
 </div>
 </div>
@@ -218,7 +218,7 @@ dependency vector on your <strong><em>project.clj</em></strong> file:</p>
 <div class="paragraph">
 <p>All hash algorithms are located in the <code>buddy.core.hash</code> namespace.</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 1. Available hash algorithms</caption>
 <colgroup>
 <col style="width: 50%;">
@@ -286,14 +286,14 @@ dependency vector on your <strong><em>project.clj</em></strong> file:</p>
 <div class="listingblock">
 <div class="title">Import namespace example:</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.hash</span> <span class="tok-ss">:as</span> <span class="tok-nv">hash</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.hash</span> <span class="tok-ss">:as</span> <span class="tok-nv">hash</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:refer</span> <span class="tok-ss">:all</span><span class="tok-p">])</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">Usage examples:</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">hash/sha256</span> <span class="tok-s">&quot;foo bar&quot;</span><span class="tok-p">)</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">hash/sha256</span> <span class="tok-s">&quot;foo bar&quot;</span><span class="tok-p">)</span>
 <span class="tok-c1">;; -&gt; #&lt;byte[] [B@162a657e&gt;</span>
 
 <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">hash/sha256</span> <span class="tok-s">&quot;foo bar&quot;</span><span class="tok-p">)</span>
@@ -312,7 +312,7 @@ for file-like objects (<strong>File</strong>, <strong>URL</strong>, URI* and <st
 <div class="listingblock">
 <div class="title">Make hash of file example:</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Additional import for easy open files</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-c1">;; Additional import for easy open files</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">clojure.java.io</span> <span class="tok-ss">:as</span> <span class="tok-nv">io</span><span class="tok-p">])</span>
 
 <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">hash/sha256</span> <span class="tok-p">(</span><span class="tok-nf">io/input-stream</span> <span class="tok-s">&quot;/tmp/some-file&quot;</span><span class="tok-p">))</span>
@@ -326,7 +326,7 @@ for file-like objects (<strong>File</strong>, <strong>URL</strong>, URI* and <st
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-kd">defprotocol </span><span class="tok-nv">Digest</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-kd">defprotocol </span><span class="tok-nv">Digest</span>
   <span class="tok-p">(</span><span class="tok-nf">-digest</span> <span class="tok-p">[</span><span class="tok-nv">data</span> <span class="tok-nv">engine</span><span class="tok-p">]))</span></code></pre>
 </div>
 </div>
@@ -372,7 +372,7 @@ hash output, and on the size and quality of the key.</p>
 <div class="listingblock">
 <div class="title">Example generate a hmac from plain string using sha256 digest</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Import required namespaces</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-c1">;; Import required namespaces</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac</span> <span class="tok-ss">:as</span> <span class="tok-nv">mac</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 
@@ -385,7 +385,7 @@ hash output, and on the size and quality of the key.</p>
 <div class="listingblock">
 <div class="title">Example verifying a hmac</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">mac/verify</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">(</span><span class="tok-nf">codecs/hex-&gt;bytes</span> <span class="tok-s">&quot;61849448bdbb67b...&quot;</span><span class="tok-p">)</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">mac/verify</span> <span class="tok-s">&quot;foo bar&quot;</span> <span class="tok-p">(</span><span class="tok-nf">codecs/hex-&gt;bytes</span> <span class="tok-s">&quot;61849448bdbb67b...&quot;</span><span class="tok-p">)</span>
             <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;mysecretkey&quot;</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:hmac+sha256</span><span class="tok-p">})</span>
 <span class="tok-c1">;; =&gt; true</span></code></pre>
 </div>
@@ -420,7 +420,7 @@ size.</p>
 <div class="listingblock">
 <div class="title">Example using poly1305 mac algorithm for generate mac from string</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.mac</span> <span class="tok-ss">:as</span> <span class="tok-nv">mac</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
 
@@ -439,7 +439,7 @@ and twofish among the default aes:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-s">&quot;some-data&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-nb">key </span><span class="tok-ss">:iv</span> <span class="tok-nv">iv</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:poly1305+twofish</span><span class="tok-p">})</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">mac/hash</span> <span class="tok-s">&quot;some-data&quot;</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-nb">key </span><span class="tok-ss">:iv</span> <span class="tok-nv">iv</span> <span class="tok-ss">:alg</span> <span class="tok-ss">:poly1305+twofish</span><span class="tok-p">})</span>
     <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; &quot;6e7304a59dfacee42071976b1c490c30&quot;</span></code></pre>
 </div>
@@ -456,7 +456,7 @@ and twofish among the default aes:</p>
 <div class="listingblock">
 <div class="title">Example generating hmac from input stream</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">clojure.java.io</span> <span class="tok-ss">:as</span> <span class="tok-nv">io</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">clojure.java.io</span> <span class="tok-ss">:as</span> <span class="tok-nv">io</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; Generate hmac for file</span>
 <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">io/input-stream</span> <span class="tok-s">&quot;/tmp/somefile&quot;</span><span class="tok-p">)</span>
@@ -474,7 +474,7 @@ with protocols and you can use it for your purposes:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">mac/-engine</span> <span class="tok-p">{</span><span class="tok-ss">:alg</span> <span class="tok-ss">:hnac+sha256</span><span class="tok-p">})]</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">mac/-engine</span> <span class="tok-p">{</span><span class="tok-ss">:alg</span> <span class="tok-ss">:hnac+sha256</span><span class="tok-p">})]</span>
   <span class="tok-p">(</span><span class="tok-nf">mac/-update</span> <span class="tok-nv">engine</span> <span class="tok-p">(</span><span class="tok-nf">codecs/str-&gt;bytes</span> <span class="tok-s">&quot;hello&quot;</span><span class="tok-p">)</span> <span class="tok-mi">0</span> <span class="tok-mi">5</span><span class="tok-p">)</span>
   <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span> <span class="tok-p">(</span><span class="tok-nf">mac/-end</span> <span class="tok-nv">engine</span><span class="tok-p">)))</span>
 <span class="tok-c1">;; &quot;924c4b82a56c0115eb9...&quot;</span></code></pre>
@@ -488,8 +488,10 @@ with protocols and you can use it for your purposes:</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="public-private-keypairs"><a class="link" href="#public-private-keypairs">Public/Private keypairs</a></h2>
+<h2 id="keys"><a class="link" href="#keys">Keys</a></h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="reading-pem-formatted-keys"><a class="link" href="#reading-pem-formatted-keys">Reading PEM formatted keys</a></h3>
 <div class="paragraph">
 <p>Before explaining digital signatures, you need to read public/private
 keypairs and convert them to usable objects. Buddy has limited support
@@ -505,8 +507,8 @@ for reading:</p>
 </li>
 </ul>
 </div>
-<div class="sect2">
-<h3 id="rsa-keypair"><a class="link" href="#rsa-keypair">RSA Keypair</a></h3>
+<div class="sect3">
+<h4 id="rsa-keypair"><a class="link" href="#rsa-keypair">RSA Keypair</a></h4>
 <div class="paragraph">
 <p>An RSA keypair is obviously used for RSA encryption/decryption, but it
 is also used for making digital signatures with RSA-derived
@@ -515,7 +517,7 @@ algorithms.</p>
 <div class="listingblock">
 <div class="title">Read keys</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; The last parameter is optional and is only mandatory</span>
 <span class="tok-c1">;; if a private key is encrypted.</span>
@@ -526,7 +528,7 @@ algorithms.</p>
 <div class="listingblock">
 <div class="title">Generate a RSA Keypair using openssl.</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span class="tok-c1"># Generate AES-256 encrypted private key</span>
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-c1"># Generate AES-256 encrypted private key</span>
 openssl genrsa -aes256 -out privkey.pem <span class="tok-m">2048</span>
 
 <span class="tok-c1"># Generate public key from previously created private key.</span>
@@ -534,8 +536,8 @@ openssl rsa -pubout -in privkey.pem -out pubkey.pem</code></pre>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="ecdsa-keypair"><a class="link" href="#ecdsa-keypair">ECDSA Keypair</a></h3>
+<div class="sect3">
+<h4 id="ecdsa-keypair"><a class="link" href="#ecdsa-keypair">ECDSA Keypair</a></h4>
 <div class="paragraph">
 <p>Like RSA keypairs, ECDSA is also used for making digital signatures
 and can be read like in the RSA examples.</p>
@@ -543,7 +545,7 @@ and can be read like in the RSA examples.</p>
 <div class="listingblock">
 <div class="title">Read keys.</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; The last parameter is optional and is only mandatory</span>
 <span class="tok-c1">;; if a private key is encrypted.</span>
@@ -554,7 +556,7 @@ and can be read like in the RSA examples.</p>
 <div class="listingblock">
 <div class="title">Generate a ECDSA Keypair using openssl.</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash"><span class="tok-c1"># Generate a params file</span>
+<pre class="pygments highlight"><code data-lang="bash"><span></span><span class="tok-c1"># Generate a params file</span>
 openssl ecparam -name prime256v1 -out ecparams.pem
 
 <span class="tok-c1"># Generate a private key from params file</span>
@@ -562,6 +564,110 @@ openssl ecparam -in ecparams.pem -genkey -noout -out ecprivkey.pem
 
 <span class="tok-c1"># Generate a public key from private key</span>
 openssl ec -in ecprivkey.pem -pubout -out ecpubkey.pem</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="jwk"><a class="link" href="#jwk">Json Web Key (JWK)</a></h3>
+<div class="paragraph">
+<p>A JSON Web Key (JWK) is a JavaScript Object Notation (JSON) data
+structure that represents a cryptographic key of different types.</p>
+</div>
+<div class="paragraph">
+<p><em>buddy-core</em> provides functions for reading and saving JCA keys in JWK format</p>
+</div>
+<div class="paragraph">
+<p>Currently supported JWK key types are</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>RSA key pairs (No RSA-CRT support yet)</p>
+</li>
+<li>
+<p>OKP key pairs (Ed25519)</p>
+</li>
+<li>
+<p>EC key pairs (P-256, P-384, P-521 curves)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Example of JWS signing for Ed25519 keys</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
+
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">edkey</span> <span class="tok-p">{</span><span class="tok-ss">:kty</span> <span class="tok-s">&quot;OKP&quot;</span>,
+            <span class="tok-ss">:crv</span> <span class="tok-s">&quot;Ed25519&quot;</span>,
+            <span class="tok-ss">:d</span> <span class="tok-s">&quot;nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A&quot;</span>,
+            <span class="tok-ss">:x</span> <span class="tok-s">&quot;11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo&quot;</span><span class="tok-p">})</span>
+
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">privkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/jwk-&gt;private-key</span> <span class="tok-nv">edkey</span><span class="tok-p">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also convert from PEM to JWK like this</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
+
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">prv</span> <span class="tok-p">(</span><span class="tok-nf">keys/private-key</span> <span class="tok-s">&quot;private.pem&quot;</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">pub</span> <span class="tok-p">(</span><span class="tok-nf">keys/public-key</span> <span class="tok-s">&quot;public.pem&quot;</span><span class="tok-p">))</span>
+
+<span class="tok-c1">;; JWK requires both public and private keys for export</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">jwk</span> <span class="tok-p">(</span><span class="tok-nf">keys/jwk</span> <span class="tok-nv">prv</span> <span class="tok-nv">pub</span><span class="tok-p">))</span>
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">jwk-pub</span> <span class="tok-p">(</span><span class="tok-nf">keys/public-key-&gt;jwk</span> <span class="tok-nv">pub</span><span class="tok-p">))</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="ed25519-generation"></a>You can generate and save keys in JWK format like this</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nb">import </span><span class="tok-ss">&#39;java.security.KeyPairGenerator</span><span class="tok-p">)</span>
+<span class="tok-p">(</span><span class="tok-nb">import </span><span class="tok-ss">&#39;java.security.SecureRandom</span><span class="tok-p">)</span>
+
+<span class="tok-p">(</span><span class="tok-kd">defn </span><span class="tok-nv">generate-keypair-ed25519</span>
+  <span class="tok-p">[]</span>
+  <span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">kg</span> <span class="tok-p">(</span><span class="tok-nf">KeyPairGenerator/getInstance</span> <span class="tok-s">&quot;EdDSA&quot;</span> <span class="tok-s">&quot;EdDSA&quot;</span><span class="tok-p">)]</span>
+    <span class="tok-p">(</span><span class="tok-nf">.initialize</span> <span class="tok-nv">kg</span>
+                 <span class="tok-mi">256</span>
+                 <span class="tok-c1">;; JDK8 only, use getInstance on JDK7 (make sure it&#39;s true random source)</span>
+                 <span class="tok-p">(</span><span class="tok-nf">SecureRandom/getInstanceStrong</span><span class="tok-p">))</span>
+    <span class="tok-p">(</span><span class="tok-nf">.genKeyPair</span> <span class="tok-nv">kg</span><span class="tok-p">)))</span>
+
+<span class="tok-p">(</span><span class="tok-k">let </span><span class="tok-p">[</span><span class="tok-nv">pair</span> <span class="tok-p">(</span><span class="tok-nf">generate-keypair-ed25519</span><span class="tok-p">)]</span>
+  <span class="tok-p">(</span><span class="tok-nf">keys/jwk</span> <span class="tok-p">(</span><span class="tok-nf">.getPrivate</span> <span class="tok-nv">pair</span><span class="tok-p">)</span> <span class="tok-p">(</span><span class="tok-nf">.getPublic</span> <span class="tok-nv">pair</span><span class="tok-p">)))</span>
+
+<span class="tok-c1">;; =&gt;</span>
+<span class="tok-c1">;; {:kty &quot;OKP&quot;,</span>
+<span class="tok-c1">;;  :crv &quot;Ed25519&quot;,</span>
+<span class="tok-c1">;;  :d &quot;5q3yhCdSDMj9Za9jJE0vhfExlTV8JeSe6XnfblAFkPY&quot;,</span>
+<span class="tok-c1">;;  :x &quot;JbbhB16SaghHiGHx3FutVMfVTgu9-SCtZGfZyoDZSbQ&quot;}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also calculate JWK thumbprint using <code>jwk-thumbprint</code> function</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
+<span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
+
+<span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">edkey</span> <span class="tok-p">{</span><span class="tok-ss">:kty</span> <span class="tok-s">&quot;OKP&quot;</span>,
+            <span class="tok-ss">:crv</span> <span class="tok-s">&quot;Ed25519&quot;</span>,
+            <span class="tok-ss">:d</span> <span class="tok-s">&quot;nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A&quot;</span>,
+            <span class="tok-ss">:x</span> <span class="tok-s">&quot;11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo&quot;</span><span class="tok-p">})</span>
+
+<span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">keys/jwk-thumbprint</span> <span class="tok-nv">edkey</span><span class="tok-p">)</span>
+    <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
+
+<span class="tok-c1">;; =&gt; &quot;90facafea9b1556698540f70c0117a22ea37bd5cf3ed3c47093c1707282b4b89&quot;</span></code></pre>
 </div>
 </div>
 </div>
@@ -586,7 +692,7 @@ explanation about the differences with MAC
 <div class="listingblock">
 <div class="title">Example signing string using rsassa-pss+sha256</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.keys</span> <span class="tok-ss">:as</span> <span class="tok-nv">keys</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.dsa</span> <span class="tok-ss">:as</span> <span class="tok-nv">dsa</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; Read private key</span>
@@ -601,7 +707,7 @@ explanation about the differences with MAC
 <div class="listingblock">
 <div class="title">Example verifying signature</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Read public key</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-c1">;; Read public key</span>
 <span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">pubkey</span> <span class="tok-p">(</span><span class="tok-nf">keys/public-key</span> <span class="tok-s">&quot;test/_files/pubkey.3des.rsa.pem&quot;</span><span class="tok-p">))</span>
 
 <span class="tok-c1">;; Make verification</span>
@@ -612,7 +718,7 @@ explanation about the differences with MAC
 <div class="paragraph">
 <p>Here is a table with complete list of supported algorithms and its variants:</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 25%;">
 <col style="width: 75%;">
@@ -662,7 +768,7 @@ to derive one or more keys from a common secret value.</p>
 <div class="paragraph">
 <p><strong>buddy</strong> commes with several of them:</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 2. Supported key derivation functions.</caption>
 <colgroup>
 <col style="width: 16.6666%;">
@@ -717,7 +823,7 @@ to derive one or more keys from a common secret value.</p>
 <div class="listingblock">
 <div class="title">Example using KDF with HKDF key derivation function</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.kdf</span> <span class="tok-ss">:as</span> <span class="tok-nv">kdf</span><span class="tok-p">])</span>
 
 <span class="tok-c1">;; Using hkdf derivation functions. It requires a</span>
@@ -748,7 +854,7 @@ to derive one or more keys from a common secret value.</p>
 <div class="listingblock">
 <div class="title">Example using PBKDF2 with sha256</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">pbkdf2</span> <span class="tok-p">(</span><span class="tok-nf">kdf/engine</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;my password&quot;</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">pbkdf2</span> <span class="tok-p">(</span><span class="tok-nf">kdf/engine</span> <span class="tok-p">{</span><span class="tok-ss">:key</span> <span class="tok-s">&quot;my password&quot;</span>
                          <span class="tok-ss">:salt</span> <span class="tok-p">(</span><span class="tok-nf">nonce/random-bytes</span> <span class="tok-mi">8</span><span class="tok-p">)</span>
                          <span class="tok-ss">:alg</span> <span class="tok-ss">:pbkdf2</span>
                          <span class="tok-ss">:digest</span> <span class="tok-ss">:sha256</span>
@@ -773,7 +879,7 @@ contrast to the others where <code>get-bytes</code> works as consumer of infinit
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-c1">;; Note the same output for multiple requests:</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-c1">;; Note the same output for multiple requests:</span>
 
 <span class="tok-p">(</span><span class="tok-nb">-&gt; </span><span class="tok-p">(</span><span class="tok-nf">kdf/get-bytes</span> <span class="tok-nv">pbkdf2</span> <span class="tok-mi">8</span><span class="tok-p">)</span>
     <span class="tok-p">(</span><span class="tok-nf">codecs/bytes-&gt;hex</span><span class="tok-p">))</span>
@@ -829,7 +935,7 @@ contrast to the others where <code>get-bytes</code> works as consumer of infinit
 fixed-length groups of bits, called blocks, with an unvarying transformation
 that is specified by a symmetric key.</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 3. This is a list of currently supported block ciphers in buddy</caption>
 <colgroup>
 <col style="width: 50%;">
@@ -860,7 +966,7 @@ that is specified by a symmetric key.</p>
 <p>Additionally, for good security, is mandatory to combine a block cipher with
 some cipher mode of operation.</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 4. This is a list of currently supported of cipher mode of operation</caption>
 <colgroup>
 <col style="width: 50%;">
@@ -907,7 +1013,7 @@ near future more many more options should be added.
 <div class="listingblock">
 <div class="title">Example encrypt</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.crypto</span> <span class="tok-ss">:as</span> <span class="tok-nv">crypto</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.crypto</span> <span class="tok-ss">:as</span> <span class="tok-nv">crypto</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 
@@ -932,7 +1038,7 @@ size of the output including the authentication tag: <code>output-size</code>.</
 <p>Stream ciphers differ from block ciphers, in that they works with arbitrary
 length input and do not require any additional mode of operation.</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 5. This is a list of currently supported of stream ciphers in buddy</caption>
 <colgroup>
 <col style="width: 50%;">
@@ -954,7 +1060,7 @@ length input and do not require any additional mode of operation.</p>
 <div class="listingblock">
 <div class="title">Example encrypt</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.crypto</span> <span class="tok-ss">:as</span> <span class="tok-nv">crypto</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.crypto</span> <span class="tok-ss">:as</span> <span class="tok-nv">crypto</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
 
@@ -1010,7 +1116,7 @@ length text and decrypt it:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.crypto</span> <span class="tok-ss">:as</span> <span class="tok-nv">crypto</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.crypto</span> <span class="tok-ss">:as</span> <span class="tok-nv">crypto</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.codecs</span> <span class="tok-ss">:as</span> <span class="tok-nv">codecs</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.hash</span> <span class="tok-ss">:as</span> <span class="tok-nv">hash</span><span class="tok-p">])</span>
@@ -1067,7 +1173,7 @@ length text and decrypt it:</p>
 <p>Padding schemes are often used for fill the empty bytes of byte array of data to an concrete
 blocksize.</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 6. This is a list of currently supported padding schemes</caption>
 <colgroup>
 <col style="width: 50%;">
@@ -1099,7 +1205,7 @@ blocksize.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.padding</span> <span class="tok-ss">:as</span> <span class="tok-nv">padding</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.padding</span> <span class="tok-ss">:as</span> <span class="tok-nv">padding</span><span class="tok-p">])</span>
 <span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.bytes</span> <span class="tok-ss">:as</span> <span class="tok-nv">bytes</span><span class="tok-p">])</span>
 
 <span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">data</span> <span class="tok-p">(</span><span class="tok-nf">byte-array</span> <span class="tok-mi">10</span><span class="tok-p">))</span>
@@ -1145,7 +1251,7 @@ nonces:</p>
 <div class="listingblock">
 <div class="title">Generate a cryptographically secure nonce</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
 
 <span class="tok-p">(</span><span class="tok-nf">vec</span> <span class="tok-p">(</span><span class="tok-nf">nonce/random-nonce</span> <span class="tok-mi">16</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; [0 0 1 75 -114 49 -91 107 67 -124 -49 -2 -96 100 42 18]</span>
@@ -1161,7 +1267,7 @@ is the size of the current time in miliseconds.</p>
 <div class="listingblock">
 <div class="title">Generate a cryptographically secure salt</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.nonce</span> <span class="tok-ss">:as</span> <span class="tok-nv">nonce</span><span class="tok-p">])</span>
 
 <span class="tok-p">(</span><span class="tok-nf">vec</span> <span class="tok-p">(</span><span class="tok-nf">nonce/random-bytes</span> <span class="tok-mi">16</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt;[-50 20 -120 -38 -32 -121 -15 109 86 -99 85 -73 28 -92 -67 -64]</span>
@@ -1171,7 +1277,7 @@ is the size of the current time in miliseconds.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Like <strong>random-nonce</strong> functiom, <strong>random-bytes</strong> returns a byte array but it not have
+<p>Like <strong>random-nonce</strong> function, <strong>random-bytes</strong> returns a byte array but it not have
 the limitation of minimum 8 bytes of size.</p>
 </div>
 </div>
@@ -1185,7 +1291,7 @@ the limitation of minimum 8 bytes of size.</p>
 <div class="paragraph">
 <p>This is a brief list of available functions:</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
+<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 7. Available hash algorithms</caption>
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1262,7 +1368,7 @@ by a known public key.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="clojure"><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.certificates</span> <span class="tok-ss">:as</span> <span class="tok-nv">certs</span><span class="tok-p">])</span>
+<pre class="pygments highlight"><code data-lang="clojure"><span></span><span class="tok-p">(</span><span class="tok-nf">require</span> <span class="tok-o">&#39;</span><span class="tok-p">[</span><span class="tok-nv">buddy.core.certificates</span> <span class="tok-ss">:as</span> <span class="tok-nv">certs</span><span class="tok-p">])</span>
 
 <span class="tok-p">(</span><span class="tok-k">def </span><span class="tok-nv">cert</span> <span class="tok-p">(</span><span class="tok-nf">certs/certificate</span> <span class="tok-s">&quot;path/to/certificate.crt&quot;</span><span class="tok-p">))</span>
 <span class="tok-c1">;; =&gt; #object[org.bouncycastle.cert.X509CertificateHolder 0x2919034b &quot;org.bouncycastle.cert.X509CertificateHolder@1612eab1&quot;]</span>
@@ -1366,7 +1472,7 @@ restrictions for contributions. Just open an issue or pull request.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash">git clone https://github.com/funcool/buddy-core</code></pre>
+<pre class="pygments highlight"><code data-lang="bash"><span></span>git clone https://github.com/funcool/buddy-core</code></pre>
 </div>
 </div>
 </div>
@@ -1377,7 +1483,7 @@ restrictions for contributions. Just open an issue or pull request.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="bash">lein test-all</code></pre>
+<pre class="pygments highlight"><code data-lang="bash"><span></span>lein test-all</code></pre>
 </div>
 </div>
 </div>
@@ -1393,7 +1499,7 @@ of the license on the root of the repository on <code>LICENSE</code> file.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-08-29 13:50:04 CEST
+Last updated 2019-06-28 18:20:34 +0200
 </div>
 </div>
 </body>
