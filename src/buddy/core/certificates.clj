@@ -32,7 +32,7 @@
 (defn not-before
   "Returns the first date this certificate is valid."
   [cert]
-  (.getNotAfter cert))
+  (.getNotBefore cert))
 
 (defn valid-on-date?
   "Returns true if certificate is valid date. Defaults to today"
