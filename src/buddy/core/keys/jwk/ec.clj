@@ -15,12 +15,10 @@
 
 (ns buddy.core.keys.jwk.ec
   (:require [buddy.core.keys.jwk.proto :as proto]
-            [buddy.core.codecs.base64 :as b64]
-            [buddy.core.codecs :as codecs]
             [buddy.core.hash :as hash]
             [cheshire.core :as json])
   (:import (java.security.interfaces ECPublicKey ECPrivateKey ECKey)
-           (java.security SecureRandom KeyPairGenerator AlgorithmParameters KeyFactory)
+           (java.security AlgorithmParameters KeyFactory)
            (java.security.spec ECGenParameterSpec ECPoint ECParameterSpec ECPrivateKeySpec ECPublicKeySpec)
            (java.io StringWriter)
            (com.fasterxml.jackson.core JsonGenerator)))
@@ -81,25 +79,21 @@
   (load-public jwk "P-521"))
 
 (defn- get-curve [curvename]
-  (let [sr (SecureRandom/getInstance "SHA1PRNG")
-        kg (KeyPairGenerator/getInstance "EC" "BC")]
-    (.initialize kg (ECGenParameterSpec. curvename) sr)
-    (.getCurve (.getParams ^ECPublicKey (.getPublic (.generateKeyPair kg))))))
+  (let [paramspec (-> (doto (AlgorithmParameters/getInstance "EC" "BC")
+                        (.init (ECGenParameterSpec. curvename)))
+                      (.getParameterSpec ECParameterSpec))]
+    (.getCurve ^ECParameterSpec paramspec)))
 
 ;; the best way i've found to convert PublicKey params to EC Name
 ;; is by using equals on Curve field (it checks curve params for equality)
-(def ^:private p256curve (get-curve "P-256"))
-(def ^:private p384curve (get-curve "P-384"))
-(def ^:private p521curve (get-curve "P-521"))
-
 (defn- get-curve-name [^ECKey key]
   (let [curve (.getCurve (.getParams key))]
     (condp = curve
-      p256curve
+      (get-curve "P-256")
       "P-256"
-      p384curve
+      (get-curve "P-384")
       "P-384"
-      p521curve
+      (get-curve "P-521")
       "P-521"
       ;; default
       (throw (ex-info "Unsupported EC curve (only P-256, P-384 and P-521 supported)"
