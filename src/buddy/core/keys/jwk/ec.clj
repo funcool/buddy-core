@@ -62,6 +62,14 @@
   [jwk]
   (load-public jwk "P-256"))
 
+(defmethod jwkec->private-key "secp256k1"
+  [jwk]
+  (load-private jwk "secp256k1"))
+
+(defmethod jwkec->public-key "secp256k1"
+  [jwk]
+  (load-public jwk "secp256k1"))
+
 (defmethod jwkec->private-key "P-384"
   [jwk]
   (load-private jwk "P-384"))
@@ -91,12 +99,14 @@
     (condp = curve
       (get-curve "P-256")
       "P-256"
+      (get-curve "secp256k1")
+      "secp256k1"
       (get-curve "P-384")
       "P-384"
       (get-curve "P-521")
       "P-521"
       ;; default
-      (throw (ex-info "Unsupported EC curve (only P-256, P-384 and P-521 supported)"
+      (throw (ex-info "Unsupported EC curve (only P-256, secp256k1, P-384 and P-521 supported)"
                       {:key key})))))
 
 (defn- convert-public [^ECPublicKey public]
