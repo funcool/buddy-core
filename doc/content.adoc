@@ -327,7 +327,7 @@ Currently supported JWK key types are
 
 * RSA key pairs (No RSA-CRT support yet)
 * OKP key pairs (Ed25519)
-* EC key pairs (P-256, P-384, P-521 curves)
+* EC key pairs (P-256, secp256k1, P-384, P-521 curves)
 
 Example of JWS signing for Ed25519 keys
 
