@@ -1,6 +1,6 @@
-= buddy-core - Cryptographic Api
+= buddy-core - Cryptographic Api for Clojure
 Andrey Antukh, <niwi@niwi.nz>
-1.6.0
+1.7.0
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -40,10 +40,10 @@ dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
-[buddy/buddy-core "1.6.0"]
+[buddy/buddy-core "1.7.0"]
 ----
 
-And is tested under JDK8.
+And is tested under JDK>=8.
 
 
 == Hash algorithms (digest)
