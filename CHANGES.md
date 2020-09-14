@@ -7,6 +7,7 @@ Date: 2020-09-14
 - Update BC to 1.66
 - Update commons-codec to 1.15
 - Update cheshire to 5.10.0
+- Minor improvement on curve detecton on jwk (thanks to Denis Shilov).
 
 
 ## Version 1.6.0
@@ -21,8 +22,8 @@ Date: 2019-06-28
 Date: 2018-06-02
 
 - Update bouncy castle to 1.59
-- Add jwk reading and conversion to JCA (thanks to Denis Shilov).
-- Add JWK loading and exporting support (thanks to Denis Shilov)
+- Add JWK reading and conversion to JCA (thanks to Denis Shilov).
+- Add JWK loading and exporting support (thanks to Denis Shilov).
 
 
 ## Version 1.4.0
