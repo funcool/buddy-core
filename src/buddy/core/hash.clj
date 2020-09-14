@@ -18,21 +18,22 @@
   (:refer-clojure :exclude [update reset!])
   (:require [buddy.core.codecs :refer :all]
             [clojure.java.io :as io])
-  (:import org.bouncycastle.crypto.Digest
-           org.bouncycastle.crypto.digests.SHA1Digest
-           org.bouncycastle.crypto.digests.TigerDigest
-           org.bouncycastle.crypto.digests.MD5Digest
-           org.bouncycastle.crypto.digests.RIPEMD128Digest
-           org.bouncycastle.crypto.digests.RIPEMD160Digest
-           org.bouncycastle.crypto.digests.RIPEMD256Digest
-           org.bouncycastle.crypto.digests.RIPEMD320Digest
-           org.bouncycastle.crypto.digests.SHA3Digest
-           org.bouncycastle.crypto.digests.SHA256Digest
-           org.bouncycastle.crypto.digests.SHA384Digest
-           org.bouncycastle.crypto.digests.SHA512Digest
-           org.bouncycastle.crypto.digests.Blake2bDigest
-           org.bouncycastle.crypto.digests.SkeinDigest
-           org.bouncycastle.crypto.digests.WhirlpoolDigest))
+  (:import
+   org.bouncycastle.crypto.Digest
+   org.bouncycastle.crypto.digests.SHA1Digest
+   org.bouncycastle.crypto.digests.TigerDigest
+   org.bouncycastle.crypto.digests.MD5Digest
+   org.bouncycastle.crypto.digests.RIPEMD128Digest
+   org.bouncycastle.crypto.digests.RIPEMD160Digest
+   org.bouncycastle.crypto.digests.RIPEMD256Digest
+   org.bouncycastle.crypto.digests.RIPEMD320Digest
+   org.bouncycastle.crypto.digests.SHA3Digest
+   org.bouncycastle.crypto.digests.SHA256Digest
+   org.bouncycastle.crypto.digests.SHA384Digest
+   org.bouncycastle.crypto.digests.SHA512Digest
+   org.bouncycastle.crypto.digests.Blake2bDigest
+   org.bouncycastle.crypto.digests.SkeinDigest
+   org.bouncycastle.crypto.digests.WhirlpoolDigest))
 
 (def ^:no-doc ^:static
   +digest-engines+
@@ -65,7 +66,7 @@
   (-digest [input engine] "Low level interface, always returns bytes"))
 
 (defprotocol IEngine
-  "Mac engine common interface definition."
+  "Hash engine common interface definition."
   (-reset [_] "Reset the hash engine to its initial state.")
   (-update [_ input offset length] "Update bytes in a current instance.")
   (-end [_] "Return the computed mac and reset the engine."))

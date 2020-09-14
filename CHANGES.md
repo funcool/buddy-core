@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 1.7.0
+
+Date: 2020-09-14
+
+- Update BC to 1.66
+- Update commons-codec to 1.15
+- Update cheshire to 5.10.0
+
+
 ## Version 1.6.0
 
 Date: 2019-06-28

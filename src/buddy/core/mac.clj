@@ -19,19 +19,20 @@
             [buddy.core.hash :as hash]
             [buddy.core.bytes :as bytes]
             [clojure.java.io :as io])
-  (:import org.bouncycastle.crypto.Mac
-           org.bouncycastle.crypto.BlockCipher
-           org.bouncycastle.crypto.digests.SHA256Digest
-           org.bouncycastle.crypto.digests.SHA3Digest
-           org.bouncycastle.crypto.digests.Blake2bDigest
-           org.bouncycastle.crypto.generators.Poly1305KeyGenerator
-           org.bouncycastle.crypto.engines.AESFastEngine
-           org.bouncycastle.crypto.engines.SerpentEngine
-           org.bouncycastle.crypto.engines.TwofishEngine
-           org.bouncycastle.crypto.params.KeyParameter
-           org.bouncycastle.crypto.params.ParametersWithIV
-           org.bouncycastle.crypto.macs.HMac
-           org.bouncycastle.crypto.macs.Poly1305))
+  (:import
+   org.bouncycastle.crypto.Mac
+   org.bouncycastle.crypto.BlockCipher
+   org.bouncycastle.crypto.digests.SHA256Digest
+   org.bouncycastle.crypto.digests.SHA3Digest
+   org.bouncycastle.crypto.digests.Blake2bDigest
+   org.bouncycastle.crypto.generators.Poly1305KeyGenerator
+   org.bouncycastle.crypto.engines.AESFastEngine
+   org.bouncycastle.crypto.engines.SerpentEngine
+   org.bouncycastle.crypto.engines.TwofishEngine
+   org.bouncycastle.crypto.params.KeyParameter
+   org.bouncycastle.crypto.params.ParametersWithIV
+   org.bouncycastle.crypto.macs.HMac
+   org.bouncycastle.crypto.macs.Poly1305))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Abstraction

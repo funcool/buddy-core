@@ -19,25 +19,26 @@
             [buddy.core.mac :as mac]
             [buddy.core.nonce :as nonce]
             [buddy.core.codecs :as codecs])
-  (:import org.bouncycastle.crypto.engines.TwofishEngine
-           org.bouncycastle.crypto.engines.SerpentEngine
-           org.bouncycastle.crypto.engines.BlowfishEngine
-           org.bouncycastle.crypto.engines.AESFastEngine
-           org.bouncycastle.crypto.engines.ChaChaEngine
-           org.bouncycastle.crypto.modes.CBCBlockCipher
-           org.bouncycastle.crypto.modes.SICBlockCipher
-           org.bouncycastle.crypto.modes.OFBBlockCipher
-           org.bouncycastle.crypto.modes.GCMBlockCipher
-           org.bouncycastle.crypto.modes.AEADBlockCipher
-           org.bouncycastle.crypto.params.ParametersWithIV
-           org.bouncycastle.crypto.params.AEADParameters
-           org.bouncycastle.crypto.params.KeyParameter
-           org.bouncycastle.crypto.BlockCipher
-           org.bouncycastle.crypto.StreamCipher
-           org.bouncycastle.crypto.InvalidCipherTextException
-           java.nio.ByteBuffer
-           clojure.lang.IFn
-           clojure.lang.Keyword))
+  (:import
+   org.bouncycastle.crypto.engines.TwofishEngine
+   org.bouncycastle.crypto.engines.SerpentEngine
+   org.bouncycastle.crypto.engines.BlowfishEngine
+   org.bouncycastle.crypto.engines.AESFastEngine
+   org.bouncycastle.crypto.engines.ChaChaEngine
+   org.bouncycastle.crypto.modes.CBCBlockCipher
+   org.bouncycastle.crypto.modes.SICBlockCipher
+   org.bouncycastle.crypto.modes.OFBBlockCipher
+   org.bouncycastle.crypto.modes.GCMBlockCipher
+   org.bouncycastle.crypto.modes.AEADBlockCipher
+   org.bouncycastle.crypto.params.ParametersWithIV
+   org.bouncycastle.crypto.params.AEADParameters
+   org.bouncycastle.crypto.params.KeyParameter
+   org.bouncycastle.crypto.BlockCipher
+   org.bouncycastle.crypto.StreamCipher
+   org.bouncycastle.crypto.InvalidCipherTextException
+   java.nio.ByteBuffer
+   clojure.lang.IFn
+   clojure.lang.Keyword))
 
 ;; --- Constants
 
@@ -63,16 +64,15 @@
 ;; --- Implementation details.
 
 (defn- init-block-cipher
-  "A generic implementation for block
-  ciphers initialization process."
+  "A generic implementation for block ciphers initialization process."
   [engine {:keys [iv key op] :or {op :encrypt}}]
   (assert (instance? BlockCipher engine) "Should be block cipher.")
   (let [params (if (nil? iv)
                  (KeyParameter. key)
                  (ParametersWithIV. (KeyParameter. key) iv))
         encrypt? (case op
-                  :encrypt true
-                  :decrypt false)]
+                   :encrypt true
+                   :decrypt false)]
     (.init ^BlockCipher engine encrypt? params)
     engine))
 
@@ -85,8 +85,8 @@
                  (KeyParameter. key)
                  (ParametersWithIV. (KeyParameter. key) iv))
         encrypt? (case op
-                  :encrypt true
-                  :decrypt false)]
+                   :encrypt true
+                   :decrypt false)]
     (.init ^StreamCipher engine encrypt? params)
     engine))
 
@@ -234,10 +234,10 @@
 (defn split-by-blocksize
   "Split a byte array in blocksize blocks.
 
-  Given a arbitrary size bytearray and block size in bytes,
-  returns a lazy sequence of bytearray blocks of blocksize
-  size. If last block does not have enought data for fill
-  all block, it is padded using zerobyte padding."
+  Given a arbitrary size bytearray and block size in bytes, returns a
+  vector of bytearray blocks of blocksize size. If last block does not
+  have enought data for fill all block, it is padded using zerobyte
+  padding."
   ([^bytes input ^long blocksize]
    (split-by-blocksize input blocksize false))
   ([^bytes input ^long blocksize additional]
@@ -278,10 +278,9 @@
 (def ^:private ivlength? #(= (count %1) %2))
 
 (defn encrypt-cbc
-  "Encrypt arbitrary length input using the provided
-  engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-cbc-hmac
-  encryption scheme."
+  "Encrypt arbitrary length input using the provided engine, key and iv
+  using cbc encryption mode and the pkcs7 padding acording to the
+  aead-aes-cbc-hmac encryption scheme."
   {:internal true :no-doc true}
   [cipher input key iv]
   (let [blocksize (get-block-size cipher)
@@ -304,10 +303,9 @@
                     (conj! processed (process-block! cipher block))))))))))
 
 (defn decrypt-cbc
-  "Dencrypt arbitrary length input using the provided
-  engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-cbc-hmac
-  encryption scheme."
+  "Dencrypt arbitrary length input using the provided engine, key and iv
+  using cbc encryption mode and the pkcs7 padding acording to the
+  aead-aes-cbc-hmac encryption scheme."
   {:internal true :no-doc true}
   [cipher input key iv]
   (let [blocksize (get-block-size cipher)
@@ -326,10 +324,9 @@
                     (conj! processed result)))))))))
 
 (defn encrypt-gcm
-  "Encrypt arbitrary length input using the provided
-  engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-gcm
-  encryption scheme."
+  "Encrypt arbitrary length input using the provided engine, key and iv
+  using cbc encryption mode and the pkcs7 padding acording to the
+  aead-aes-gcm encryption scheme."
   {:internal true :no-doc true}
   [cipher input key iv aad]
   (-init cipher {:iv iv :key key :tagsize 128 :op :encrypt :aad aad})
@@ -344,10 +341,9 @@
     output))
 
 (defn decrypt-gcm
-  "Dencrypt arbitrary length input using the provided
-  engine, key and iv using cbc encryption mode and
-  the pkcs7 padding acording to the aead-aes-gcm
-  encryption scheme."
+  "Dencrypt arbitrary length input using the provided engine, key and iv
+  using cbc encryption mode and the pkcs7 padding acording to the
+  aead-aes-gcm encryption scheme."
   {:internal true :no-doc true}
   [cipher ciphertext key iv aad]
   (-init cipher {:iv iv :key key :tagsize 128 :op :decrypt :aad aad})
@@ -559,8 +555,8 @@
 (defn decrypt
   "Decrypt data encrypted using the `encrypt` function.
 
-  The input, key and iv parameters should be of any type
-  that can be coerced to byte array."
+  The input, key and iv parameters should be of any type that can be
+  coerced to byte array."
   ([input key iv]
    (decrypt input key iv {}))
   ([input key iv {:keys [algorithm alg]
