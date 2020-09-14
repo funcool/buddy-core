@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 1.7.1
+
+Date: 2020-09-14
+
+- Minor documentation changes.
+
+
+
 ## Version 1.7.0
 
 Date: 2020-09-14

@@ -10,6 +10,7 @@
                  [net.i2p.crypto/eddsa "0.3.0"]
                  [org.bouncycastle/bcprov-jdk15on "1.66"]
                  [org.bouncycastle/bcpkix-jdk15on "1.66"]]
+  :jar-name "buddy-core.jar"
   :source-paths ["src"]
   :java-source-paths ["src"]
   :test-paths ["test"]
