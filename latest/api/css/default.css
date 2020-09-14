@@ -1,95 +1,192 @@
-@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono:200,300,400);
-@import url(http://fonts.googleapis.com/css?family=Lato:light,regular);
-@import url(http://fonts.googleapis.com/css?family=Ubuntu:300,400,500);
+@import url('https://fonts.googleapis.com/css?family=PT+Sans');
 
 body {
-    font-family: "Lato", Helvetica, Arial, sans-serif;
-    font-weight: 300;
-    color:#585858;
-    font-size: 100%;
-    margin: 0px;
+    font-family: 'PT Sans', Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+a {
+    color: #337ab7;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #30426a;
+    text-decoration: underline;
 }
 
 pre, code {
-    font-family: "Droid Sans Mono","DejaVu Sans Mono","Monospace",monospace;
-    font-weight: 300;
+    font-family: Monaco, DejaVu Sans Mono, Consolas, monospace;
+    font-size: 9pt;
+    margin: 15px 0;
 }
 
-section.container {
-    display: flex;
-    font-size: 100%;
+h1 {
+    font-weight: normal;
+    font-size: 29px;
+    margin: 10px 0 2px 0;
+    padding: 0;
 }
 
 h2 {
     font-weight: normal;
-    font-size: 3em;
-    padding: 10px 0 2px 0;
-    margin: 0;
+    font-size: 25px;
 }
 
-header {
-    color: #333;
-    padding: 10px;
-}
-
-header small {
-    font-style: italic;
-}
-
-header h1 {
-    margin: 0;
-    padding: 0;
-    /* font-size: 12pt; */
-    font-weight: lighter;
-    /* text-shadow: -1px -1px 0px #333; */
-}
-
-header h1 a {
-    color: #333;
-    /* font-size: 32px; */
-    font-weight: 400;
+h3 > a:hover {
     text-decoration: none;
 }
 
+.document h1, .namespace-index h1 {
+    font-size: 32px;
+    margin-top: 12px;
+}
+
+#header, #content, .sidebar {
+    position: fixed;
+}
+
+#header {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 22px;
+    color: #f5f5f5;
+    padding: 5px 7px;
+}
+
 #content {
+    top: 32px;
+    right: 0;
+    bottom: 0;
     overflow: auto;
     background: #fff;
     color: #333;
     padding: 0 18px;
-    font-size: 1.3em;
-}
-
-#namespaces {
-    border-right: solid 1px #cccccc;
-    min-width: 200px;
-    padding-right: 15px;
-}
-
-#vars {
-    border-right: solid 1px #cccccc;
-    width: 200px;
 }
 
 .sidebar {
+    position: fixed;
+    top: 32px;
+    bottom: 0;
     overflow: auto;
 }
 
-.sidebar a {
-    color: #333;
+.sidebar.primary {
+    background: #30426a;
+    border-right: solid 1px #cccccc;
+    left: 0;
+    width: 250px;
+    color: white;
+    font-size: 110%;
+}
+
+.sidebar.secondary {
+    background: #f2f2f2;
+    border-right: solid 1px #d7d7d7;
+    left: 251px;
+    width: 200px;
+    font-size: 110%;
+}
+
+#content.namespace-index, #content.document {
+    left: 251px;
+}
+
+#content.namespace-docs {
+    left: 452px;
+}
+
+#content.document {
+    padding-bottom: 10%;
+}
+
+#header {
+    background: #2d3e63;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+}
+
+#header h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 18px;
+    font-weight: lighter;
+    text-shadow: -1px -1px 0px #333;
+}
+
+#header h1 .project-version {
+    font-weight: normal;
+}
+
+.project-version {
+    padding-left: 0.15em;
+}
+
+#header a, .sidebar a {
     display: block;
     text-decoration: none;
 }
 
+#header a {
+    color: #f5f5f5;
+}
+
+.sidebar.primary, .sidebar.primary a {
+    color: #b2bfdc;
+}
+
+.sidebar.primary a:hover {
+    color: white;
+}
+
+.sidebar.secondary, .sidebar.secondary a {
+    color: #738bc0;
+}
+
+.sidebar.secondary a:hover {
+    color: #2d3e63;
+}
+
+#header h2 {
+    float: right;
+    font-size: 9pt;
+    font-weight: normal;
+    margin: 4px 3px;
+    padding: 0;
+    color: #bbb;
+}
+
+#header h2 a {
+    display: inline;
+}
+
 .sidebar h3 {
     margin: 0;
-    padding: 10px 10px 0 10px;
+    padding: 10px 13px 0 13px;
     font-size: 19px;
-    font-weight: normal;
+    font-weight: lighter;
+}
+
+.sidebar.primary h3.no-link {
+    text-transform: uppercase;
+    font-size: 12px;
+    color: #738bc0;
+}
+
+.sidebar.secondary h3 a {
+    text-transform: uppercase;
+    font-size: 12px;
+    color: #2d3e63;
 }
 
 .sidebar ul {
-    padding: 0.5em 0em;
+    padding: 7px 0 6px 0;
     margin: 0;
+}
+
+.sidebar ul.index-link {
+    padding-bottom: 4px;
 }
 
 .sidebar li {
@@ -99,14 +196,8 @@ header h1 a {
 
 .sidebar li a, .sidebar li .no-link {
     border-left: 3px solid transparent;
-    padding: 0 15px;
+    padding: 0 10px;
     white-space: nowrap;
-}
-
-.sidebar li .no-link {
-    display: block;
-    color: #777;
-    font-style: italic;
 }
 
 .sidebar li .inner {
@@ -117,7 +208,6 @@ header h1 a {
 
 .sidebar li a, .sidebar li .tree {
     height: 31px;
-    /* height: 25px; */
 }
 
 .depth-1 .inner { padding-left: 2px; }
@@ -161,57 +251,57 @@ header h1 a {
     border-left: 1px solid #aaa;
 }
 
-#namespaces li.current a {
-    border-left: 3px solid #a33;
-    border-left: 3px solid #7a2518;
-    color: #a33;
-    color: #7a2518;
-
+.sidebar.primary li.current a {
+    border-left: 3px solid #e99d1a;
+    color: white;
 }
 
-#vars li.current a {
-    border-left: 3px solid #33a;
+.sidebar.secondary li.current a {
+    border-left: 3px solid #2d3e63;
     color: #33a;
 }
 
-.namespace-docs h2 {
-    color: #7a2518;
+.namespace-index h2 {
+    margin: 30px 0 0 0;
 }
 
-.namespace-docs h3 a {
-    color: #ba3925;
-    font-family: "Droid Sans Mono","DejaVu Sans Mono","Monospace",monospace;
-    font-weight: 400;
-    text-decoration: none;
+.namespace-index h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 0;
+    letter-spacing: 0.05em;
+    border-bottom: solid 1px #ddd;
+    max-width: 680px;
+    background-color: #fafafa;
+    padding: 0.5em;
 }
 
-.namespace-docs .usage code {
-    display: block;
-    color: #777;
-    margin: 2px 0;
-    font-size: 0.6em;
+.namespace-index .topics {
+    padding-left: 30px;
+    margin: 11px 0 0 0;
 }
 
-/* .usage code:first-child { */
-/*     padding-top: 10px; */
-/* } */
+.namespace-index .topics li {
+    padding: 5px 0;
+}
 
-
-
-.namespace-index h3 a {
-    text-decoration: none;
-    color: #ba3925;
-    font-family: "Droid Sans Mono","DejaVu Sans Mono","Monospace",monospace;
-    font-weight: 300;
+.namespace-docs h3 {
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .public h3 {
     margin: 0;
+    float: left;
+}
+
+.usage {
+    clear: both;
 }
 
 .public {
     margin: 0;
-    border-top: 1px solid #efefef;
+    border-top: 1px solid #e0e0e0;
     padding-top: 14px;
     padding-bottom: 6px;
 }
@@ -244,7 +334,7 @@ header h1 a {
 }
 
 #content .members .inner h3 {
-    /* font-size: 12pt; */
+    font-size: 12pt;
 }
 
 .members .public {
@@ -262,7 +352,9 @@ h4.type,
 h4.dynamic,
 h4.added,
 h4.deprecated {
-    margin: 3px 10px 10spx 0;
+    float: left;
+    margin: 3px 10px 15px 0;
+    font-size: 15px;
     font-weight: bold;
     font-variant: small-caps;
 }
@@ -271,9 +363,9 @@ h4.deprecated {
 .public h4.dynamic,
 .public h4.added,
 .public h4.deprecated {
+    font-size: 13px;
     font-weight: bold;
-    /* margin: 3px 0 0 10px; */
-    font-size: 0.7em;
+    margin: 3px 0 0 10px;
 }
 
 .members h4.type,
@@ -299,7 +391,7 @@ h4.deprecated {
 }
 
 .namespace {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .namespace:last-child {
@@ -308,7 +400,9 @@ h4.deprecated {
 
 .index {
     padding: 0;
+    font-size: 80%;
     margin: 15px 0;
+    line-height: 1.6em;
 }
 
 .index * {
@@ -323,16 +417,28 @@ h4.deprecated {
     padding-right: 5px;
 }
 
-.index li a {
-    color: #333;
-    font-family: "Droid Sans Mono","DejaVu Sans Mono","Monospace",monospace;
-    font-size: 0.8em;
-    text-decoration: none;
-    font-weight: 300;
-}
-
 .index ul {
     padding-left: 0;
+}
+
+.type-sig {
+    clear: both;
+    color: #088;
+}
+
+.type-sig pre {
+    padding-top: 10px;
+    margin: 0;
+}
+
+.usage code {
+    display: block;
+    color: #008;
+    margin: 2px 0;
+}
+
+.usage code:first-child {
+    padding-top: 10px;
 }
 
 p {
@@ -352,6 +458,10 @@ p {
     margin: 0;
 }
 
+.namespace-index {
+  font-size: 120%;
+}
+
 .namespace-index .doc {
     margin-bottom: 20px;
 }
@@ -360,34 +470,63 @@ p {
     margin-bottom: 10px;
 }
 
-.markdown {
-    /* line-height: 18px; */
-    /* font-size: 16px; */
+.markdown p, .markdown li, .markdown dt, .markdown dd, .markdown td {
+    line-height: 1.6em;
+}
+
+.markdown h2 {
+    font-weight: normal;
+    font-size: 25px;
+}
+
+#content .markdown h3 {
+    font-size: 20px;
+}
+
+.markdown h4 {
+    font-size: 15px;
 }
 
 .doc, .public, .namespace .index {
-    max-width: 780px;
+    max-width: 680px;
     overflow-x: visible;
 }
 
-.markdown code, .src-link a {
+.markdown pre > code {
+    display: block;
+    padding: 10px;
+}
+
+.markdown pre > code, .src-link a {
+    border: 1px solid #e4e4e4;
     border-radius: 2px;
-    font-size: 0.8em;
-    color: #444;
 }
 
-.markdown pre {
-    background: #f4f4f4;
-    border: 1px solid #e0e0e0;
-    /* border-radius: 2px; */
-    padding: 5px 5px;
-    border-top: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
+.src-link a {
+    background: #f6f6f6;
 }
 
-.markdown pre code {
-    background: transparent;
-    border: none;
+.markdown code:not(.hljs) {
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+    font-size: 90%;
+    padding: 2px 4px;
+}
+
+pre.deps {
+    display: inline-block;
+    margin: 0 10px;
+    border: 1px solid #e4e4e4;
+    border-radius: 2px;
+    padding: 10px;
+    background-color: #f6f6f6;
+}
+
+.markdown hr {
+    border-style: solid;
+    border-top: none;
+    color: #ccc;
 }
 
 .doc ul, .doc ol {
@@ -426,8 +565,8 @@ p {
 
 .doc abbr {
     border-bottom: 1px dotted #333;
-    font-variant: none
-                      cursor: help;
+    font-variant: none;
+    cursor: help;
 }
 
 .src-link {
@@ -435,8 +574,76 @@ p {
 }
 
 .src-link a {
-    /* font-size: 70%; */
+    font-size: 70%;
     padding: 1px 4px;
     text-decoration: none;
     color: #5555bb;
+    background-color: #f6f6f6;
+}
+
+blockquote {
+    opacity: 0.6;
+    border-left: solid 2px #ddd;
+    margin-left: 0;
+    padding-left: 1em;
+}
+
+/* Responsiveness Theme */
+
+@media (max-device-width: 480px) {
+  .sidebar {
+    display:none;
+  }
+
+  #content {
+    position: relative;
+    left: initial !important;
+    top: 110px;
+    padding: 0 1em;
+  }
+
+  #header {
+    display: flex;
+    flex-direction: column-reverse;
+    height: 100px;
+  }
+
+  #header > h1 {
+    font-size: 52px;
+  }
+
+  #header h2 {
+    float: none;
+    font-size: 20px;
+  }
+
+  .namespace-index > h1 {
+    display: none;
+  }
+
+  .public, .doc, .namespace > .index, .namespace > .doc, .namespace > h3 {
+    max-width: initial;
+  }
+
+  .doc {
+    text-align: justify;
+  }
+
+  .public {
+    padding-top: 2em;
+    padding-bottom: 2em;
+  }
+
+  .public > h3 {
+    font-size: 300%;
+  }
+
+  .public > h4.type, .public > h4.added, .public > h4.deprecated {
+    font-size: 150%;
+    margin-top: 1em;
+  }
+
+  pre > code {
+    font-size: 200%;
+  }
 }
