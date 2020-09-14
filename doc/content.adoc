@@ -1,6 +1,6 @@
 = buddy-core - Cryptographic Api for Clojure
 Andrey Antukh, <niwi@niwi.nz>
-1.7.0
+1.7.1
 :toc: left
 :!numbered:
 :source-highlighter: pygments
@@ -40,7 +40,14 @@ dependency vector on your *_project.clj_* file:
 
 [source,clojure]
 ----
-[buddy/buddy-core "1.7.0"]
+[buddy/buddy-core "1.7.1"]
+----
+
+Or deps.edn: 
+
+[source,clojure]
+----
+buddy/buddy-core {:mvn/version "1.7.1"}
 ----
 
 And is tested under JDK>=8.
