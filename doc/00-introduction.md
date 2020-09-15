@@ -27,15 +27,41 @@ The simplest way to use _buddy-core_ in a clojure project, is by including it in
 dependency vector on your *_project.clj_* file:
 
 ```clojure
-[buddy/buddy-core "1.7.1"]
+[buddy/buddy-core "1.8.0"]
 ```
 
-Or deps.edn: 
+Or deps.edn:
 
 ```clojure
-buddy/buddy-core {:mvn/version "1.7.1"}
+buddy/buddy-core {:mvn/version "1.8.0"}
 ```
 
-And is tested under JDK>=8.
+And is tested under JDK >= 8.
+
+
+## Source Code
+
+_buddy-core_ is open source and can be found on [github](https://github.com/funcool/buddy-core).
+
+You can clone the public repository with this command:
+
+```bash
+git clone https://github.com/funcool/buddy-core
+```
+
+## Run tests
+
+For running tests just execute this:
+
+```bash
+lein test-all
+```
+
+## License
+
+_buddy-core_ is licensed under Apache 2.0 License. You can see the
+complete text of the license on the root of the repository on
+`LICENSE` file.
+
 
 
