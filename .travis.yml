@@ -1,11 +1,11 @@
+dist: bionic
 language: clojure
 lein: lein
 sudo: false
 
 script:
-  - lein test-all
+  - lein test
 
 jdk:
   - openjdk8
-  - openjdk10
   - openjdk11
