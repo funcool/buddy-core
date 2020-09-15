@@ -14,13 +14,16 @@
 
 (ns buddy.core.codecs.base64
   "Util functions for make conversion between string, bytes
-  and encode them to base64 hex format."
+  and encode them to base64 hex format.
+
+  DEPRECATED: replaced by functions in `buddy.core.codecs`"
   (:require [buddy.core.codecs :as codecs])
   (:import org.apache.commons.codec.binary.Base64))
 
 (defn encode
   "Encode data to byte array base64.
   Accepts String and byte array as argument."
+  {:deprecated "1.7.1"}
   ([data]
    (encode data false))
   ([data urlsafe?]
@@ -33,6 +36,7 @@
   "Decode base64 data into byte array.
   Accepts String and byte array as input
   argument."
+  {:deprecated "1.7.1"}
   [data]
   (let [data (codecs/to-bytes data)]
     (Base64/decodeBase64 ^bytes data)))

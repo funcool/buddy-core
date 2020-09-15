@@ -1,4 +1,4 @@
-;; Copyright (c) 2015-2016 Andrey Antukh <niwi@niwi.nz>
+;; Copyright (c) 2015-2020 Andrey Antukh <niwi@niwi.nz>
 ;;
 ;; Licensed under the Apache License, Version 2.0 (the "License")
 ;; you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
   [x]
   (if (nil? x)
     false
-    (= +bytes-class+ (.getClass x))))
+    (= +bytes-class+ (.getClass ^Object x))))
 
 (defn fill!
   "Assigns the specified byte value to each element
@@ -38,7 +38,7 @@
   ([^bytes input val & {:keys [limit offset start end]}]
    (let [start (or offset start 0)
          end (or limit start (count input))]
-     (Arrays/fill input start end (byte val)))))
+     (Arrays/fill input (int start) (int end) (byte val)))))
 
 (defn slice
   "Returns a new copy of the byte array but

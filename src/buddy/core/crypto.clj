@@ -59,7 +59,7 @@
    :gcm #(GCMBlockCipher. %)
    :ctr #(SICBlockCipher. %)
    :sic #(SICBlockCipher. %)
-   :ofb #(OFBBlockCipher. % (* 8 (.getBlockSize %)))})
+   :ofb #(OFBBlockCipher. % (* 8 (.getBlockSize ^BlockCipher %)))})
 
 ;; --- Implementation details.
 
@@ -168,11 +168,11 @@
 
   AEADBlockCipher
   (-process-block [e in inoff out outoff]
-    (.processBytes ^AEADBlockCipher e in (int inoff) (alength in) out (int outoff)))
+    (.processBytes ^AEADBlockCipher e in (int inoff) (alength ^bytes in) out (int outoff)))
 
   StreamCipher
   (-process-block [e in inoff out outoff]
-    (.processBytes ^StreamCipher e in (int inoff) (alength in) out (int outoff))))
+    (.processBytes ^StreamCipher e in (int inoff) (alength ^bytes in) out (int outoff))))
 
 (extend-protocol IStreamCipherLike
   AEADBlockCipher
@@ -199,12 +199,12 @@
   Is a specialized version of `process-block!` for stream ciphers
   and aead ciphers."
   ([engine in]
-   (let [length (alength in)
+   (let [length (alength ^bytes in)
          out (byte-array length)]
      (-process-bytes engine in 0 length out 0)
      out))
   ([engine in inoff out outoff]
-   (-process-bytes engine in inoff (alength in) out outoff))
+   (-process-bytes engine in inoff (alength ^bytes in) out outoff))
   ([engine in inoff inlen out outoff]
    (-process-bytes engine in inoff inlen out outoff)))
 

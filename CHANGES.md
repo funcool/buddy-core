@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 1.8.0
+
+Date: 2020-09-15
+
+- Add `bytes->b64` function to `buddy.core.codecs`.
+- Add `bytes->b64u` function to `buddy.core.codecs`.
+- Add `b64->bytes` function to `buddy.core.codecs`.
+- Add `b64u->bytes` function to `buddy.core.codecs`.
+- Deprecate `buddy.core.codecs.base64`.
+
+
 ## Version 1.7.1
 
 Date: 2020-09-14

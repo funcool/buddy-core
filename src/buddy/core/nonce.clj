@@ -46,7 +46,7 @@
   ([^long numbytes ^SecureRandom sr]
    (let [buffer (java.nio.ByteBuffer/allocate numbytes)]
      (.putLong buffer (System/currentTimeMillis))
-     (.put buffer (random-bytes (.remaining buffer) sr))
+     (.put buffer ^bytes (random-bytes (.remaining buffer) sr))
      (.array buffer))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,5 +56,5 @@
 (defmulti for-engine class)
 
 (defmethod for-engine ChaChaEngine [e] (random-nonce 8))
-(defmethod for-engine SICBlockCipher [e] (random-nonce (.getBlockSize e)))
-(defmethod for-engine BlockCipher [e] (random-bytes (.getBlockSize e)))
+(defmethod for-engine SICBlockCipher [e] (random-nonce (.getBlockSize ^SICBlockCipher e)))
+(defmethod for-engine BlockCipher [e] (random-bytes (.getBlockSize ^BlockCipher e)))
