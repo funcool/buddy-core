@@ -1,6 +1,6 @@
 # Ciphers
 
-Ciphers support in buddy is available on `buddy.core.crypto`
+Ciphers support in buddy-core is available on `buddy.core.crypto`
 namespace.
 
 
