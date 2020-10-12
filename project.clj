@@ -7,7 +7,6 @@
                  [org.clojure/test.check "1.1.0" :scope "test"]
                  [commons-codec/commons-codec "1.15"]
                  [cheshire "5.10.0"]
-                 [net.i2p.crypto/eddsa "0.3.0"]
                  [org.bouncycastle/bcprov-jdk15on "1.66"]
                  [org.bouncycastle/bcpkix-jdk15on "1.66"]]
   :jar-name "buddy-core.jar"

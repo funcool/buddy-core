@@ -20,10 +20,12 @@
             [buddy.core.codecs.base64 :as b64]
             [buddy.core.codecs :as codecs]
             [buddy.core.dsa :as dsa]
-            [buddy.util.ecdsa :refer [transcode-to-der]])
-  (:import (net.i2p.crypto.eddsa EdDSAPrivateKey EdDSAPublicKey)
+            [buddy.util.ecdsa :refer [transcode-to-der]]
+            [buddy.core.keys.jwk.eddsa :refer [bc-ed-private-key bc-ed-public-key pkcs8-key x509-key]])
+  (:import (org.bouncycastle.jcajce.provider.asymmetric.edec BCEdDSAPrivateKey BCEdDSAPublicKey)
+           (org.bouncycastle.crypto.params Ed25519PrivateKeyParameters Ed25519PublicKeyParameters)
            (java.security.interfaces ECPublicKey ECPrivateKey RSAPrivateKey RSAPublicKey)
-           (java.util Random)
+           (java.util Arrays)
            (org.bouncycastle.util BigIntegers)))
 
 ;; Ed25519
@@ -32,18 +34,47 @@
 (def ed25519-jwk-key
   {:kty "OKP"
    :crv "Ed25519"
-   :d "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A",
+   :d "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A"
    :x "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"})
 
 (defn- load-pair [jwk]
   [(keys/jwk->public-key jwk)
    (keys/jwk->private-key jwk)])
 
+(deftest ed25519-pem->jca->jwk
+  (let [public (keys/public-key "test/_files/pubkey.ed25519.pem")
+        private (keys/private-key "test/_files/privkey.ed25519.pem")
+        jwk (keys/jwk private public)]
+    (is (map? jwk))))
+
+(deftest ed25519-encoding
+  (testing "Private key .getEncoded"
+    (let [buf (-> (:d ed25519-jwk-key) (b64/decode))
+          params (Ed25519PrivateKeyParameters. buf 0)
+          key (bc-ed-private-key params)
+          buf2 (.getEncoded key)
+          buf3 (pkcs8-key buf2)]
+      ;(println (codecs/bytes->hex buf))
+      ;(println (codecs/bytes->hex buf2))
+      ;(println (codecs/bytes->hex buf3))
+      (is (Arrays/equals buf buf3))))
+  (testing "Public key .getEncoded"
+    (let [buf (-> (:x ed25519-jwk-key) (b64/decode))
+          params (Ed25519PublicKeyParameters. buf 0)
+          key (bc-ed-public-key params)
+          buf2 (.getEncoded key)
+          buf3 (x509-key buf2)]
+      ;(println (codecs/bytes->hex buf))
+      ;(println (codecs/bytes->hex buf2))
+      ;(println (codecs/bytes->hex buf3))
+      (is (Arrays/equals buf buf3))))
+  )
+
 (deftest ed25519-jwk->jca->jwk
   (let [[public private] (load-pair ed25519-jwk-key)]
 
-    (is (instance? EdDSAPrivateKey private))
-    (is (instance? EdDSAPublicKey public))
+    (is (instance? BCEdDSAPrivateKey private))
+    (is (instance? BCEdDSAPublicKey public))
 
     (is (= ed25519-jwk-key (keys/jwk private public)))
 
