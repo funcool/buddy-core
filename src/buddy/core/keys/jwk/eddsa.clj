@@ -19,7 +19,9 @@
             [buddy.core.codecs.base64 :as base64]
             [buddy.core.keys.jwk.proto :as proto]
             [buddy.core.keys.jwk.okp :as okp])
-  (:import (org.bouncycastle.crypto.params Ed25519PrivateKeyParameters Ed25519PublicKeyParameters AsymmetricKeyParameter)
+  (:import (org.bouncycastle.crypto.params Ed25519PrivateKeyParameters Ed25519PublicKeyParameters
+                                           Ed448PrivateKeyParameters Ed448PublicKeyParameters
+                                           AsymmetricKeyParameter)
            (org.bouncycastle.jcajce.provider.asymmetric.edec BCEdDSAPrivateKey BCEdDSAPublicKey)
            (java.util Arrays)))
 
@@ -37,12 +39,15 @@
     (.newInstance ctor (to-array [params]))))
 
 (defn pkcs8-key
-  [encoded]
-  (Arrays/copyOfRange encoded 16 48))
+  [encoded len]
+  (let [offset (if (and (= len 57)
+                     (not= 73 (count encoded)))
+                 17 16)]
+    (Arrays/copyOfRange encoded offset (+ offset len))))
 
 (defn x509-key
-  [encoded]
-  (Arrays/copyOfRange encoded 12 44))
+  [encoded len]
+  (Arrays/copyOfRange encoded 12 (+ 12 len)))
 
 (defn bc-ed-private-key
   [params]
@@ -52,12 +57,18 @@
   [params]
   (construct BCEdDSAPublicKey params))
 
-(defn- pubkey
+(defn- pubkey-25519
   [jwk]
   (-> (:x jwk)
-    ;(codecs/b64->bytes)
     (base64/decode)
     (Ed25519PublicKeyParameters. 0)
+    (bc-ed-public-key)))
+
+(defn- pubkey-448
+  [jwk]
+  (-> (:x jwk)
+    (base64/decode)
+    (Ed448PublicKeyParameters. 0)
     (bc-ed-public-key)))
 
 (defn- verify-public-key!
@@ -73,29 +84,49 @@
 (defmethod okp/jwkokp->private-key "Ed25519"
   [jwk]
   (let [priv (-> (:d jwk)
-               ;(codecs/to-bytes)
-               ;(codecs/b64->bytes)
                (base64/decode)
                (Ed25519PrivateKeyParameters. 0)
                (bc-ed-private-key))
-        pub (pubkey jwk)]
+        pub (pubkey-25519 jwk)]
     (verify-public-key! priv pub)
     priv))
 
 (defmethod okp/jwkokp->public-key "Ed25519"
   [jwk]
-  (pubkey jwk))
+  (pubkey-25519 jwk))
+
+(defmethod okp/jwkokp->private-key "Ed448"
+  [jwk]
+  (let [priv (-> (:d jwk)
+               (base64/decode)
+               (Ed448PrivateKeyParameters. 0)
+               (bc-ed-private-key))
+        pub (pubkey-448 jwk)]
+    (verify-public-key! priv pub)
+    priv))
+
+(defmethod okp/jwkokp->public-key "Ed448"
+  [jwk]
+  (pubkey-448 jwk))
+
+(defn- key-size
+  [alg]
+  (case alg "Ed448" 57 32))
 
 (defmethod proto/jwk BCEdDSAPrivateKey
   [^BCEdDSAPrivateKey private ^BCEdDSAPublicKey public]
   (verify-public-key! private public)
-  {:kty "OKP"
-   :crv "Ed25519"
-   :d (proto/bytes->b64str (pkcs8-key (.getEncoded private)))
-   :x (proto/bytes->b64str (x509-key (.getEncoded public)))})
+  (let [alg (.getAlgorithm public)
+        key-size (key-size alg)]
+    {:kty "OKP"
+     :crv alg
+     :d (proto/bytes->b64str (pkcs8-key (.getEncoded private) key-size))
+     :x (proto/bytes->b64str (x509-key (.getEncoded public) key-size))}))
 
 (defmethod proto/public-key->jwk BCEdDSAPublicKey
   [^BCEdDSAPublicKey public]
-  {:kty "OKP"
-   :crv "Ed25519"
-   :x (proto/bytes->b64str (x509-key (.getEncoded public)))})
+  (let [alg (.getAlgorithm public)
+        key-size (key-size alg)]
+    {:kty "OKP"
+     :crv alg
+     :x (proto/bytes->b64str (x509-key (.getEncoded public) key-size))}))
