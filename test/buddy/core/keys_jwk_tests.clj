@@ -20,10 +20,13 @@
             [buddy.core.codecs.base64 :as b64]
             [buddy.core.codecs :as codecs]
             [buddy.core.dsa :as dsa]
-            [buddy.util.ecdsa :refer [transcode-to-der]])
-  (:import (net.i2p.crypto.eddsa EdDSAPrivateKey EdDSAPublicKey)
+            [buddy.util.ecdsa :refer [transcode-to-der]]
+            [buddy.core.keys.jwk.eddsa :refer [bc-ed-private-key bc-ed-public-key pkcs8-key x509-key]])
+  (:import (org.bouncycastle.jcajce.provider.asymmetric.edec BCEdDSAPrivateKey BCEdDSAPublicKey)
+           (org.bouncycastle.crypto.params Ed25519PrivateKeyParameters Ed25519PublicKeyParameters
+                                           Ed448PrivateKeyParameters Ed448PublicKeyParameters)
            (java.security.interfaces ECPublicKey ECPrivateKey RSAPrivateKey RSAPublicKey)
-           (java.util Random)
+           (java.util Arrays)
            (org.bouncycastle.util BigIntegers)))
 
 ;; Ed25519
@@ -32,18 +35,55 @@
 (def ed25519-jwk-key
   {:kty "OKP"
    :crv "Ed25519"
-   :d "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A",
+   :d "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A"
    :x "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"})
+
+(def ed448-jwk-key
+  {:kty "OKP"
+   :crv "Ed448"
+   :d "ZXIvEfZfm7XeT-kYVnwfIftaRZgz8Bo3b19BGMSJ2fdLaW4SRXH2sZjs2Arc8ewN3fuzWRjev3rs"
+   :x "l1kFulHU9ZNQSbIxY7sYt6NCmg1S1UMm_LGJhx36fE5koFG_6esy9wX5Pt-J0xsK6aB4JFHxT3CA"})
 
 (defn- load-pair [jwk]
   [(keys/jwk->public-key jwk)
    (keys/jwk->private-key jwk)])
 
+(deftest ed25519-pem->jca->jwk
+  ; Key generation requires openssl >= 1.1.1
+  ; openssl genpkey -algorithm ED25519 > private.pem
+  ; openssl pkey -in ec_private.pem -pubout -out public.pem
+  (let [public (keys/public-key "test/_files/pubkey.ed25519.pem")
+        private (keys/private-key "test/_files/privkey.ed25519.pem")
+        jwk (keys/jwk private public)]
+    (is (map? jwk))
+    (is (= "OKP" (:kty jwk)))
+    (is (= "Ed25519" (:crv jwk)))
+    (let [public2 (keys/jwk->public-key jwk)
+          private2 (keys/jwk->private-key jwk)
+          jwk2 (keys/jwk private2 public2)]
+      (is (= jwk jwk2)))))
+
+(deftest ed25519-encoding
+  (testing "Private key .getEncoded"
+    (let [buf (-> (:d ed25519-jwk-key) (b64/decode))
+          params (Ed25519PrivateKeyParameters. buf 0)
+          key (bc-ed-private-key params)
+          buf2 (.getEncoded key)
+          buf3 (pkcs8-key buf2 32)]
+      (is (Arrays/equals buf buf3))))
+  (testing "Public key .getEncoded"
+    (let [buf (-> (:x ed25519-jwk-key) (b64/decode))
+          params (Ed25519PublicKeyParameters. buf 0)
+          key (bc-ed-public-key params)
+          buf2 (.getEncoded key)
+          buf3 (x509-key buf2 32)]
+      (is (Arrays/equals buf buf3)))))
+
 (deftest ed25519-jwk->jca->jwk
   (let [[public private] (load-pair ed25519-jwk-key)]
 
-    (is (instance? EdDSAPrivateKey private))
-    (is (instance? EdDSAPublicKey public))
+    (is (instance? BCEdDSAPrivateKey private))
+    (is (instance? BCEdDSAPublicKey public))
 
     (is (= ed25519-jwk-key (keys/jwk private public)))
 
@@ -63,6 +103,50 @@
         signature (dsa/sign payload {:alg :eddsa :key private})]
     (is (= "hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg"
            (codecs/bytes->str (b64/encode signature true))))
+    (is (dsa/verify payload signature {:alg :eddsa :key public}))))
+
+(deftest ed448-encoding
+  (testing "Private key .getEncoded"
+    (let [buf (-> (:d ed448-jwk-key) (b64/decode))
+          params (Ed448PrivateKeyParameters. buf 0)
+          key (bc-ed-private-key params)
+          buf2 (.getEncoded key)
+          buf3 (pkcs8-key buf2 57)]
+      (is (Arrays/equals buf buf3))))
+  (testing "Public key .getEncoded"
+    (let [buf (-> (:x ed448-jwk-key) (b64/decode))
+          params (Ed448PublicKeyParameters. buf 0)
+          key (bc-ed-public-key params)
+          buf2 (.getEncoded key)
+          buf3 (x509-key buf2 57)]
+      (is (Arrays/equals buf buf3)))))
+
+(deftest ed448-pem->jca->jwk
+  ; Key generation requires openssl >= 1.1.1
+  ; openssl genpkey -algorithm ED448 > private.pem
+  ; openssl pkey -in ec_private.pem -pubout -out public.pem
+  (let [public (keys/public-key "test/_files/pubkey.ed448.pem")
+        private (keys/private-key "test/_files/privkey.ed448.pem")
+        jwk (keys/jwk private public)
+        sig1 (dsa/sign "ABC" {:alg :eddsa :key private})]
+    (is (map? jwk))
+    (is (= "OKP" (:kty jwk)))
+    (is (= "Ed448" (:crv jwk)))
+    (is (dsa/verify "ABC" sig1 {:alg :eddsa :key public}))
+    (let [public2 (keys/jwk->public-key jwk)
+          private2 (keys/jwk->private-key jwk)
+          jwk2 (keys/jwk private2 public2)
+          private3 (keys/jwk->private-key jwk2)
+          sig2 (dsa/sign "ABC" {:alg :eddsa :key private3})]
+      (is (dsa/verify "ABC" sig2 {:alg :eddsa :key public}))
+      (is (= jwk jwk2)))))
+
+(deftest ed448-load-sign-verify
+  (let [[public private] (load-pair ed448-jwk-key)
+        payload "Buddy Loves Christmas!"
+        signature (dsa/sign payload {:alg :eddsa :key private})]
+    (is (= "mFUWr_F-Xgk0B53Ede9Z7nLOjIdlt5XapOV-BPtLQfznfqoW0ALfrFkaocWKvAV0ytRhTlvLSKiA_rxy6EuvyImPERv0duTf-HwF1gwULvH1MUQQ5Yr8nyymrJTBSHT1aDOCiXm8hCtPHTUbgnBQ0SgA"
+          (codecs/bytes->str (b64/encode signature true))))
     (is (dsa/verify payload signature {:alg :eddsa :key public}))))
 
 (deftest bi-encoding
