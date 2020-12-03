@@ -48,7 +48,7 @@
                                               (certificates/certificate "test/_files/cert.rsa.pem")))))))
 (deftest date-handling
     (let [expired (certificates/certificate "test/_files/expired-rsa.crt")]
-      (is (= #inst "2016-12-02T16:18:40.000-00:00" (certificates/not-before expired)))
+      (is (= #inst "2016-12-01T16:18:40.000-00:00" (certificates/not-before expired)))
       (is (= #inst "2016-12-02T16:18:40.000-00:00" (certificates/not-after expired)))
       (is (not (certificates/valid-on-date? expired)))
       (is (certificates/valid-on-date? expired #inst "2016-12-02T16:18:40.000-00:00"))

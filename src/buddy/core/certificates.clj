@@ -53,7 +53,8 @@
 (defn not-before
   "Returns the first date this certificate is valid."
   [^X509CertificateHolder cert]
-  (.getNotAfter cert))
+  [cert]
+  (.getNotBefore cert))
 
 (defn valid-on-date?
   "Returns true if certificate is valid date. Defaults to today"
