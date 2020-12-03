@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 1.9.0
+
+Date: 2020-12-03
+
+- Update dsa code (now used bouncy castle native function instead of third party dep).
+- Reflection fixes.
+- Update BC to 1.67
+
+
 ## Version 1.8.0
 
 Date: 2020-09-15

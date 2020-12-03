@@ -1,4 +1,4 @@
-(defproject buddy/buddy-core "1.8.0"
+(defproject buddy/buddy-core "1.9.0"
   :description "Cryptographic Api for Clojure."
   :url "https://github.com/funcool/buddy-core"
   :license {:name "Apache 2.0"
@@ -7,8 +7,8 @@
                  [org.clojure/test.check "1.1.0" :scope "test"]
                  [commons-codec/commons-codec "1.15"]
                  [cheshire "5.10.0"]
-                 [org.bouncycastle/bcprov-jdk15on "1.66"]
-                 [org.bouncycastle/bcpkix-jdk15on "1.66"]]
+                 [org.bouncycastle/bcprov-jdk15on "1.67"]
+                 [org.bouncycastle/bcpkix-jdk15on "1.67"]]
   :jar-name "buddy-core.jar"
   :source-paths ["src"]
   :java-source-paths ["src"]
