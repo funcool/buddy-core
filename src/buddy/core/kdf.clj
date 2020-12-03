@@ -27,6 +27,7 @@
            org.bouncycastle.crypto.params.KDFCounterParameters
            org.bouncycastle.crypto.params.KDFFeedbackParameters
            org.bouncycastle.crypto.params.KDFDoublePipelineIterationParameters
+           org.bouncycastle.crypto.params.KeyParameter
            org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
            org.bouncycastle.crypto.macs.HMac
            org.bouncycastle.crypto.DerivationFunction
@@ -77,7 +78,7 @@
 (extend-protocol IKDF
   PKCS5S2ParametersGenerator
   (-get-bytes [it length]
-    (.getKey (.generateDerivedParameters it (* 8 length)))))
+    (.getKey ^KeyParameter (.generateDerivedParameters it (* 8 length)))))
 
 (defmethod engine :hkdf
   [{:keys [key salt info digest]}]

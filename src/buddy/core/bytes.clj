@@ -38,7 +38,7 @@
   ([^bytes input val & {:keys [limit offset start end]}]
    (let [start (or offset start 0)
          end (or limit start (count input))]
-     (Arrays/fill input (int start) (int end) (byte val)))))
+     (Arrays/fill input ^int start ^int end (byte val)))))
 
 (defn slice
   "Returns a new copy of the byte array but

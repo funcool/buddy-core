@@ -33,10 +33,10 @@
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.)))
 
 (defn- decryptor
-  [builder passphrase]
+  [^String passphrase]
   (when (nil? passphrase)
     (throw (ex-info "Passphrase is mandatory with encrypted keys." {})))
-  (.build builder (.toCharArray passphrase)))
+  (.toCharArray passphrase))
 
 ;; TODO: maybe make this functions work with strings instead of reader
 
@@ -49,14 +49,14 @@
                       (.setProvider "BC"))]
       (cond
         (instance? PEMEncryptedKeyPair obj)
-        (->> (.decryptKeyPair obj (decryptor (JcePEMDecryptorProviderBuilder.) passphrase))
+        (->> (.decryptKeyPair ^PEMEncryptedKeyPair obj (.build (JcePEMDecryptorProviderBuilder.) (decryptor passphrase)))
              (.getKeyPair converter)
              (.getPrivate))
         (instance? PEMKeyPair obj)
         (->> (.getKeyPair converter obj)
              (.getPrivate))
         (instance? PKCS8EncryptedPrivateKeyInfo obj)
-        (->> (.decryptPrivateKeyInfo obj (decryptor (JceOpenSSLPKCS8DecryptorProviderBuilder.) passphrase))
+        (->> (.decryptPrivateKeyInfo ^PKCS8EncryptedPrivateKeyInfo obj (.build (JceOpenSSLPKCS8DecryptorProviderBuilder.) (decryptor passphrase)))
              (.getPrivateKey converter))
         (instance? PrivateKeyInfo obj)
         (.getPrivateKey converter obj)
@@ -71,6 +71,6 @@
           converter (doto (JcaPEMKeyConverter.)
                       (.setProvider "BC"))]
       (if (instance? X509CertificateHolder keyinfo)
-        (.getPublicKey converter (.getSubjectPublicKeyInfo keyinfo))
+        (.getPublicKey converter (.getSubjectPublicKeyInfo ^X509CertificateHolder keyinfo))
         (.getPublicKey converter keyinfo)))))
 

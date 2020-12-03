@@ -25,7 +25,7 @@
 
 
 (defn random-bytes
-  "Generate a byte array of scpecified length with random
+  "Generate a byte array of specified length with random
   bytes taken from secure random number generator.
   This method should be used to generate a random
   iv/salt or arbitrary length."
@@ -49,6 +49,7 @@
      (.put buffer ^bytes (random-bytes (.remaining buffer) sr))
      (.array buffer))))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helpers for generate specific iv/nonces for engines
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,5 +57,5 @@
 (defmulti for-engine class)
 
 (defmethod for-engine ChaChaEngine [e] (random-nonce 8))
-(defmethod for-engine SICBlockCipher [e] (random-nonce (.getBlockSize ^SICBlockCipher e)))
-(defmethod for-engine BlockCipher [e] (random-bytes (.getBlockSize ^BlockCipher e)))
+(defmethod for-engine SICBlockCipher [^BlockCipher e] (random-nonce (.getBlockSize e)))
+(defmethod for-engine BlockCipher [^BlockCipher e] (random-bytes (.getBlockSize e)))

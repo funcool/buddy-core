@@ -71,7 +71,7 @@
   Signature
   (-init [^Signature it options]
     (let [verify? (:verify options false)
-          key (:key options)]
+          ^PublicKey key (:key options)]
       (if verify?
         (.initVerify it key)
         (let [prng (or (:prng options)
