@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 1.10.0
+
+Date: 2021-05-01
+
+- Update BC to 1.68
+- Update other dependencies.
+
+
 ## Version 1.9.0
 
 Date: 2020-12-03

@@ -1,13 +1,13 @@
 {:dev
  {:aliases {"test-all" ["with-profile" "dev,1.9:dev,1.8:dev,1.7:dev" "test"]}
-  :plugins [[lein-ancient "0.6.15"]
+  :plugins [[lein-ancient "0.7.0"]
             [lein-codox "0.10.7"]]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace []
   :dependencies
-  [[org.clojure/tools.namespace "1.0.0"]
-   [criterium/criterium "0.4.5"]
-   [org.clojure/tools.reader "1.1.0"]
+  [[org.clojure/tools.namespace "1.1.0"]
+   [criterium/criterium "0.4.6"]
+   [org.clojure/tools.reader "1.3.5"]
    [codox-theme-rdash "0.1.2"]]
 
   :codox {:project {:name "buddy-core"}
