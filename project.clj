@@ -15,5 +15,4 @@
   :test-paths ["test"]
   :global-vars {*warn-on-reflection* true}
   :jar-exclusions [#"\.cljx|\.swp|\.swo|user.clj"]
-  :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"])
-
+  :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"])
