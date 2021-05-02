@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 1.10.1
+
+Date: 2021-05-02
+
+- Change the jvm build target to 1.8
+
+
 ## Version 1.10.0
 
 Date: 2021-05-01
