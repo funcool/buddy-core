@@ -4,7 +4,7 @@
   <groupId>buddy</groupId>
   <artifactId>buddy-core</artifactId>
   <packaging>jar</packaging>
-  <version>1.10.0</version>
+  <version>1.10.1</version>
   <name>buddy-core</name>
   <description>Cryptographic Api for Clojure.</description>
   <url>https://github.com/funcool/buddy-core</url>
@@ -18,7 +18,7 @@
     <url>https://github.com/funcool/buddy-core</url>
     <connection>scm:git:git://github.com/funcool/buddy-core.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/funcool/buddy-core.git</developerConnection>
-    <tag>d86314855c75e9e8b15be7f6cf16c69ceb38873f</tag>
+    <tag>182e4dbc298df95c6b3a097e672f5d2ff78e3feb</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
