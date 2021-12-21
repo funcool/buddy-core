@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.10.3" :scope "provided"]
                  [org.clojure/test.check "1.1.0" :scope "test"]
                  [commons-codec/commons-codec "1.15"]
-                 [cheshire "5.10.0"]
+                 [cheshire "5.10.1"]
                  [org.bouncycastle/bcprov-jdk15on "1.68"]
                  [org.bouncycastle/bcpkix-jdk15on "1.68"]]
   :jar-name "buddy-core.jar"
