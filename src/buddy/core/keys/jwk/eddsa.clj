@@ -23,15 +23,17 @@
                                            Ed448PrivateKeyParameters Ed448PublicKeyParameters
                                            AsymmetricKeyParameter)
            (org.bouncycastle.jcajce.provider.asymmetric.edec BCEdDSAPrivateKey BCEdDSAPublicKey)
+           (java.lang.reflect Constructor)
            (java.util Arrays)))
 
 (defn- construct
-  [cls params]
+  [^java.lang.Class cls params]
   ; HACK: These constructors are not public
   (let [cons (vec (.getDeclaredConstructors cls))
+        ^Constructor
         ctor (first (filter #(and
-                               (= 1 (.getParameterCount %))
-                               (= AsymmetricKeyParameter (aget (.getParameterTypes %) 0)))
+                               (= 1 (.getParameterCount ^Constructor %))
+                               (= AsymmetricKeyParameter (aget (.getParameterTypes ^Constructor %) 0)))
                       cons))]
     (when-not (some? ctor)
       (throw (UnsupportedOperationException. "Can not get key constructor")))
@@ -39,15 +41,15 @@
     (.newInstance ctor (to-array [params]))))
 
 (defn pkcs8-key
-  [encoded len]
+  [^bytes encoded len]
   (let [offset (if (and (= len 57)
                      (not= 73 (count encoded)))
                  17 16)]
-    (Arrays/copyOfRange encoded offset (+ offset len))))
+    (Arrays/copyOfRange encoded offset ^Integer (+ offset len))))
 
 (defn x509-key
-  [encoded len]
-  (Arrays/copyOfRange encoded 12 (+ 12 len)))
+  [^bytes encoded len]
+  (Arrays/copyOfRange encoded 12 ^Integer (+ 12 len)))
 
 (defn bc-ed-private-key
   [params]
@@ -72,7 +74,7 @@
     (bc-ed-public-key)))
 
 (defn- verify-public-key!
-  [priv pub]
+  [^BCEdDSAPrivateKey priv ^BCEdDSAPublicKey pub]
   ;; Check for incorrect public key
   (let [pub-buf (.getEncoded pub)
         pub2-buf (-> (.getPublicKey priv) (.getEncoded))]
