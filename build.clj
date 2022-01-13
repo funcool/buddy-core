@@ -33,3 +33,12 @@
     :class-dir class-dir
     :basis basis
     :javac-opts ["-source" "1.8" "-target" "1.8"]}))
+
+(defn clojars [_]
+  (b/process
+   {:command-args ["mvn"
+                   "deploy:deploy-file"
+                   (str "-Dfile=" jar-file)
+                   "-DpomFile=target/classes/META-INF/maven/buddy/buddy-core/pom.xml"
+                   "-DrepositoryId=clojars"
+                   "-Durl=https://clojars.org/repo/"]}))
