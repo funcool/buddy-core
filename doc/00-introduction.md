@@ -27,13 +27,13 @@ The simplest way to use _buddy-core_ in a clojure project, is by including it in
 dependency vector on your *_project.clj_* file:
 
 ```clojure
-[buddy/buddy-core "1.10.1"]
+[buddy/buddy-core "1.10.413"]
 ```
 
 Or deps.edn:
 
 ```clojure
-buddy/buddy-core {:mvn/version "1.9.0"}
+buddy/buddy-core {:mvn/version "1.10.413"}
 ```
 
 And is tested under JDK >= 8.
@@ -54,7 +54,7 @@ git clone https://github.com/funcool/buddy-core
 For running tests just execute this:
 
 ```bash
-lein test-all
+clojure -X:dev:test
 ```
 
 ## License
