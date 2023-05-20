@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 
-export OPTIONS="-A:dev -J-XX:-OmitStackTraceInFastThrow -J-Xms50m -J-Xmx512m -J-Djdk.attach.allowAttachSelf -J-XX:+UnlockDiagnosticVMOptions -J-XX:+DebugNonSafepoints";
+export OPTIONS="
+       -A:dev \
+       -J-XX:-OmitStackTraceInFastThrow \
+       -J-Xms50m \
+       -J-Xmx512m \
+       -J-Djdk.attach.allowAttachSelf \
+       -J-XX:+UnlockDiagnosticVMOptions \
+       -J-XX:+DebugNonSafepoints";
+
+# Disable C2 Compiler
+# export OPTIONS="$OPTIONS -J-XX:TieredStopAtLevel=1"
+
+# Disable all compilers
+# export OPTIONS="$OPTIONS -J-Xint"
+
+# export OPTIONS_EVAL="nil"
+export OPTIONS_EVAL="(set! *warn-on-reflection* true)"
 
 set -ex
-exec clojure $OPTIONS -M -m rebel-readline.main
+exec clojure $OPTIONS -M -e "$OPTIONS_EVAL" -m rebel-readline.main

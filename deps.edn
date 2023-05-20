@@ -1,8 +1,8 @@
 {:deps
  {commons-codec/commons-codec {:mvn/version "1.15"}
-  cheshire/cheshire {:mvn/version "5.10.1"}
-  org.bouncycastle/bcprov-jdk15on {:mvn/version "1.70"}
-  org.bouncycastle/bcpkix-jdk15on {:mvn/version "1.70"}}
+  cheshire/cheshire {:mvn/version "5.11.0"}
+  org.bouncycastle/bcprov-jdk18on {:mvn/version "1.73"}
+  org.bouncycastle/bcpkix-jdk18on {:mvn/version "1.73"}}
  :paths ["src" "resources" "target/classes"]
  :aliases
  {:dev
@@ -10,7 +10,7 @@
    {org.clojure/tools.namespace {:mvn/version "RELEASE"}
     org.clojure/test.check {:mvn/version "RELEASE"}
     org.clojure/tools.deps.alpha {:mvn/version "RELEASE"}
-    org.clojure/clojure {:mvn/version "1.11.0-alpha3"}
+    org.clojure/clojure {:mvn/version "1.11.1"}
     com.bhauman/rebel-readline {:mvn/version "RELEASE"}
     criterium/criterium {:mvn/version "RELEASE"}}
    :extra-paths ["test" "dev"]}
@@ -25,16 +25,16 @@
   {:extra-paths ["test"]
    :extra-deps
    {io.github.cognitect-labs/test-runner
-    {:git/tag "v0.5.0" :git/sha "b3fd0d2"}}
-   :exec-fn cognitect.test-runner.api/test
-   :exec-args {:patterns [".*-tests.*"]}}
+    {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+   :main-opts ["-m" "cognitect.test-runner"]
+   :exec-fn cognitect.test-runner.api/test}
 
   :build
-  {:extra-deps {io.github.clojure/tools.build {:git/tag "v0.7.4" :git/sha "ac442da"}}
+  {:extra-deps
+   {io.github.clojure/tools.build {:git/tag "v0.9.3" :git/sha "e537cd1"}}
    :ns-default build}
 
   :outdated
   {:extra-deps {com.github.liquidz/antq {:mvn/version "RELEASE"}
                 org.slf4j/slf4j-nop {:mvn/version "RELEASE"}}
    :main-opts ["-m" "antq.core"]}}}
-
