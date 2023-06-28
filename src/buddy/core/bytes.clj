@@ -19,6 +19,8 @@
   (:import java.nio.ByteBuffer
            java.util.Arrays))
 
+(set! *warn-on-reflection* true)
+
 (def ^:private +bytes-class+
   (Class/forName "[B"))
 

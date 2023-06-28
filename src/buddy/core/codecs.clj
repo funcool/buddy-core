@@ -53,33 +53,39 @@
   (Hex/decodeHex (.toCharArray data)))
 
 (defn bytes->b64
-  "Encode data to base64 byte array (using standard variant)."
-  [^bytes data]
+  "Encode bytes to base64 byte array (using standard variant)."
   {:added "1.8.0"}
-  (let [^Base64$Encoder encoder (java.util.Base64/getEncoder)]
-    (.encode encoder data)))
+  ([^bytes data] (bytes->b64 data false))
+  ([^bytes data urlsafe?]
+   (if urlsafe?
+     (let [^Base64$Encoder encoder (-> (java.util.Base64/getUrlEncoder) (.withoutPadding))]
+       (.encode encoder data))
+     (let [^Base64$Encoder encoder (java.util.Base64/getEncoder)]
+       (.encode encoder data)))))
 
-(defn bytes->b64u
-  "Encode data to base64 byte array (using url-safe variant)."
-  {:added "1.8.0"}
-  [^bytes data]
-  (let [^Base64$Encoder encoder (-> (java.util.Base64/getUrlEncoder)
-                                    (.withoutPadding))]
-    (.encode encoder data)))
+(defn bytes->b64-str
+  "Encode data to base64 string (using standard variant)."
+  {:added "1.11"}
+  ([data] (-> data bytes->b64 bytes->str))
+  ([data urlsafe?] (-> data (bytes->b64 urlsafe?) bytes->str)))
 
 (defn b64->bytes
-  "Decode base64 bytes array."
+  "Decode base64 bytes array"
   {:added "1.8.0"}
-  [^bytes data]
-  (let [^Base64$Decoder decoder (java.util.Base64/getDecoder)]
-    (.decode decoder data)))
+  ([data] (b64->bytes data false))
+  ([data urlsafe?]
+   (let [data (if (bytes? data) data (-to-bytes data))]
+     (if urlsafe?
+       (let [^Base64$Decoder decoder (java.util.Base64/getUrlDecoder)]
+         (.decode decoder ^bytes data))
+       (let [^Base64$Decoder decoder (java.util.Base64/getDecoder)]
+         (.decode decoder ^bytes data))))))
 
-(defn b64u->bytes
-  "Decode base64 bytes array (using url-safe variant)."
-  {:added "1.8.0"}
-  [^bytes data]
-  (let [^Base64$Decoder decoder (java.util.Base64/getUrlDecoder)]
-    (.decode decoder data)))
+(defn b64->str
+  "Decode base64 byte array to string."
+  {:added "1.11"}
+  ([data] (-> (b64->bytes data false) (bytes->str)))
+  ([data urlsafe?] (-> (b64->bytes data urlsafe?) (bytes->str))))
 
 (defn long->bytes
   [^Long input]
@@ -95,9 +101,15 @@
     (.getLong buffer)))
 
 (defn to-bytes
-  "Encode as bytes."
+  "Encode as byte array"
   [v]
   (-to-bytes v))
+
+(defn ->bytes
+  "A convenience alias for to-bytes"
+  {:added "1.11"}
+  [data]
+  (-to-bytes data))
 
 (extend-protocol IByteArray
   (Class/forName "[B")
@@ -109,3 +121,26 @@
 
   String
   (-to-bytes [data] (str->bytes data)))
+
+;; --- DEPRECATED
+
+(defn b64u->bytes
+  "Decode base64 bytes array (using url-safe variant)
+
+  NOTE: DEPRECATED"
+  {:added "1.8"
+   :deprecated "1.11"}
+  [^bytes data]
+  (let [^Base64$Decoder decoder (java.util.Base64/getUrlDecoder)]
+    (.decode decoder data)))
+
+(defn bytes->b64u
+  "Encode data to base64 byte array (using url-safe variant)
+
+  NOTE: DEPRECATED"
+  {:added "1.8"
+   :deprecated "1.11"}
+  [^bytes data]
+  (let [^Base64$Encoder encoder (-> (java.util.Base64/getUrlEncoder)
+                                    (.withoutPadding))]
+    (.encode encoder data)))

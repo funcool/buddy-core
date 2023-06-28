@@ -47,3 +47,23 @@
           array2 (into-array Byte/TYPE [3,4,5])]
       (is (bytes/equals? (bytes/concat array1 array2)
                          (into-array Byte/TYPE [1,2,3,3,4,5]))))))
+
+(deftest buddy-core-codecs-2
+  (testing "b64 1"
+    (let [mybytes (into-array Byte/TYPE (range 10))
+          encoded (bytes->b64 mybytes)
+          decoded (b64->bytes encoded)]
+      (is (bytes/equals? decoded mybytes))))
+
+  (testing "b64 2"
+    (let [mydata  "hello world"
+          encoded (-> (str->bytes mydata) (bytes->b64))
+          decoded (b64->str encoded)]
+      (is (= decoded mydata))))
+
+  (testing "b64 3"
+    (let [mydata  "hello world2"
+          encoded (-> (str->bytes mydata) (bytes->b64 true))
+          decoded (b64->str encoded false)]
+      (is (= decoded mydata))))
+  )
