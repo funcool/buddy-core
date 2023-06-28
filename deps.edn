@@ -1,8 +1,8 @@
 {:deps
- {commons-codec/commons-codec {:mvn/version "1.15"}
+ {commons-codec/commons-codec {:mvn/version "1.16.0"}
   cheshire/cheshire {:mvn/version "5.11.0"}
-  org.bouncycastle/bcprov-jdk18on {:mvn/version "1.73"}
-  org.bouncycastle/bcpkix-jdk18on {:mvn/version "1.73"}}
+  org.bouncycastle/bcprov-jdk18on {:mvn/version "1.75"}
+  org.bouncycastle/bcpkix-jdk18on {:mvn/version "1.75"}}
  :paths ["src" "resources" "target/classes"]
  :aliases
  {:dev
