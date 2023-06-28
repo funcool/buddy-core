@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 1.11.423
+
+Date: 2023-06-28
+
+- Update dependencies
+- Add some improvements to codecs ns
+
+
 ## Version 1.11.418
 
 Date: 2023-05-20
