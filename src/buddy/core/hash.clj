@@ -32,31 +32,33 @@
    org.bouncycastle.crypto.digests.SHA384Digest
    org.bouncycastle.crypto.digests.SHA512Digest
    org.bouncycastle.crypto.digests.Blake2bDigest
+   org.bouncycastle.crypto.digests.Blake3Digest
    org.bouncycastle.crypto.digests.SkeinDigest
    org.bouncycastle.crypto.digests.WhirlpoolDigest))
 
 (def ^:no-doc ^:static
   +digest-engines+
-  {:sha256   #(SHA256Digest.)
-   :sha384   #(SHA384Digest.)
-   :sha512   #(SHA512Digest.)
-   :sha1     #(SHA1Digest.)
-   :ripemd128 #(RIPEMD128Digest.)
-   :ripemd160 #(RIPEMD160Digest.)
-   :ripemd256 #(RIPEMD256Digest.)
-   :ripemd320 #(RIPEMD320Digest.)
-   :tiger    #(TigerDigest.)
-   :md5      #(MD5Digest.)
-   :sha3-256 #(SHA3Digest. 256)
-   :sha3-384 #(SHA3Digest. 384)
-   :sha3-512 #(SHA3Digest. 512)
+  {:sha256      #(SHA256Digest.)
+   :sha384      #(SHA384Digest.)
+   :sha512      #(SHA512Digest.)
+   :sha1        #(SHA1Digest.)
+   :ripemd128   #(RIPEMD128Digest.)
+   :ripemd160   #(RIPEMD160Digest.)
+   :ripemd256   #(RIPEMD256Digest.)
+   :ripemd320   #(RIPEMD320Digest.)
+   :tiger       #(TigerDigest.)
+   :md5         #(MD5Digest.)
+   :sha3-256    #(SHA3Digest. 256)
+   :sha3-384    #(SHA3Digest. 384)
+   :sha3-512    #(SHA3Digest. 512)
    :blake2b-128 #(Blake2bDigest. nil 16 nil nil)
    :blake2b-256 #(Blake2bDigest. nil 32 nil nil)
    :blake2b-512 #(Blake2bDigest. nil 64 nil nil)
-   :skein-256 #(SkeinDigest. 256 256)
-   :skein-512 #(SkeinDigest. 512 512)
-   :skein-1024 #(SkeinDigest. 1024 1024)
-   :whirlpool #(WhirlpoolDigest.)})
+   :blake3-256  #(Blake3Digest. 256)
+   :skein-256   #(SkeinDigest. 256 256)
+   :skein-512   #(SkeinDigest. 512 512)
+   :skein-1024  #(SkeinDigest. 1024 1024)
+   :whirlpool   #(WhirlpoolDigest.)})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Protocol definitions (abstractions)
@@ -195,6 +197,20 @@
   digest size to 512 bits."
   [input]
   (digest input :blake2b-512))
+
+(defn blake3
+  "BLAKE3 is a cryptographic hash function faster than MD5,
+  SHA-1, SHA-2, SHA-3, and BLAKE2. It focuses on speed."
+  [input length]
+  (let [length (* length 8)
+        engine (Blake3Digest. ^int length)]
+    (-digest input engine)))
+
+(defn blake3-256
+  "BLAKE3 cryptographic hash function with fixed output
+  digest size to 256 bits."
+  [input]
+  (digest input :blake3-256))
 
 (defn skein
   "Skein is a cryptographic hash function based on

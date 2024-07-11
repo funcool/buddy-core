@@ -4,21 +4,21 @@ All hash algorithms are located in the `buddy.core.hash` namespace.
 
 Available hash algorithms:
 
-| Hash algorithm name | Digest size |
-| --- |---|
-| SHA1      | 160 | 
-| SHA2      | 256, 384, 512 |
-| SHA3      | 256, 384, 512 |
-| MD5       | 128 |
-| Tiger     | 192 |
-| Blake2b   | 512 |
-| Skein     | 256, 512, 1024, arbitrary size |
-| Whirlpool | 512 |
-| RIPEMD128 | 128 |
-| RIPEMD160 | 160 |
-| RIPEMD256 | 256 |
-| RIPEMD320 | 320 |
-
+| Hash algorithm name | Digest size                    |
+|---------------------|--------------------------------|
+| SHA1                | 160                            | 
+| SHA2                | 256, 384, 512                  |
+| SHA3                | 256, 384, 512                  |
+| MD5                 | 128                            |
+| Tiger               | 192                            |
+| BLAKE2b             | 128, 256, 512                  |
+| BLAKE3              | 256, arbitrary size            |
+| Skein               | 256, 512, 1024, arbitrary size |
+| Whirlpool           | 512                            |
+| RIPEMD128           | 128                            |
+| RIPEMD160           | 160                            |
+| RIPEMD256           | 256                            |
+| RIPEMD320           | 320                            |
 
 ## Basic usage
 

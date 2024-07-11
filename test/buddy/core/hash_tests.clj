@@ -76,6 +76,13 @@
                   "D25E1031AFEE585313896444934EB04B"
                   "903A685B1448B755D56F701AFE9BE2CE")))))
 
+  (testing "blake3 256"
+    (let [hashed1 (hash/blake3-256 "")
+          hashed2 (hash/digest "" :blake3-256)]
+      (is (bytes/equals? hashed1 hashed2))
+      (is (= (bytes->hex hashed1)
+             "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"))))
+
   (testing "skein 256"
     (let [hashed1 (hash/skein-256 "")
           hashed2 (hash/skein "" 32)
