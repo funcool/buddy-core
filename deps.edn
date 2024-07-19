@@ -1,8 +1,8 @@
 {:deps
- {commons-codec/commons-codec {:mvn/version "1.16.0"}
-  cheshire/cheshire {:mvn/version "5.11.0"}
-  org.bouncycastle/bcprov-jdk18on {:mvn/version "1.75"}
-  org.bouncycastle/bcpkix-jdk18on {:mvn/version "1.75"}}
+ {commons-codec/commons-codec {:mvn/version "1.17.1"}
+  cheshire/cheshire {:mvn/version "5.13.0"}
+  org.bouncycastle/bcprov-jdk18on {:mvn/version "1.78.1"}
+  org.bouncycastle/bcpkix-jdk18on {:mvn/version "1.78.1"}}
  :paths ["src" "resources" "target/classes"]
  :aliases
  {:dev
@@ -10,7 +10,7 @@
    {org.clojure/tools.namespace {:mvn/version "RELEASE"}
     org.clojure/test.check {:mvn/version "RELEASE"}
     org.clojure/tools.deps.alpha {:mvn/version "RELEASE"}
-    org.clojure/clojure {:mvn/version "1.11.1"}
+    org.clojure/clojure {:mvn/version "1.11.3"}
     com.bhauman/rebel-readline {:mvn/version "RELEASE"}
     criterium/criterium {:mvn/version "RELEASE"}}
    :extra-paths ["test" "dev"]}
@@ -30,8 +30,7 @@
    :exec-fn cognitect.test-runner.api/test}
 
   :build
-  {:extra-deps
-   {io.github.clojure/tools.build {:git/tag "v0.9.3" :git/sha "e537cd1"}}
+  {:extra-deps {io.github.clojure/tools.build {:git/tag "v0.10.5" :git/sha "2a21b7a"}}
    :ns-default build}
 
   :outdated
