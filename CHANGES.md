@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 1.12.0-430
+
+Date: 2024-07-19
+
+- Update dependencies
+- Add blake3 has functions helpers
+
+
 ## Version 1.11.423
 
 Date: 2023-06-28
