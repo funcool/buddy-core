@@ -3,7 +3,7 @@
   (:require [clojure.tools.build.api :as b]))
 
 (def lib 'buddy/buddy-core)
-(def version (format "1.11.%s" (b/git-count-revs nil)))
+(def version (format "1.12-%s" (b/git-count-revs nil)))
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
@@ -32,7 +32,7 @@
    {:src-dirs ["src"]
     :class-dir class-dir
     :basis basis
-    :javac-opts ["-source" "1.8" "-target" "1.8"]}))
+    :javac-opts ["--release" "11" "-proc:none"]}))
 
 (defn clojars [_]
   (b/process
